@@ -14,6 +14,30 @@ export default function ShopeeDiagnostic() {
   const [report,setReport]=useState(null);
   const [copied,setCopied]=useState(false);
   const [err,setErr]=useState('');
+  const [schemaReport,setSchemaReport]=useState(null);
+  const [schemaBusy,setSchemaBusy]=useState(false);
+  const [schemaError,setSchemaError]=useState('');
+  const [schemaCopied,setSchemaCopied]=useState(false);
+
+  async function inspectStorefront(){
+    setSchemaBusy(true);setSchemaReport(null);setSchemaError('');setSchemaCopied(false);
+    try {
+      const response=await fetch('/api/admin/shopee/storefront-schema',{
+        method:'POST',cache:'no-store'
+      });
+      if(response.status===401){window.location.href='/adm/login';return;}
+      const payload=await response.json();
+      setSchemaReport(payload);
+    }catch(error){setSchemaError('Falha no teste: '+String(error?.message||'erro de conexão'));}
+    finally{setSchemaBusy(false);}
+  }
+  async function copySchema(){
+    if(!schemaReport)return;
+    try{
+      await navigator.clipboard.writeText(JSON.stringify(schemaReport,null,2));
+      setSchemaCopied(true);
+    }catch{setSchemaError('Selecione e copie o relatório exibido abaixo.');}
+  }
 
   async function test() {
     setBusy(true);setReport(null);setErr('');setCopied(false);
@@ -65,6 +89,19 @@ export default function ShopeeDiagnostic() {
         <pre style={{background:'#111827',color:'#e5e7eb',padding:16,borderRadius:10,whiteSpace:'pre-wrap',overflowWrap:'anywhere',fontSize:12,lineHeight:1.5,marginTop:12}}>{JSON.stringify(report,null,2)}</pre>
       </>}
     </section>
-    <p style={{fontSize:13,color:'#757580',lineHeight:1.5,marginTop:18}}>Teste restrito ao login administrativo. Se a Shopee retornar um erro de autorização, confirme que o App ID e o Secret pertencem à Open API de Afiliados.</p>
+    <section style={{...card,marginTop:20}}>
+      <h2 style={{fontSize:22,marginTop:0}}>🛍️ Minha Vitrine Shopee — verificar API</h2>
+      <p style={{lineHeight:1.6}}>A busca comum de produtos não acessa sua seleção da Vitrine do Afiliado. Este teste consulta somente os nomes das operações GraphQL disponíveis em sua conexão, para descobrir se há alguma operação de vitrine ou coleção. Não depende do Neon.</p>
+      <button onClick={inspectStorefront} disabled={schemaBusy} style={button}>{schemaBusy?'Consultando operações…':'Verificar operações de vitrine'}</button>
+      {schemaError&&<p role="alert" style={{color:'#c23925'}}>{schemaError}</p>}
+      {schemaReport&&<>
+       <p style={{color:schemaReport.status==='ok'?'#176b43':'#b14825',fontWeight:700}}>{schemaReport.message}</p>
+       <p style={{lineHeight:1.55}}>{schemaReport.interpretation||'A API não disponibilizou o catálogo de operações nesta consulta.'}</p>
+       {Array.isArray(schemaReport.possibleStorefrontQueries)&&<p><b>Possíveis operações relacionadas:</b> {schemaReport.possibleStorefrontQueries.length?schemaReport.possibleStorefrontQueries.join(', '):'Nenhuma identificada'}</p>}
+       <button onClick={copySchema} style={secondary}>{schemaCopied?'✓ Relatório copiado':'📋 Copiar relatório de operações'}</button>
+       <pre style={{background:'#111827',color:'#e5e7eb',padding:16,borderRadius:10,whiteSpace:'pre-wrap',overflowWrap:'anywhere',fontSize:12,lineHeight:1.5,marginTop:12}}>{JSON.stringify(schemaReport,null,2)}</pre>
+      </>}
+    </section>
+    <p style={{fontSize:13,color:'#757580',lineHeight:1.5,marginTop:18}}>Testes restritos ao login administrativo. A consulta de operações não confirma acesso à vitrine até validarmos uma operação específica.</p>
   </main>;
 }
