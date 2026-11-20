@@ -18,6 +18,10 @@ export default function ShopeeDiagnostic() {
   const [schemaBusy,setSchemaBusy]=useState(false);
   const [schemaError,setSchemaError]=useState('');
   const [schemaCopied,setSchemaCopied]=useState(false);
+  const [feedDetails,setFeedDetails]=useState(null);
+  const [feedBusy,setFeedBusy]=useState(false);
+  const [feedError,setFeedError]=useState('');
+  const [feedCopied,setFeedCopied]=useState(false);
 
   async function inspectStorefront(){
     setSchemaBusy(true);setSchemaReport(null);setSchemaError('');setSchemaCopied(false);
@@ -30,6 +34,23 @@ export default function ShopeeDiagnostic() {
       setSchemaReport(payload);
     }catch(error){setSchemaError('Falha no teste: '+String(error?.message||'erro de conexão'));}
     finally{setSchemaBusy(false);}
+  }
+  async function inspectFeeds(){
+    setFeedBusy(true);setFeedDetails(null);setFeedError('');setFeedCopied(false);
+    try{
+      const response=await fetch('/api/admin/shopee/storefront-details',{method:'POST',cache:'no-store'});
+      if(response.status===401){window.location.href='/adm/login';return}
+      const json=await response.json();
+      setFeedDetails(json);
+    }catch(error){setFeedError(String(error?.message||'Erro ao consultar estrutura dos feeds'))}
+    finally{setFeedBusy(false)}
+  }
+  async function copyFeedDetails(){
+    if(!feedDetails)return;
+    try{
+      await navigator.clipboard.writeText(JSON.stringify(feedDetails,null,2));
+      setFeedCopied(true);
+    }catch{setFeedError('Selecione o texto do relatório para copiar manualmente.')}
   }
   async function copySchema(){
     if(!schemaReport)return;
@@ -91,6 +112,7 @@ export default function ShopeeDiagnostic() {
     </section>
     <section style={{...card,marginTop:20}}>
       <h2 style={{fontSize:22,marginTop:0}}>🛍️ Minha Vitrine Shopee — verificar API</h2>
+      <p style={{lineHeight:1.5}}>Perfil informado: <a href="https://collshp.com/perf.jaqueporto?view=storefront" target="_blank" rel="noopener noreferrer" style={{color:'#d9511f'}}>collshp.com/perf.jaqueporto</a></p>
       <p style={{lineHeight:1.6}}>A busca comum de produtos não acessa sua seleção da Vitrine do Afiliado. Este teste consulta somente os nomes das operações GraphQL disponíveis em sua conexão, para descobrir se há alguma operação de vitrine ou coleção. Não depende do Neon.</p>
       <button onClick={inspectStorefront} disabled={schemaBusy} style={button}>{schemaBusy?'Consultando operações…':'Verificar operações de vitrine'}</button>
       {schemaError&&<p role="alert" style={{color:'#c23925'}}>{schemaError}</p>}
@@ -100,6 +122,22 @@ export default function ShopeeDiagnostic() {
        {Array.isArray(schemaReport.possibleStorefrontQueries)&&<p><b>Possíveis operações relacionadas:</b> {schemaReport.possibleStorefrontQueries.length?schemaReport.possibleStorefrontQueries.join(', '):'Nenhuma identificada'}</p>}
        <button onClick={copySchema} style={secondary}>{schemaCopied?'✓ Relatório copiado':'📋 Copiar relatório de operações'}</button>
        <pre style={{background:'#111827',color:'#e5e7eb',padding:16,borderRadius:10,whiteSpace:'pre-wrap',overflowWrap:'anywhere',fontSize:12,lineHeight:1.5,marginTop:12}}>{JSON.stringify(schemaReport,null,2)}</pre>
+      </>}
+      <hr style={{border:0,borderTop:'1px solid #eee',margin:'23px 0'}}/>
+      <h3 style={{fontSize:18,margin:'0 0 10px'}}>Investigar listItemFeeds e getItemFeedData</h3>
+      <p style={{lineHeight:1.6}}>Seu primeiro relatório encontrou essas duas consultas. Agora podemos ver quais parâmetros exigem e quais tipos retornam. Isso não significa que elas consultem a vitrine personalizada.</p>
+      <button onClick={inspectFeeds} disabled={feedBusy} style={button}>{feedBusy?'Analisando estrutura…':'Ver parâmetros dos feeds'}</button>
+      {feedError&&<p role="alert" style={{color:'#bb4325'}}>{feedError}</p>}
+      {feedDetails&&<>
+        <p style={{color:feedDetails.status==='ok'?'#167544':'#ab492c',fontWeight:700}}>{feedDetails.message}</p>
+        {Array.isArray(feedDetails.operations)&&<div style={{display:'grid',gap:10,marginBottom:14}}>
+          {feedDetails.operations.map(op=><div key={op.name} style={{border:'1px solid #eee',padding:12,borderRadius:10}}>
+            <b>{op.name}</b><p style={{color:'#666',fontSize:13}}>{op.description||'Sem descrição disponibilizada'}</p>
+            <small>Argumentos: {(op.args||[]).map(arg=>arg.name+': '+(arg.type?.name||'desconhecido')).join(', ')||'Nenhum'}</small>
+          </div>)}
+        </div>}
+        <button onClick={copyFeedDetails} style={secondary}>{feedCopied?'✓ Copiado':'📋 Copiar detalhes da API'}</button>
+        <pre style={{background:'#111827',color:'#e5e7eb',padding:16,borderRadius:10,whiteSpace:'pre-wrap',overflowWrap:'anywhere',fontSize:12,lineHeight:1.5,marginTop:12}}>{JSON.stringify(feedDetails,null,2)}</pre>
       </>}
     </section>
     <p style={{fontSize:13,color:'#757580',lineHeight:1.5,marginTop:18}}>Testes restritos ao login administrativo. A consulta de operações não confirma acesso à vitrine até validarmos uma operação específica.</p>
