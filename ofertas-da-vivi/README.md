@@ -32,7 +32,7 @@ Crie um projeto Next.js e configure em *Settings > Environment Variables*:
 | `SHOPEE_APP_SECRET` | Secret da API Shopee. |
 | `NEXT_PUBLIC_SITE_URL` | URL pública do projeto, para o sitemap. |
 
-**Nunca coloque chaves ou senhas em variáveis `NEXT_PUBLIC_`.** Nenhuma credencial vem pré-configurada. O painel administrativo permanece inacessível até a senha e a chave de sessão serem informadas.
+**Defina ADMIN_PASSWORD, SESSION_SECRET, DATABASE_URL, SHOPEE_APP_ID e SHOPEE_APP_SECRET como variáveis do tipo Secret da Vercel.** Não publique valores com prefixo `NEXT_PUBLIC_`, nem os armazene no banco. Após alterá-los, faça um novo deploy. Nenhuma credencial vem pré-configurada. O painel administrativo permanece inacessível até a senha e a chave de sessão serem informadas.
 
 ## Painel ADM
 
@@ -40,7 +40,7 @@ Entre em `https://SEU-DOMINIO/adm` após configurar as credenciais de administra
 
 - **Visão geral:** produtos cadastrados, ofertas ativas, cliques.
 - **Ofertas:** ativar/desativar, marcar como destaque, apagar.
-- **Integração Shopee:** pesquisar e importar até 40 ofertas por palavra-chave, após aprovação de acesso à API.
+- **Integração Shopee:** testar a conexão, buscar produtos e importar apenas itens selecionados, após aprovação da API.
 - **Configurações:** adicionar produtos com link de afiliada, URL do canal WhatsApp, Instagram, TikTok e chamada do banner.
 
 **Importação segura:** produtos sincronizados são inseridos **inativos**, para revisão manual. A API usa SHA256 com o corpo exato da requisição, apenas no servidor.

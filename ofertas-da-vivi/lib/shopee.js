@@ -12,5 +12,5 @@ export async function shopeeQuery(query){
 export async function searchShopee(keyword='',limit=24){
  const safe=JSON.stringify(String(keyword).slice(0,80));
  const data=await shopeeQuery(`{productOfferV2(keyword:${safe},page:1,limit:${Math.min(50,Math.max(1,limit))}){nodes{itemId shopId productName imageUrl priceMin priceMax priceDiscountRate offerLink productLink}pageInfo{hasNextPage}}}`);
- return (data?.productOfferV2?.nodes||[]).map(n=>({id:`shopee-${n.shopId}-${n.itemId}`,title:n.productName,category:'Outros',price:Number(n.priceMin),oldPrice:Number(n.priceMax)>Number(n.priceMin)?Number(n.priceMax):null,image:n.imageUrl,url:n.offerLink,featured:false,active:true,origin:'shopee'})).filter(o=>o.title&&o.url&&Number.isFinite(o.price));
+ return (data?.productOfferV2?.nodes||[]).map(n=>({id:`shopee-${n.shopId}-${n.itemId}`,title:n.productName,category:'Outros',price:Number(n.priceMin),oldPrice:null,image:n.imageUrl,url:n.offerLink,featured:false,active:false,origin:'shopee'})).filter(o=>o.title&&o.url&&Number.isFinite(o.price)&&o.price>0&&(()=>{try{const u=new URL(o.url);return u.protocol==='https:'&&['shopee.com.br','shopee.com','shopee.ee','s.shopee.com.br'].some(d=>u.hostname===d||u.hostname.endsWith('.'+d))}catch{return false}})());
 }
