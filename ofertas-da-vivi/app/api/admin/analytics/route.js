@@ -12,10 +12,12 @@ async function getSiteClicks(){
  try{
   const sql=await getDB();
   if(!sql)return {status:'not_configured',count:null,topOffers:[]};
-  const rows=await sql`SELECT id,title,clicks FROM vivi_offers WHERE clicks > 0 ORDER BY clicks DESC LIMIT 15`;
+  const [totals,rows]=await Promise.all([
+    sql`SELECT COALESCE(SUM(clicks),0)::bigint AS total FROM vivi_offers`,
+    sql`SELECT id,title,clicks FROM vivi_offers WHERE clicks > 0 ORDER BY clicks DESC LIMIT 15`
+  ]);
   return {
-    status:'ok',count:rows.reduce((sum,o)=>sum+Number(o.clicks||0),0),
-    // A soma de top 15 não deve ser apresentada como total geral.
+    status:'ok',count:Number(totals[0]?.total||0),
     topOffers:rows.map(o=>({id:o.id,title:o.title,clicks:Number(o.clicks||0)}))
   };
  }catch{
