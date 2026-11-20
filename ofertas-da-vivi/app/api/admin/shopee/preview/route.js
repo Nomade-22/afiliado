@@ -1,8 +1,17 @@
 import {isAdmin,forbidden} from '../../../../../lib/auth';
-import {searchShopee} from '../../../../../lib/shopee';
+import {searchShopeePage} from '../../../../../lib/shopee';
+
+export const dynamic='force-dynamic';
 export const maxDuration=25;
+
 export async function POST(req){
  if(!await isAdmin())return forbidden();
- try{let d=await req.json().catch(()=>({}));return Response.json({offers:await searchShopee(String(d.keyword||'').slice(0,80),Math.min(40,Math.max(1,Number(d.limit)||24)))},{headers:{'Cache-Control':'no-store'}})}
- catch(e){return Response.json({error:e.message},{status:502})}
+ try{
+  const data=await req.json().catch(()=>({}));
+  const found=await searchShopeePage(data.keyword,data.limit,data.page);
+  return Response.json(found,{headers:{'Cache-Control':'private, no-store'}});
+ }catch(e){
+  const msg=String(e?.message||'Erro ao consultar Shopee').slice(0,220);
+  return Response.json({error:msg},{status:502,headers:{'Cache-Control':'private, no-store'}});
+ }
 }
