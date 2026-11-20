@@ -27,6 +27,7 @@ export default function SalesPanel(){
  const [days,setDays]=useState(30),[busy,setBusy]=useState(false);
  const [report,setReport]=useState(null),[error,setError]=useState('');
  const [validationId,setValidationId]=useState(''),[validated,setValidated]=useState(null),[valBusy,setValBusy]=useState(false),[valError,setValError]=useState('');
+ const [clickImport,setClickImport]=useState(null),[clickBusy,setClickBusy]=useState(false),[clickError,setClickError]=useState('');
  async function load(period=days){
   setBusy(true);setError('');
   try{
@@ -48,6 +49,18 @@ export default function SalesPanel(){
    if(!r.ok)throw Error(d.error||'Erro na consulta de validação');
    setValidated(d.report);
   }catch(e){setValError(e.message)}finally{setValBusy(false)}
+ }
+ async function importClicks(file){
+   if(!file)return;
+   setClickBusy(true);setClickError('');setClickImport(null);
+   try{
+    const form=new FormData();form.append('file',file);
+    const r=await fetch('/api/admin/analytics/clicks-import',{method:'POST',body:form});
+    if(r.status===401){window.location.href='/adm/login';return}
+    const data=await r.json();
+    if(!r.ok)throw Error(data.error||'Não foi possível ler o relatório de cliques.');
+    setClickImport(data);
+   }catch(e){setClickError(e.message)}finally{setClickBusy(false)}
  }
  const summary=report||{};
  const st=summary.statusCounts||{};
@@ -108,6 +121,27 @@ export default function SalesPanel(){
     <p style={{fontSize:13,lineHeight:1.6}}>
       Para conferir os cliques oficiais em todos os canais, use o <a style={{color:'#e45a20'}} href="https://affiliate.shopee.com.br/" target="_blank" rel="noopener noreferrer">Portal do Afiliado Shopee</a> → Relatório → Relatório de cliques → Exportar.
     </p>
+  </section>
+  <section style={panel}>
+    <h2 style={{fontSize:20,marginTop:0}}>Importar relatório oficial de cliques Shopee</h2>
+    <p style={{fontSize:13,color:'#777',lineHeight:1.6}}>
+      A API de afiliados não disponibiliza a contagem total de cliques. Exporte o relatório no Portal da Shopee e envie o arquivo Excel (.xlsx) ou CSV aqui. O arquivo é analisado nesta sessão e <b>não é salvo no nosso banco</b>.
+    </p>
+    <input type="file" accept=".xlsx,.csv" aria-label="Selecionar relatório de cliques Shopee" onChange={e=>importClicks(e.target.files?.[0])} style={{display:'block',maxWidth:'100%',padding:'10px 0'}}/>
+    {clickBusy&&<p style={{color:'#777'}}>Analisando relatório...</p>}
+    {clickError&&<p role="alert" style={{color:'#b43d27'}}>{clickError}</p>}
+    {clickImport&&<div style={{marginTop:12}}>
+      <div style={dataBox}>
+        <KeyValue name="Linhas de dados" value={clickImport.rows}/>
+        <KeyValue name="Cliques (coluna do arquivo)" value={clickImport.officialClicks===null?'Não identificados':clickImport.officialClicks.toLocaleString('pt-BR')}/>
+      </div>
+      <p style={{fontSize:12,color:'#7b7e88',lineHeight:1.5}}>{clickImport.message} Colunas detectadas: {(clickImport.columns||[]).join(', ')||'Nenhuma'}.</p>
+      {clickImport.bySubId?.length>0&&<div style={{marginTop:10}}>
+        <b>Desempenho por Sub ID ({clickImport.groupUnit})</b>
+        {clickImport.bySubId.map((o,i)=><div key={i} style={{display:'flex',gap:10,justifyContent:'space-between',borderBottom:'1px solid #eee',padding:'8px 0',fontSize:13}}><span>{o.subId}</span><strong>{o.count}</strong></div>)}
+      </div>}
+      {!clickImport.isComplete&&<p style={{color:'#ad5021'}}>Arquivo grande: somente as primeiras 30 mil linhas foram analisadas.</p>}
+    </div>}
   </section>
   {report&&<section style={panel}>
     <h2 style={{fontSize:20,marginTop:0}}>Conversões por pedido</h2>
