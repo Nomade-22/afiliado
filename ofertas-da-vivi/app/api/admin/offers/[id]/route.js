@@ -1,0 +1,4 @@
+import {isAdmin,forbidden} from '../../../../../lib/auth';
+import {getDB} from '../../../../../lib/db';
+export async function PATCH(req,{params}){if(!await isAdmin())return forbidden();let sql=await getDB();if(!sql)return Response.json({error:'Banco não configurado'},{status:503});let {id}=await params;let d=await req.json();if(typeof d.active==='boolean')await sql`UPDATE vivi_offers SET active=${d.active},updated_at=NOW() WHERE id=${id}`;if(typeof d.featured==='boolean')await sql`UPDATE vivi_offers SET featured=${d.featured},updated_at=NOW() WHERE id=${id}`;return Response.json({ok:true})}
+export async function DELETE(_req,{params}){if(!await isAdmin())return forbidden();const sql=await getDB();if(!sql)return Response.json({error:'Banco não configurado'},{status:503});const {id}=await params;await sql`DELETE FROM vivi_offers WHERE id=${id}`;return Response.json({ok:true})}

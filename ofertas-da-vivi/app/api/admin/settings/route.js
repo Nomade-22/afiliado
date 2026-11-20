@@ -1,0 +1,6 @@
+import {isAdmin,forbidden} from '../../../../lib/auth';
+import {getDB,getSettings} from '../../../../lib/db';
+import {defaultSettings} from '../../../../lib/demo';
+export async function GET(){if(!await isAdmin())return forbidden();const sql=await getDB();let settings=sql?await getSettings(sql):{};return Response.json({settings:{...defaultSettings,...settings},shopeeConfigured:!!(process.env.SHOPEE_APP_ID&&process.env.SHOPEE_APP_SECRET),databaseConfigured:!!sql,adminConfigured:!!process.env.ADMIN_PASSWORD});}
+export async function POST(req){if(!await isAdmin())return forbidden();const sql=await getDB();if(!sql)return Response.json({error:'Banco não configurado'},{status:503});let d=await req.json();for(const key of Object.keys(defaultSettings)){if(typeof d[key]==='string'){let v=d[key].trim().slice(0,key.includes('hero')?280:300);if(['whatsapp','instagram','tiktok'].includes(key)&&v){try{const url=new URL(v);if(url.protocol!=='https:')return Response.json({error:`URL inválida no campo ${key}`},{status:400})}catch{return Response.json({error:`URL inválida no campo ${key}`},{status:400})}}await sql`INSERT INTO vivi_settings(key,value) VALUES(${key},${v}) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value`;}}
+return Response.json({ok:true})}
