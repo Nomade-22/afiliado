@@ -5,11 +5,43 @@ const TABS=[['dashboard',LayoutDashboard,'Visão geral'],['ofertas',Tag,'Ofertas
 const brl=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const cats=['Casa','Beleza','Moda','Eletrônicos','Utilidades','Infantil','Outros'];
 export default function AdminPanel(){
- const[tab,setTab]=useState('dashboard'),[offers,setOffers]=useState([]),[config,setConfig]=useState(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(null),[form,setForm]=useState({title:'',category:'Casa',price:'',oldPrice:'',image:'',url:'',featured:false}),[keyword,setKeyword]=useState(''),[search,setSearch]=useState(''),[mobileMenu,setMobileMenu]=useState(false),[preview,setPreview]=useState([]),[selected,setSelected]=useState([]);
- async function load(){const [a,b]=await Promise.all([fetch('/api/admin/offers',{cache:'no-store'}),fetch('/api/admin/settings',{cache:'no-store'})]);if(a.status===401||b.status===401){location.href='/adm/login';return}let offersData=await a.json(),confData=await b.json();setOffers(offersData.offers||[]);setConfig(confData)}
+ const[tab,setTab]=useState('dashboard'),[offers,setOffers]=useState([]),[config,setConfig]=useState(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(null),[form,setForm]=useState({title:'',category:'Casa',price:'',oldPrice:'',image:'',url:'',featured:false}),[keyword,setKeyword]=useState(''),[search,setSearch]=useState(''),[mobileMenu,setMobileMenu]=useState(false),[preview,setPreview]=useState([]),[selected,setSelected]=useState([]),[page,setPage]=useState(1),[hasNextPage,setHasNextPage]=useState(false);
+ async function load(){
+  const [a,b]=await Promise.allSettled([
+    fetch('/api/admin/offers',{cache:'no-store'}),
+    fetch('/api/admin/settings',{cache:'no-store'})
+  ]);
+  const offersRes=a.status==='fulfilled'?a.value:null;
+  const settingsRes=b.status==='fulfilled'?b.value:null;
+  if(offersRes?.status===401||settingsRes?.status===401){location.href='/adm/login';return}
+  const offersData=offersRes?.ok?await offersRes.json().catch(()=>({})):{};
+  const settingsData=settingsRes?.ok?await settingsRes.json().catch(()=>({})):{};
+  setOffers(offersData.offers||[]);
+  setConfig({
+    settings:{},
+    shopeeConfigured:false,
+    databaseConfigured:false,
+    ...settingsData,
+    databaseError:settingsData.databaseError||(!offersRes?.ok?'Banco Neon indisponível. A pesquisa Shopee continua funcionando.':null)
+  });
+ }
  useEffect(()=>{load().catch(()=>setMessage({type:'error',text:'Erro ao carregar dados do painel.'}))},[]);
  async function run(action){setBusy(true);setMessage(null);try{const result=await action();setMessage({type:'ok',text:result||'Alterações salvas com sucesso.'});await load()}catch(e){setMessage({type:'error',text:e.message})}finally{setBusy(false)}}
  async function api(path,options={}){let resp=await fetch(path,{...options,headers:{'Content-Type':'application/json',...options.headers}}),d=await resp.json();if(!resp.ok)throw Error(d.error||'Não foi possível concluir');return d}
+ async function findShopee(nextPage=1){
+  setBusy(true);setMessage(null);
+  try{
+    const d=await api('/api/admin/shopee/preview',{
+      method:'POST',body:JSON.stringify({keyword,limit:24,page:nextPage})
+    });
+    setPreview(d.offers||[]);
+    setPage(d.page||nextPage);
+    setHasNextPage(Boolean(d.hasNextPage));
+    setSelected([]);
+    setMessage({type:'ok',text:(d.offers||[]).length+' produtos encontrados na página '+(d.page||nextPage)+'.'});
+  }catch(e){setMessage({type:'error',text:e.message})}
+  finally{setBusy(false)}
+ }
  function updateOffer(id,k,value){run(async()=>{await api('/api/admin/offers/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({[k]:value})});return 'Oferta atualizada.'})}
  function deleteOffer(id){if(!window.confirm('Remover essa oferta definitivamente?'))return;run(async()=>{await api('/api/admin/offers/'+encodeURIComponent(id),{method:'DELETE'});return 'Oferta removida.'})}
  const filtered=offers.filter(o=>o.title.toLowerCase().includes(search.toLowerCase()));const active=offers.filter(o=>o.active);const clickTotal=offers.reduce((a,o)=>a+(o.clicks||0),0);
@@ -22,16 +54,21 @@ export default function AdminPanel(){
 <a href="/adm/teste-shopee" className="btn btn-primary btn-wide" style={{marginBottom:18}}><PlugZap size={18}/> Abrir Laboratório API Shopee →</a>
 <div className="connection-list"><div><span>API Shopee</span><b className={config?.shopeeConfigured?'good':'muted'}>{config?.shopeeConfigured?'Configurada na Vercel':'Pendente'}</b></div><div><span>Banco Neon</span><b className={config?.databaseConfigured?'good':'muted'}>{config?.databaseConfigured?'Conectado':'Pendente'}</b></div></div>
 <div className="info-note"><ShieldCheck size={19}/><p>No projeto da Vercel, em <strong>Settings → Environment Variables</strong>, cadastre <code>SHOPEE_APP_ID</code> e <code>SHOPEE_APP_SECRET</code> como <strong>Secret</strong> em Production. Depois faça um novo deploy.</p></div>
-<button className="btn btn-outline btn-wide" disabled={busy||!config?.shopeeConfigured} onClick={()=>run(async()=>{let d=await api('/api/admin/shopee/test',{method:'POST'});return d.message})}><ShieldCheck size={17}/> Testar conexão com Shopee</button>
-<p className="footnote">O ADM precisa de ADMIN_PASSWORD e SESSION_SECRET. O Neon (DATABASE_URL) permite salvar os produtos importados.</p></div>
+<button className="btn btn-outline btn-wide" disabled={busy} onClick={()=>run(async()=>{let d=await api('/api/admin/shopee/test',{method:'POST'});return d.message})}><ShieldCheck size={17}/> Testar conexão com Shopee</button>
+<p className="footnote">O ADM precisa de ADMIN_PASSWORD e SESSION_SECRET. O Neon (DATABASE_URL) permite salvar os produtos importados.</p>{config?.databaseError&&<p className="footnote" style={{color:"#b83d25"}}>⚠️ {config.databaseError} A busca pela API Shopee pode continuar normalmente.</p>}</div>
 <div className="admin-card"><div className="admin-card-title"><h2><Search size={22}/> Pesquisar produtos na Shopee</h2></div>
 <p className="muted-text">Encontre produtos, selecione os que deseja e importe para revisão. Nenhum produto é publicado automaticamente.</p>
 <label className="admin-label">Palavra-chave</label><input className="admin-input" placeholder="Ex.: sandália, vestido, air fryer" value={keyword} onChange={e=>setKeyword(e.target.value)}/>
-<div className="shopee-actions"><button className="btn btn-primary" disabled={busy||!config?.shopeeConfigured} onClick={()=>run(async()=>{let d=await api('/api/admin/shopee/preview',{method:'POST',body:JSON.stringify({keyword,limit:24})});setPreview(d.offers||[]);setSelected([]);return (d.offers||[]).length+' produtos encontrados'})}><Search size={17}/> Buscar produtos</button></div>
-{preview.length>0&&<><div className="shopee-preview"><div className="shopee-preview-bar"><label><input type="checkbox" checked={selected.length===preview.length} onChange={e=>setSelected(e.target.checked?preview.map(x=>x.id):[])}/> Selecionar todos</label><span>{selected.length} selecionados</span></div>{preview.map(x=><label className="shopee-result" key={x.id}><input type="checkbox" checked={selected.includes(x.id)} onChange={e=>setSelected(e.target.checked?[...selected,x.id]:selected.filter(id=>id!==x.id))}/><img alt="" src={x.image||'/images/produto-1.webp'}/><div><strong>{x.title}</strong><small>Produto da Shopee</small></div><b>{brl(x.price)}</b></label>)}</div>
-<div className="shopee-actions"><button className="btn btn-primary" disabled={busy||!selected.length||!config?.databaseConfigured} onClick={()=>run(async()=>{let d=await api('/api/admin/sync',{method:'POST',body:JSON.stringify({keyword,limit:24,ids:selected})});setSelected([]);return d.message})}><Package size={17}/> Importar {selected.length} selecionados</button></div></>}
+<div className="shopee-actions"><button className="btn btn-primary" disabled={busy} onClick={()=>findShopee(1)}><Search size={17}/> Buscar produtos</button></div>
+{preview.length>0&&<><div className="shopee-preview"><div className="shopee-preview-bar"><label><input type="checkbox" checked={selected.length===preview.length} onChange={e=>setSelected(e.target.checked?preview.map(x=>x.id):[])}/> Selecionar todos</label><span>{selected.length} selecionados</span></div>{preview.map(x=><label className="shopee-result" key={x.id}><input type="checkbox" checked={selected.includes(x.id)} onChange={e=>setSelected(e.target.checked?[...selected,x.id]:selected.filter(id=>id!==x.id))}/><img alt="" src={x.image||'/images/produto-1.webp'}/><div><strong>{x.title}</strong><small>{x.shopName||'Loja Shopee'} · Comissão indicada: {x.commissionRate!==null&&x.commissionRate!==undefined?(Number(x.commissionRate)*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%':'não informada'}</small><small>Vendas: {x.sales??'—'} · Avaliação: {x.ratingStar??'—'}{x.priceMax>x.price?' · Até '+brl(x.priceMax):''}</small></div><b>{brl(x.price)}</b></label>)}</div>
+<div className="shopee-actions"><button className="btn btn-primary" disabled={busy||!selected.length||!config?.databaseConfigured} onClick={()=>run(async()=>{let d=await api('/api/admin/sync',{method:'POST',body:JSON.stringify({keyword,limit:24,page,ids:selected})});setSelected([]);return d.message})}><Package size={17}/> Importar {selected.length} selecionados</button></div>
+<div className="shopee-actions" style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+<button className="btn btn-outline" disabled={busy||page<=1} onClick={()=>findShopee(page-1)}>← Anterior</button>
+<span style={{fontWeight:700}}>Página {page}</span>
+<button className="btn btn-outline" disabled={busy||!hasNextPage} onClick={()=>findShopee(page+1)}>Próxima →</button>
+</div></>}
 {!preview.length&&<p className="footnote">Os resultados aparecerão aqui após a pesquisa.</p>}
-<p className="footnote">As ofertas entram inativas. Revise imagens, preços e links antes de ativar. O preço mais alto de uma variação não equivale a preço antigo.</p>
+<p className="footnote">As ofertas entram inativas. Revise imagens, preços e links antes de ativar. Taxa de comissão é informativa, não garante pagamento. O preço máximo de uma variação não é preço antigo.</p>
 </div><div className="admin-card"><h2>Como habilitar</h2><ol className="steps"><li>Solicite acesso à Open API da Shopee.</li><li>Adicione App ID e Secret como Secret na Vercel.</li><li>Cadastre DATABASE_URL do Neon.</li><li>Faça Redeploy, teste a conexão e pesquise os produtos.</li><li>Importe os escolhidos e ative-os na aba Ofertas.</li></ol><a href="https://affiliate.shopee.com.br/open_api" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-wide">Portal Shopee Afiliados <ExternalLink size={16}/></a></div></div>}
  {tab==='config'&&<div className="admin-two-col"><div className="admin-card"><div className="admin-card-title"><h2><Plus size={20}/> Cadastrar oferta manual</h2></div><form className="admin-form" onSubmit={e=>{e.preventDefault();run(async()=>{await api('/api/admin/offers',{method:'POST',body:JSON.stringify(form)});setForm({title:'',category:'Casa',price:'',oldPrice:'',image:'',url:'',featured:false});return 'Oferta cadastrada!'})}}><label>Nome do produto<input required value={form.title} onChange={e=>setForm({...form,title:e.target.value})} placeholder="Ex.: Vestido midi feminino"/></label><label>Categoria<select value={form.category} onChange={e=>setForm({...form,category:e.target.value})}>{cats.map(c=><option key={c}>{c}</option>)}</select></label><div className="inline-fields"><label>Preço atual (R$)<input type="number" min="0.01" step="0.01" required value={form.price} onChange={e=>setForm({...form,price:e.target.value})}/></label><label>Preço antigo (R$)<input type="number" min="0" step="0.01" value={form.oldPrice} onChange={e=>setForm({...form,oldPrice:e.target.value})}/></label></div><label>URL da imagem (HTTPS)<input value={form.image} onChange={e=>setForm({...form,image:e.target.value})} placeholder="https://..."/></label><label>Link de afiliado Shopee<input required value={form.url} onChange={e=>setForm({...form,url:e.target.value})} placeholder="https://shopee..."/></label><label className="check-label"><input type="checkbox" checked={form.featured} onChange={e=>setForm({...form,featured:e.target.checked})}/> Exibir em destaque</label><button className="btn btn-primary btn-wide" disabled={busy||!config?.databaseConfigured}><Save size={17}/> Salvar oferta</button>{!config?.databaseConfigured&&<p className="footnote">É preciso conectar o Neon para habilitar o cadastro.</p>}</form></div><div className="admin-card"><div className="admin-card-title"><h2><Settings size={20}/> Identidade e canais</h2></div><form className="admin-form" onSubmit={e=>{e.preventDefault();run(async()=>{await api('/api/admin/settings',{method:'POST',body:JSON.stringify(config.settings)});return 'Configurações atualizadas.'})}}><label>Canal WhatsApp (link de convite)<input value={config?.settings?.whatsapp||''} onChange={e=>setConfig({...config,settings:{...config.settings,whatsapp:e.target.value}})} placeholder="https://whatsapp.com/channel/..."/></label><label>Instagram<input value={config?.settings?.instagram||''} onChange={e=>setConfig({...config,settings:{...config.settings,instagram:e.target.value}})} placeholder="https://instagram.com/..."/></label><label>TikTok<input value={config?.settings?.tiktok||''} onChange={e=>setConfig({...config,settings:{...config.settings,tiktok:e.target.value}})} placeholder="https://www.tiktok.com/@..."/></label><label>Mensagem de abertura<input value={config?.settings?.heroSubtitle||''} onChange={e=>setConfig({...config,settings:{...config.settings,heroSubtitle:e.target.value}})}/></label><button className="btn btn-primary btn-wide" disabled={busy||!config?.databaseConfigured}><Save size={17}/> Salvar configurações</button></form><div className="info-note"><ShieldCheck size={19}/><p>O painel não fica no menu público. O endereço de acesso é <strong>/adm</strong> e exige senha.</p></div></div></div>}
  </div></div></div>
