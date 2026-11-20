@@ -19,6 +19,7 @@ export default function AdminPanel(){
  {tab==='integracao'&&<div className="admin-two-col">
 <div className="admin-card"><div className="admin-card-title"><h2><PlugZap size={22}/> Integração Shopee</h2></div>
 <p className="muted-text">As credenciais ficam exclusivamente nas variáveis Secret da Vercel. Nunca serão salvas no banco de ofertas ou enviadas ao navegador.</p>
+<a href="/adm/teste-shopee" className="btn btn-primary btn-wide" style={{marginBottom:18}}><PlugZap size={18}/> Abrir Laboratório API Shopee →</a>
 <div className="connection-list"><div><span>API Shopee</span><b className={config?.shopeeConfigured?'good':'muted'}>{config?.shopeeConfigured?'Configurada na Vercel':'Pendente'}</b></div><div><span>Banco Neon</span><b className={config?.databaseConfigured?'good':'muted'}>{config?.databaseConfigured?'Conectado':'Pendente'}</b></div></div>
 <div className="info-note"><ShieldCheck size={19}/><p>No projeto da Vercel, em <strong>Settings → Environment Variables</strong>, cadastre <code>SHOPEE_APP_ID</code> e <code>SHOPEE_APP_SECRET</code> como <strong>Secret</strong> em Production. Depois faça um novo deploy.</p></div>
 <button className="btn btn-outline btn-wide" disabled={busy||!config?.shopeeConfigured} onClick={()=>run(async()=>{let d=await api('/api/admin/shopee/test',{method:'POST'});return d.message})}><ShieldCheck size={17}/> Testar conexão com Shopee</button>
