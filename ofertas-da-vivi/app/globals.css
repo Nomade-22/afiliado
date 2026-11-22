@@ -1237,3 +1237,76 @@
  .vivi-live-flash-card img{width:65px;height:68px;flex-basis:65px}
  .vivi-live-flash-heading h3{font-size:15px}
 }
+
+
+/* Produtos promocionais: descontos verificados na API de afiliados, sem rótulo Flash Sale */
+.site-shell .vivi-flash-discount-tiles{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ align-items:stretch;gap:7px;width:100%;min-width:0;
+}
+.site-shell .vivi-flash-discount-tile{
+ display:flex;position:relative;flex-direction:column;gap:6px;
+ min-width:0;min-height:174px;padding:9px 6px 8px;
+ background:#fff;border-radius:12px;color:#252937;
+ text-align:left;box-shadow:0 6px 13px #480e2d20;
+}
+.site-shell .vivi-flash-discount-badge{
+ position:absolute;top:5px;right:5px;
+ color:#fff;background:#c21d3f;border-radius:7px;
+ font-size:10px;line-height:1;padding:6px 5px;font-weight:900;z-index:2;
+}
+.site-shell .vivi-flash-discount-tile img{
+ display:block;width:100%;height:95px;object-fit:contain;
+}
+.site-shell .vivi-flash-discount-detail{display:flex;flex-direction:column;gap:4px;padding:0 2px}
+.site-shell .vivi-flash-discount-detail strong{
+ font-size:9px;line-height:1.25;color:#414451;
+ display:-webkit-box;-webkit-line-clamp:2;
+ -webkit-box-orient:vertical;overflow:hidden;
+}
+.site-shell .vivi-flash-discount-detail b{
+ font-size:12px;line-height:1.2;color:#bb1b41;overflow-wrap:anywhere;
+}
+.site-shell .vivi-flash-discount-tiles>small{
+ grid-column:1/-1;color:#fff;font-size:9px;line-height:1.25;
+ text-align:center;opacity:.9;
+}
+.site-shell .vivi-flash-discount-placeholder{height:95px;display:grid;place-items:center;color:#bfbfc9}
+.vivi-discounts-section{margin:22px 0}
+.vivi-discounts-heading{display:flex;gap:9px;align-items:flex-start;margin-bottom:12px;color:#24764c}
+.vivi-discounts-heading svg{flex-shrink:0;margin-top:4px}
+.vivi-discounts-heading h3{font-size:17px;color:#32363f;line-height:1.3;margin:0 0 4px}
+.vivi-discounts-heading p{margin:0;font-size:12px;color:#8b9099;line-height:1.4}
+.vivi-discounts-scroll{display:flex;gap:12px;overflow-x:auto;padding:3px 0 12px;scroll-snap-type:x mandatory}
+.vivi-discount-card{
+ flex:0 0 clamp(150px,20%,190px);
+ display:flex;flex-direction:column;gap:7px;min-width:0;
+ background:#fff;border-radius:13px;border:1px solid #e6e7ec;
+ padding:10px;scroll-snap-align:start;text-decoration:none;
+}
+.vivi-discount-image{height:120px;width:100%;position:relative;display:grid;place-items:center;background:#f9f9fb;border-radius:9px}
+.vivi-discount-image img{height:100%;width:100%;object-fit:contain}
+.vivi-discount-image span{
+ position:absolute;top:5px;right:5px;background:#cf1e43;
+ color:white;font-size:11px;font-weight:850;padding:5px 7px;border-radius:7px;
+}
+.vivi-discount-card>strong{
+ font-size:12px;line-height:1.35;color:#333744;
+ display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+ overflow:hidden;min-height:32px;
+}
+.vivi-discount-card>b{font-size:17px;color:var(--vivi-accent);margin-top:auto}
+.vivi-discount-card>small{display:flex;align-items:center;gap:4px;font-size:11px;color:#607182;font-weight:750}
+.vivi-discounts-note{font-size:11px;color:#7d8792;line-height:1.4;margin:2px 0}
+@media(max-width:760px){
+ .site-shell .vivi-flash-discount-tiles{max-width:370px;gap:7px}
+ .site-shell .vivi-flash-discount-tile{min-height:137px;padding:8px 5px 6px}
+ .site-shell .vivi-flash-discount-tile img{height:73px}
+ .site-shell .vivi-flash-discount-placeholder{height:73px}
+ .site-shell .vivi-flash-discount-detail strong{font-size:9px}
+ .site-shell .vivi-flash-discount-detail b{font-size:11px}
+ .site-shell .vivi-flash-discount-badge{font-size:9px;padding:5px 4px}
+ .vivi-discount-card{flex-basis:155px}
+ .vivi-discount-image{height:108px}
+ .vivi-discount-card>b{font-size:16px}
+}
