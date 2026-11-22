@@ -111,9 +111,9 @@ export async function getShopeeProductMetadata(offer){
   const list=data?.productOfferV2?.nodes||[];
   // Se o encurtador não revelou IDs, só aceita correspondência forte:
   // mesma imagem de anúncio e título semelhante, sem escolher itens aleatórios.
-  const imgTail=(value)=>{try{return new URL(value).pathname.replace(/^\\/file\\//,'')}catch{return ''}};
-  const normalize=value=>String(value||'').normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'')
-    .toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().replace(/\\s+/g,' ');
+  const imgTail=value=>{try{return new URL(value).pathname.split('/').pop()||''}catch{return ''}};
+  const normalize=value=>String(value||'').normalize('NFKD').toLowerCase()
+    .replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean).join(' ');
   const normalizedTitle=normalize(offer.title);
   const match=list.find(x=>{
     if(ids)return String(x.itemId)===ids.itemId&&String(x.shopId)===ids.shopId;
