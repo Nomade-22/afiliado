@@ -7,9 +7,10 @@ import BannerPanel from './BannerPanel';
 import OfferEditor from './OfferEditor';
 import CampaignAdminPanel from './CampaignAdminPanel';
 import CatalogActionsPanel from './CatalogActionsPanel';
+import DiscoverProductsPanel from './DiscoverProductsPanel';
 import {actualSubIdIsCurrent} from '../lib/subid-format';
-import {LayoutDashboard,Package,Tag,Star,Settings,PlugZap,LogOut,Plus,RefreshCw,Search,Save,Trash2,ExternalLink,Eye,EyeOff,ShieldCheck,AlertCircle,CheckCircle2,MessageCircle,ArrowLeft,Menu,X,MousePointerClick,Link2,Image as ImageIcon,Pencil} from 'lucide-react';
-const TABS=[['dashboard',LayoutDashboard,'Visão geral'],['ofertas',Tag,'Ofertas'],['produtos',Package,'Produtos'],['visual',ImageIcon,'Personalização do site'],['campanhas',Tag,'Promoções e cupons'],['vitrine',Package,'Minha Vitrine'],['vendas',MousePointerClick,'Vendas e cliques'],['links',Link2,'Links de afiliado'],['integracao',PlugZap,'Integração Shopee'],['config',Settings,'Configurações']];
+import {LayoutDashboard,Package,Tag,Star,Settings,PlugZap,LogOut,Plus,RefreshCw,Search,Save,Trash2,ExternalLink,Eye,EyeOff,ShieldCheck,AlertCircle,CheckCircle2,MessageCircle,ArrowLeft,Menu,X,MousePointerClick,Link2,Image as ImageIcon,Pencil,Compass} from 'lucide-react';
+const TABS=[['dashboard',LayoutDashboard,'Visão geral'],['ofertas',Tag,'Ofertas'],['produtos',Package,'Produtos'],['descobrir',Compass,'Descobrir produtos'],['visual',ImageIcon,'Personalização do site'],['campanhas',Tag,'Promoções e cupons'],['vitrine',Package,'Minha Vitrine'],['vendas',MousePointerClick,'Vendas e cliques'],['links',Link2,'Links de afiliado'],['integracao',PlugZap,'Integração Shopee'],['config',Settings,'Configurações']];
 const brl=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const cats=['Casa','Beleza','Moda','Eletrônicos','Utilidades','Infantil','Outros'];
 export default function AdminPanel(){
@@ -129,6 +130,7 @@ export default function AdminPanel(){
  {tab==='visual'&&<BannerPanel settings={config?.settings||{}} offers={offers} onSaved={load} onManageOffers={()=>setTab('ofertas')}/>}
  {tab==='campanhas'&&<CampaignAdminPanel settings={config?.settings||{}} onSaved={load}/>}
  {tab==='vitrine'&&<StorefrontPanel/>}
+ {tab==='descobrir'&&<DiscoverProductsPanel offers={offers} onImported={load}/>}
  {tab==='vendas'&&<SalesPanel/>}
  {tab==='links'&&<AffiliateLinksPanel initialUrl={linkOrigin} initialItemId={linkItemId}/> }
  {(tab==='ofertas'||tab==='produtos')&&<div className="admin-card"><div className="admin-card-title"><h2>{tab==='ofertas'?'Controle das ofertas':'Catálogo de produtos'}</h2><button className="btn btn-primary btn-small" onClick={()=>setTab('config')}><Plus size={16}/> Nova oferta</button></div><CatalogActionsPanel offers={offers} onCompleted={load}/><div className="vivi-code-repair"><div><b>Rastreamento por código interno</b><small>O código interno e o Sub ID são sempre iguais, com 10 dígitos: 2111260001. Sem sublinhado e sem letras. Os links antigos só mudam após confirmação da Shopee.</small></div><button className="btn btn-outline btn-small" disabled={busy} onClick={renewAllProductLinks}><Link2 size={16}/> Converter links antigos</button>{importProgress&&busy&&<span className="footnote">{importProgress.done}/{importProgress.total} processados</span>}</div>
