@@ -210,7 +210,7 @@ def analyze_one(product):
         # Navegador normal: sem sessão autenticada, sem rotação de IP e sem burlar desafios.
         response = DynamicFetcher.fetch(
             product["sourceUrl"], headless=True, google_search=False,
-            network_idle=False, timeout=22000, wait=950, retries=0
+            network_idle=False, timeout=22000, wait=950, retries=1
         )
         result["httpStatus"] = int(response.status or 0)
         content = response.body.decode("utf8", "replace")
@@ -272,7 +272,8 @@ def main():
         print("Erro geral:", type(exc).__name__)
     payload = {
         "runId": run, "results": results,
-        "status": "completed" if len(results) == len(products) else "failed",
+        "status": "failed" if (len(results) != len(products) or
+                    all(item["status"] == "error" for item in results)) else "completed",
         "notes": f"Scrapling DynamicFetcher, {len(results)}/{len(products)} anúncios, "
                  f"{round(time.monotonic()-started)}s, sem alterações na vitrine."
     }
