@@ -31,15 +31,22 @@ function urlKey(raw){
  const url=canonicalSourceUrl(raw);
  return url?'url:'+createHash('sha256').update(url).digest('hex').slice(0,28):null;
 }
-export function offerIdentityKeys({id,shopId,itemId,url,productLink,dedupeKey}={}){
+function visualKey(title,image){
+ const name=String(title||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+  .toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
+ const url=canonicalSourceUrl(image);
+ if(name.length<12||!url)return null;
+ return 'visual:'+createHash('sha256').update(name+'|'+url).digest('hex').slice(0,28);
+}
+export function offerIdentityKeys({id,shopId,itemId,url,productLink,dedupeKey,title,image}={}){
  const keys=[shopeeProductId({shopId,itemId,url,productLink}),
-  urlKey(productLink),urlKey(url),dedupeKey||null];
+  visualKey(title,image),urlKey(productLink),urlKey(url),dedupeKey||null];
  if(id&&/^vitrine-|^shopee-/.test(String(id)))keys.push('internal:'+id);
  return [...new Set(keys.filter(Boolean))];
 }
 export function primaryOfferKey(offer){
  const keys=offerIdentityKeys(offer);
- return keys.find(k=>k.startsWith('product:'))||keys.find(k=>k.startsWith('url:'))||keys[0]||null;
+ return keys.find(k=>k.startsWith('product:'))||keys.find(k=>k.startsWith('visual:'))||keys.find(k=>k.startsWith('url:'))||keys[0]||null;
 }
 export function knownOfferKeys(rows=[]){
  const seen=new Set();
@@ -47,6 +54,7 @@ export function knownOfferKeys(rows=[]){
   for(const key of offerIdentityKeys({
     id:row.id,shopId:row.shop_id??row.shopId,itemId:row.item_id??row.itemId,
     productLink:row.product_link??row.productLink,url:row.url,
+    title:row.title,image:row.image,
     dedupeKey:row.dedupe_key??row.dedupeKey
   }))seen.add(key);
  }
