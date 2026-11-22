@@ -91,3 +91,29 @@ export async function resolveOfferAffiliateLink(offer){
   throw error;
  }
 }
+
+/**
+ * Identificador único da Vivi, enviado como ÚNICO Sub ID na Shopee.
+ * Modo estrito: não troca o Sub ID, não usa offerLink preexistente e
+ * jamais considera válida uma conversão que tenha sido recusada.
+ */
+export async function generateProductAffiliateLink(originUrl,internalCode) {
+ if(!/^\d{6}_\d{4}$/.test(String(internalCode||''))){
+  throw Error('Código interno inválido; esperado DDMMAA_0001.');
+ }
+ const source=String(originUrl||'').trim();
+ if(!isShopeeLink(source))throw Error('O destino original precisa ser um link HTTPS da Shopee.');
+ const ids=[internalCode];
+ const query=`mutation { generateShortLink(input: { originUrl: ${JSON.stringify(source)}, subIds: ${JSON.stringify(ids)} }) { shortLink } }`;
+ let response;
+ try{response=await shopeeQuery(query)}catch(error){
+  const message=String(error?.message||'A Shopee rejeitou a conversão.');
+  if(/invalid\\s*sub[\\s_-]*id/i.test(message)){
+   throw Error('A Shopee recusou o Sub ID '+internalCode+'. O produto não será publicado sem rastreamento válido.');
+  }
+  throw Error('Conversão do produto '+internalCode+' não confirmada: '+message.slice(0,135));
+ }
+ const shortLink=String(response?.generateShortLink?.shortLink||'').trim();
+ if(!isShopeeLink(shortLink))throw Error('A Shopee não retornou um link afiliado válido para '+internalCode+'.');
+ return {shortLink,subIds:ids,generatedBy:'generateShortLink',internalCode,verified:true};
+}

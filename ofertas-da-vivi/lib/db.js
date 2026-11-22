@@ -29,7 +29,14 @@ export async function getDB(){
     rating_star NUMERIC(6,3),
     affiliate_link_source TEXT,
     affiliate_sub_ids TEXT,
-    dedupe_key TEXT
+    dedupe_key TEXT,
+    internal_code TEXT,
+    imported_at TIMESTAMPTZ,
+    affiliate_status TEXT DEFAULT 'legacy',
+    product_description TEXT,
+    product_images TEXT,
+    stock_quantity INTEGER,
+    updated_from_api_at TIMESTAMPTZ
   )`;
   await sql`CREATE TABLE IF NOT EXISTS vivi_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`;
   await sql`ALTER TABLE vivi_offers
@@ -44,8 +51,17 @@ export async function getDB(){
     ADD COLUMN IF NOT EXISTS rating_star NUMERIC(6,3),
     ADD COLUMN IF NOT EXISTS affiliate_link_source TEXT,
     ADD COLUMN IF NOT EXISTS affiliate_sub_ids TEXT,
-    ADD COLUMN IF NOT EXISTS dedupe_key TEXT`;
+    ADD COLUMN IF NOT EXISTS dedupe_key TEXT,
+    ADD COLUMN IF NOT EXISTS internal_code TEXT,
+    ADD COLUMN IF NOT EXISTS imported_at TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS affiliate_status TEXT DEFAULT 'legacy',
+    ADD COLUMN IF NOT EXISTS product_description TEXT,
+    ADD COLUMN IF NOT EXISTS product_images TEXT,
+    ADD COLUMN IF NOT EXISTS stock_quantity INTEGER,
+    ADD COLUMN IF NOT EXISTS updated_from_api_at TIMESTAMPTZ`;
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS vivi_offers_unique_identity ON vivi_offers (dedupe_key) WHERE dedupe_key IS NOT NULL`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS vivi_offers_unique_code ON vivi_offers (internal_code) WHERE internal_code IS NOT NULL`;
+  await sql`CREATE TABLE IF NOT EXISTS vivi_product_code_counters (day_key TEXT PRIMARY KEY, last_number INTEGER NOT NULL DEFAULT 0)`;
  })().catch(e=>{initPromise=null;throw e});
  await initPromise;
  return sql;
@@ -61,6 +77,10 @@ export const mapOffer=o=>({
  commissionRate:numberOrNull(o.commission_rate),priceMax:numberOrNull(o.price_max),
  priceDiscountRate:numberOrNull(o.price_discount_rate),productLink:o.product_link??null,
  sales:numberOrNull(o.sales),ratingStar:numberOrNull(o.rating_star),
+ internalCode:o.internal_code??null,importedAt:o.imported_at??null,affiliateStatus:o.affiliate_status??'legacy',
+ description:o.product_description??null,
+ images:(()=>{try{const v=JSON.parse(o.product_images||'[]');return Array.isArray(v)?v.filter(x=>typeof x==='string').slice(0,12):[]}catch{return []}})(),
+ stockQuantity:o.stock_quantity??null,updatedFromApiAt:o.updated_from_api_at??null,
  affiliateLinkSource:o.affiliate_link_source??null,
  dedupeKey:o.dedupe_key??null,
  affiliateSubIds:typeof o.affiliate_sub_ids==='string'?o.affiliate_sub_ids.split(',').filter(Boolean):[]
