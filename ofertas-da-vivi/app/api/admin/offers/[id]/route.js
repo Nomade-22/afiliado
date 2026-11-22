@@ -52,6 +52,20 @@ export async function PATCH(req,{params}){
   if(body.active&&!isShopeeLink(old.url))return Response.json({error:'O produto não possui um link Shopee válido para ativação.'},{status:400,headers});
   next.active=body.active;
  }
+ if(Object.hasOwn(body,'description')){
+  next.description=String(body.description||'').trim().slice(0,6000);
+ }
+ if(Object.hasOwn(body,'images')){
+  if(!Array.isArray(body.images)||body.images.length>12){
+   return Response.json({error:'A galeria aceita até 12 imagens.'},{status:400,headers});
+  }
+  const unique=[...new Set(body.images.map(x=>String(x||'').trim()).filter(Boolean))];
+  for(const value of unique){
+   try{const u=new URL(value);if(u.protocol!=='https:'||u.username||u.password)throw Error('invalid')}
+   catch{return Response.json({error:'A galeria precisa de URLs HTTPS válidas.'},{status:400,headers})}
+  }
+  next.images=JSON.stringify(unique);
+ }
  if(typeof body.featured==='boolean')next.featured=body.featured;
  const wantsActive=Object.hasOwn(next,'active')?next.active:old.active;
  if(wantsActive){
@@ -75,6 +89,8 @@ export async function PATCH(req,{params}){
   image=${Object.hasOwn(next,'image')?next.image:old.image},
   active=${Object.hasOwn(next,'active')?next.active:old.active},
   featured=${Object.hasOwn(next,'featured')?next.featured:old.featured},
+  product_description=${Object.hasOwn(next,'description')?next.description:old.product_description},
+  product_images=${Object.hasOwn(next,'images')?next.images:old.product_images},
   updated_at=NOW()
   WHERE id=${id}`;
  return Response.json({ok:true,message:'Produto atualizado.'},{headers});
