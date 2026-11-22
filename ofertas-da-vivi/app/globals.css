@@ -19,3 +19,191 @@
 .shopee-result b{font-size:13px;color:#f45518;white-space:nowrap}
 .info-note code{font-size:.9em;overflow-wrap:anywhere}
 @media(max-width:550px){.shopee-result{gap:7px;padding:9px 7px}.shopee-result img{width:46px;height:46px}.shopee-result strong{font-size:11px}.shopee-result b{font-size:11px}}
+
+
+/* Ofertas da Vivi — destaque editável, preço discreto e responsividade 2026 */
+.hero-theme-orange{background:linear-gradient(108deg,#f3421b,#ff6b25 62%,#ff982e)}
+.hero-theme-pink{background:linear-gradient(108deg,#b93570,#f3658e 68%,#ff9c8f)}
+.hero-theme-purple{background:linear-gradient(108deg,#5434a1,#8f5aca 65%,#c295e5)}
+.hero .hero-copy{max-width:64%}
+.hero .hero-copy h1{font-size:clamp(25px,3vw,39px);line-height:1.08;max-width:660px;
+ overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow-wrap:anywhere}
+.hero .hero-copy p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.hero-art{background-image:url('/images/vivi-banner.webp')}
+.hero-art.hero-has-image{background-image:none!important;display:flex;justify-content:center;align-items:center;padding:12px}
+.hero-art.hero-has-image img{width:100%;height:100%;object-fit:contain;border-radius:12px}
+.hero-mode-banner .hero-art.hero-has-image{padding:0;mask-image:linear-gradient(90deg,transparent 0%,#000 15%)}
+.hero-mode-banner .hero-art.hero-has-image img{object-fit:cover;border-radius:0}
+.hero-mode-product .hero-art.hero-has-image img{object-fit:contain;mix-blend-mode:normal}
+.hero .hero-actions .btn{max-width:100%;white-space:normal;text-align:center}
+.price-zone strong.price-unavailable{font-size:12px!important;line-height:1.25!important;letter-spacing:-.08px;
+ white-space:normal!important;overflow-wrap:break-word;font-weight:800;min-height:29px;display:flex;align-items:flex-end}
+.product-card .price-zone{min-height:31px}
+.product-content h3{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;height:36px}
+.product-media img{object-fit:contain}
+
+/* Minha vitrine: seleção em massa e indicadores de duplicação */
+.vivi-storefront-title{font-size:clamp(20px,2.7vw,26px);margin:0 0 9px}
+.vivi-storefront-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px}
+.vivi-storefront-heading h3{font-size:19px;margin:0}
+.vivi-storefront-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:13px 0}
+.vivi-storefront-toolbar button{display:inline-flex;gap:8px;align-items:center;justify-content:center}
+.vivi-storefront-search{display:block;width:100%;min-width:0;border:1px solid #dddfe6;border-radius:10px;padding:13px;
+ margin:14px 0;font-size:15px;background:#fff;color:#242431}
+.vivi-storefront-list{display:grid;gap:9px;margin-top:15px}
+.vivi-storefront-item{display:grid;grid-template-columns:24px 75px minmax(0,1fr) 25px;align-items:center;gap:12px;
+ border:1px solid #e8e8ed;border-radius:12px;padding:11px;background:#fff;min-width:0}
+.vivi-storefront-item input{width:19px;height:19px;accent-color:#fb6726}
+.vivi-storefront-item>img{width:75px;height:75px;object-fit:contain;border-radius:8px;background:#fafafa}
+.vivi-storefront-item>a{color:#e96228}
+.vivi-storefront-item-text{min-width:0}
+.vivi-storefront-item-text strong{font-size:14px;line-height:1.38;font-weight:750;display:-webkit-box;
+ -webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.vivi-storefront-item-text small{display:block;color:#868b96;margin-top:5px;font-size:12px}
+.vivi-item-imported{background:#f4faf5;border-color:#e4f1e5}
+.vivi-stored-badge{display:inline-flex;align-items:center;gap:5px;background:#e5f6e9;border-radius:999px;
+ color:#138347;padding:4px 8px;font-size:11px;margin-top:6px;font-weight:800}
+.vivi-warning-badge{background:#fff0e7;color:#b4491f}
+.vivi-storefront-pages{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:20px}
+.vivi-storefront-pages button{display:inline-flex;align-items:center;gap:5px}
+.vivi-notice{display:flex;align-items:flex-start;gap:9px;margin-top:12px;padding:13px;border-radius:10px;font-size:13px;line-height:1.5}
+.vivi-notice svg{flex-shrink:0}
+.vivi-notice-error{background:#fff0e8;color:#a63d24}
+.vivi-notice-success{background:#eaf8ee;color:#13733e}
+.vivi-progress{padding:12px;border-radius:11px;background:#f3f6fb;margin:16px 0}
+.vivi-progress-row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:#43485b}
+.vivi-progress progress{display:block;width:100%;height:12px;accent-color:#fb6324;margin:9px 0 11px}
+
+/* Painel de banners */
+.vivi-mode-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.vivi-mode-card{border:1px solid #e6e7ec;border-radius:12px;padding:15px;text-align:left;display:flex;flex-direction:column;
+ gap:6px;background:#fff;color:#343443;min-height:93px}
+.vivi-mode-card.active{border:2px solid #fb6427;background:#fff5ee}
+.vivi-mode-card strong{font-size:13px}
+.vivi-mode-card span{font-size:11px;line-height:1.4;color:#8b8b97}
+.vivi-banner-admin-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:18px;align-items:start}
+.vivi-banner-form{display:flex;flex-direction:column;gap:16px}
+.vivi-banner-form h2{margin-bottom:2px}
+.vivi-banner-preview{border-radius:16px;color:#fff;min-height:275px;display:flex;align-items:center;
+ overflow:hidden;position:relative;padding:24px;gap:16px}
+.vivi-preview-copy{flex:1;min-width:0;z-index:1}
+.vivi-preview-copy>span{display:inline-block;border:1px solid #ffffff55;background:#ffffff24;border-radius:99px;
+ font-size:11px;padding:6px 9px}
+.vivi-preview-copy h3{font-size:clamp(17px,2.2vw,27px);line-height:1.16;overflow-wrap:anywhere;margin:13px 0 9px}
+.vivi-preview-copy p{font-size:12px;line-height:1.45}
+.vivi-preview-copy>strong{display:inline-flex;align-items:center;background:#fff;color:#f2591b;
+ border-radius:9px;padding:9px 11px;font-size:12px}
+.vivi-banner-preview>img{width:36%;max-height:220px;object-fit:contain;border-radius:12px}
+.vivi-banner-preview-product{display:flex;gap:11px;align-items:center;border:1px solid #eee;padding:10px;
+ margin:13px 0;border-radius:11px}
+.vivi-banner-preview-product img{width:62px;height:62px;object-fit:contain}
+.vivi-banner-preview-product div{min-width:0}
+.vivi-banner-preview-product b{font-size:12px;display:block}
+.vivi-banner-preview-product small,.vivi-banner-preview-product span{display:block;color:#777;overflow-wrap:anywhere;font-size:11px;margin-top:5px}
+
+/* Modal de edição de ofertas */
+.vivi-modal-backdrop{position:fixed;inset:0;z-index:100;background:#1b1b28a3;
+ display:flex;align-items:center;justify-content:center;padding:14px}
+.vivi-offer-editor{width:min(580px,100%);max-height:calc(100dvh - 28px);overflow-y:auto;
+ border-radius:17px;background:white;box-shadow:0 22px 80px #1116}
+.vivi-editor-header{position:sticky;top:0;z-index:2;background:#fff;display:flex;justify-content:space-between;
+ align-items:center;border-bottom:1px solid #eee;padding:16px 19px}
+.vivi-editor-header small{font-size:11px;color:#8c919d}
+.vivi-editor-header h2{font-size:20px;margin:4px 0 0}
+.vivi-editor-header button{border:0;background:#f7f7f8;color:#444;border-radius:9px;padding:8px;display:grid;place-items:center}
+.vivi-editor-form{display:flex;flex-direction:column;gap:14px;padding:17px 20px 22px}
+.vivi-editor-form>label,.vivi-editor-columns>label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:750;color:#3d404b}
+.vivi-editor-form input:not([type=checkbox]),.vivi-editor-form select{width:100%;min-width:0;border:1px solid #dfe1e6;
+ padding:12px;border-radius:10px;font-size:15px;color:#292b38;background:white}
+.vivi-editor-image{display:flex;align-items:center;gap:15px;background:#fafafa;padding:9px;border-radius:12px}
+.vivi-editor-image img{width:80px;height:80px;object-fit:contain}
+.vivi-editor-image small{color:#888;font-size:12px}
+.vivi-editor-columns{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.vivi-editor-toggles{background:#f9f9fc;padding:12px;border-radius:11px}
+.vivi-editor-toggles>label{display:flex;flex-direction:row;align-items:center;gap:9px}
+.vivi-editor-toggles input{accent-color:#ff6525;width:17px;height:17px}
+.vivi-editor-link-note{font-size:12px;color:#767c86;line-height:1.45}
+.vivi-editor-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.vivi-admin-mobile-list{display:none}
+.admin-backdrop{display:none}
+
+@media(max-width:900px){
+ .vivi-banner-admin-grid{grid-template-columns:1fr}
+ .vivi-banner-preview{min-height:220px}
+}
+@media(max-width:760px){
+ html,body{overflow-x:clip}
+ .container{width:calc(100% - 24px)}
+ .site-header .header-top{gap:9px;padding:10px 0}
+ .site-header .brand{font-size:clamp(18px,5vw,23px);letter-spacing:-1px}
+ .site-header .brand-heart{font-size:18px}
+ .header-top .searchbox{min-width:0}
+ .hero{height:auto!important;min-height:0!important;display:flex;flex-direction:column;margin-top:10px;border-radius:15px}
+ .hero .hero-copy{padding:21px 17px 20px!important;max-width:100%;width:100%;min-height:0}
+ .hero .hero-copy h1{font-size:clamp(22px,6vw,30px)!important;line-height:1.12;margin:12px 0 10px;
+  max-width:100%;-webkit-line-clamp:4}
+ .hero .hero-copy p{font-size:13px;line-height:1.45;max-width:100%;margin:0 0 14px}
+ .hero .hero-eyebrow{font-size:10px;max-width:100%;white-space:normal}
+ .hero .hero-actions{position:relative;display:flex;gap:8px;flex-wrap:wrap}
+ .hero .hero-actions .btn{font-size:12px;padding:11px 12px;min-height:41px;max-width:100%;flex:1 1 135px}
+ .hero .hero-art{position:relative;display:block;width:100%;height:165px;top:auto;bottom:auto;right:auto;
+  mask-image:none;opacity:1;background-size:contain;background-repeat:no-repeat;background-position:center}
+ .hero-mode-default .hero-art{display:none}
+ .hero .hero-art.hero-has-image{display:flex;height:165px;max-width:100%;background:none;padding:8px 14px 13px}
+ .hero-mode-banner .hero-art.hero-has-image{padding:0;height:170px;mask-image:none}
+ .hero-mode-banner .hero-art img{object-fit:cover}
+ .floating-percent,.hero-spark{display:none}
+ .categories-section{padding-top:19px}
+ .category-grid{gap:8px}
+ .category-item{min-height:72px;height:auto;padding:10px 4px}
+ .offers-header{margin-bottom:12px}
+ .offers-header p{font-size:12px}
+ .price-zone strong.price-unavailable{font-size:11.5px!important;min-height:29px}
+ .product-content{padding:7px 8px 10px}
+ .product-content h3{font-size:12px;min-height:33px;max-height:35px}
+ .product-media{height:135px}
+ .product-card .verified-label{font-size:9px}
+ .product-card .offer-button{margin-top:8px;height:35px}
+ .admin-top{position:sticky;top:0;z-index:31;height:68px;min-height:68px;padding:0 14px}
+ .admin-top h1{font-size:18px;line-height:1.2}
+ .admin-inner{padding:13px 12px}
+ .admin-card{padding:15px;border-radius:13px}
+ .admin-card-title{align-items:flex-start;flex-wrap:wrap}
+ .admin-two-col{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+ .admin-side{z-index:41}
+ .admin-backdrop{display:block;position:fixed;inset:0;background:#10101aaa;border:0;z-index:40}
+ .admin-nav button,.admin-bottom a,.admin-bottom button{min-height:43px}
+ .vivi-mode-grid{grid-template-columns:1fr;gap:8px}
+ .vivi-mode-card{min-height:66px;padding:12px}
+ .vivi-storefront-toolbar button{flex:1 1 auto;white-space:normal}
+ .vivi-storefront-item{grid-template-columns:22px 61px minmax(0,1fr) 18px;gap:8px;padding:9px}
+ .vivi-storefront-item>img{width:61px;height:65px}
+ .vivi-storefront-item-text strong{font-size:12px;-webkit-line-clamp:3}
+ .vivi-storefront-item-text small{font-size:11px}
+ .vivi-storefront-pages b{flex-basis:100%;text-align:center;order:-1}
+ .vivi-banner-preview{padding:15px;min-height:200px}
+ .vivi-preview-copy h3{font-size:20px}
+ .vivi-banner-preview>img{max-width:42%;max-height:150px}
+ .vivi-admin-mobile-list{display:grid;gap:9px}
+ .vivi-admin-desktop-table{display:none}
+ .vivi-admin-offer-card{display:grid;grid-template-columns:62px minmax(0,1fr);gap:11px;
+  border:1px solid #e8e9ee;border-radius:12px;padding:11px;background:#fff}
+ .vivi-admin-offer-card>img{width:62px;height:67px;object-fit:contain;border-radius:8px;background:#fafafa}
+ .vivi-admin-offer-card h3{font-size:13px;line-height:1.38;margin:0 0 4px;overflow-wrap:anywhere}
+ .vivi-admin-offer-card small{color:#8a8e9b;font-size:11px}
+ .vivi-admin-offer-card strong{display:block;color:#f55d24;font-size:13px;margin:5px 0}
+ .vivi-admin-offer-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+ .vivi-admin-offer-actions button{min-height:36px}
+}
+@media(max-width:400px){
+ .vivi-storefront-toolbar button{flex:1 1 100%}
+ .vivi-storefront-item{grid-template-columns:20px 50px minmax(0,1fr) 17px;gap:7px}
+ .vivi-storefront-item>img{width:50px;height:54px}
+ .hero .hero-copy{padding:17px 15px!important}
+ .hero .hero-copy h1{font-size:22px!important}
+ .hero .hero-actions .btn{font-size:11px;padding:10px}
+ .product-grid{gap:8px}
+ .product-media{height:116px}
+ .vivi-editor-columns{grid-template-columns:1fr}
+ .vivi-editor-form{padding:13px}
+}
