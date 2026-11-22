@@ -54,11 +54,13 @@ export function getThemeCssVars(settings={}){
  const light=relativeLuminance(accent)>.38;
  const white='#ffffff',dark='#19212c';
  const gradient=fill==='solid'?start:`linear-gradient(${angle}deg, ${start} 0%, ${end} 100%)`;
- const avgLuminance=(relativeLuminance(start)+relativeLuminance(end))/2;
+ const avgLuminance=fill==='solid'?relativeLuminance(start):
+  (relativeLuminance(start)+relativeLuminance(end))/2;
  const heroInk=avgLuminance>.43?dark:white;
  const heroIsLight=heroInk===dark;
  return {
   '--vivi-accent':accent,
+  '--vivi-page-bg':mix(accent,'#ffffff',.97),
   '--vivi-accent-deep':mix(accent,'#151522',light?.51:.2),
   '--vivi-accent-soft':mix(accent,'#ffffff',.9),
   '--vivi-accent-glow':accent+'38',

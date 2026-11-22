@@ -1144,3 +1144,9 @@
 .vivi-upload-button:focus-within{
  outline:3px solid #f17b45;outline-offset:3px;
 }
+
+/* Uma tonalidade muito leve da paleta acompanha também o fundo */
+.site-shell{background:var(--vivi-page-bg,#f8f9fb)}
+.site-shell .site-header{background:#fff}
+.site-shell .site-footer{background:#26252e}
+.vivi-product-page{background:var(--vivi-page-bg,#f8f9fb)}

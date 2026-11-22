@@ -43,15 +43,20 @@ async function compressImage(file){
  canvas.width=width;canvas.height=height;
  const ctx=canvas.getContext('2d');
  if(!ctx)throw Error('O navegador não conseguiu preparar a imagem.');
- ctx.fillStyle='#ffffff';ctx.fillRect(0,0,width,height);
+ ctx.clearRect(0,0,width,height);
  ctx.drawImage(src,0,0,width,height);
  bitmap?.close?.();
  async function blob(format,quality){
   return await new Promise(resolve=>canvas.toBlob(resolve,format,quality));
  }
  let output=await blob('image/webp',.8);
- if(!output||output.type!=='image/webp')output=await blob('image/jpeg',.82);
- if(output?.size>1600000)output=await blob('image/jpeg',.64);
+ if(output?.size>1600000)output=await blob('image/webp',.62);
+ if(!output||output.type!=='image/webp'||output.size>1600000){
+  ctx.globalCompositeOperation='destination-over';
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,width,height);
+  ctx.globalCompositeOperation='source-over';
+  output=await blob('image/jpeg',.65);
+ }
  if(!output||output.size>1600000)throw Error('A foto ficou acima de 1,6 MB. Tente uma imagem menor.');
  return new File([output],'vivi-banner.'+(output.type==='image/webp'?'webp':'jpg'),{type:output.type});
 }
