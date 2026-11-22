@@ -59,12 +59,13 @@ const FIELD_SETS=[
 ];
 const unsupportedField=e=>/cannot query field|unknown field|does not exist|field .*not found|cannot select|undefined field/i.test(String(e?.message||''));
 export async function searchShopeePage(keyword='',limit=24,page=1,options={}){
- const text=JSON.stringify(String(keyword||'').trim().slice(0,80));
+ const searchText=String(keyword||'').trim().slice(0,80);
  const size=intInRange(limit,1,40,24);
  const number=intInRange(page,1,100,1);
  const sortType=limitedInteger(options?.sortType,[1,2,3,4,5],1);
  const listType=limitedInteger(options?.listType,[0,1,2],0);
- const args=[`keyword:${text}`,`page:${number}`,`limit:${size}`];
+ const args=[...(searchText?[`keyword:${JSON.stringify(searchText)}`]:[]),
+  `page:${number}`,`limit:${size}`];
  if(options?.sortType!==undefined)args.push(`sortType:${sortType}`);
  if(options?.listType!==undefined)args.push(`listType:${listType}`);
  if(options?.isAMSOffer===true)args.push('isAMSOffer:true');
