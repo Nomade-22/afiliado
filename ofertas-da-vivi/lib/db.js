@@ -98,6 +98,32 @@ export async function getDB(){
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`;
   await sql`CREATE INDEX IF NOT EXISTS vivi_admin_sessions_expiry ON vivi_admin_sessions (expires_at)`;
+  // Histórico e trava de execução da sincronização automática/manual de produtos.
+  await sql`CREATE TABLE IF NOT EXISTS vivi_product_sync_runs (
+    id TEXT PRIMARY KEY,
+    origin TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'running',
+    started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    finished_at TIMESTAMPTZ,
+    product_ids TEXT NOT NULL DEFAULT '[]',
+    total INTEGER NOT NULL DEFAULT 0,
+    next_index INTEGER NOT NULL DEFAULT 0,
+    processing BOOLEAN NOT NULL DEFAULT FALSE,
+    processing_started_at TIMESTAMPTZ,
+    processed INTEGER NOT NULL DEFAULT 0,
+    matched INTEGER NOT NULL DEFAULT 0,
+    identified INTEGER NOT NULL DEFAULT 0,
+    descriptions_added INTEGER NOT NULL DEFAULT 0,
+    new_photos INTEGER NOT NULL DEFAULT 0,
+    discounts_found INTEGER NOT NULL DEFAULT 0,
+    prices_updated INTEGER NOT NULL DEFAULT 0,
+    without_extra_data INTEGER NOT NULL DEFAULT 0,
+    failed INTEGER NOT NULL DEFAULT 0,
+    errors_json TEXT NOT NULL DEFAULT '[]'
+  )`;
+  await sql`CREATE INDEX IF NOT EXISTS vivi_product_sync_runs_recent ON vivi_product_sync_runs (started_at DESC)`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS vivi_product_sync_single_active
+    ON vivi_product_sync_runs ((status)) WHERE status='running'`;
  })().catch(e=>{initPromise=null;throw e});
  await initPromise;
  return sql;
