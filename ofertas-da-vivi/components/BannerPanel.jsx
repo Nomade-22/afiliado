@@ -316,7 +316,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
         <option value="left">Esquerda</option><option value="right">Direita</option>
        </select>
       </label>
-      <label style={label}>Altura no computador
+      {(current.placement||'carousel')!=='carousel'&&<><label style={label}>Altura no computador
        <select style={input} value={current.imageHeightDesktop||'auto'} onChange={e=>updateSlide('imageHeightDesktop',e.target.value)}>
         <option value="auto">Automática: proporção original</option>
         {[180,240,320,420,520].map(n=><option key={n} value={n}>{n} px</option>)}
@@ -327,9 +327,11 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
         <option value="auto">Automática: proporção original</option>
         {[180,240,320,420,520].map(n=><option key={n} value={n}>{n} px</option>)}
        </select>
-      </label>
+      </label></>}
      </div>
-     <p className="vivi-photo-info">Recomendamos 1920 × 640 px no computador e 1080 × 810 px no celular. No modo automático, a imagem aparece inteira, sem cortes.</p>
+     <p className="vivi-photo-info">{(current.placement||'carousel')==='carousel'?
+      'No carrossel principal, todos os slides têm o mesmo tamanho e cantos arredondados. Escolha Mostrar imagem inteira para não cortar a arte.':
+      'Em banners internos, a altura pode ser automática ou personalizada. Recomendamos uma arte para celular e outra para computador.'}</p>
     </>}
     {current.type==='product'&&<label style={label}>Escolher produto ativo
      <select style={input} value={current.productId||''} onChange={e=>updateSlide('productId',e.target.value)}>
@@ -427,7 +429,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
      <button type="button" className={previewDevice==='mobile'?'selected':''} onClick={()=>setPreviewDevice('mobile')}>Celular</button>
      <button type="button" className={previewDevice==='desktop'?'selected':''} onClick={()=>setPreviewDevice('desktop')}>Computador</button>
     </div>}
-    {current.type==='images'?<div className={'vivi-banner-full-preview device-'+previewDevice}>
+    {current.type==='images'?<div className={'vivi-banner-full-preview device-'+previewDevice+((current.placement||'carousel')==='carousel'?' is-carousel':'')}>
      {bannerImageOf(current)||bannerMobileImageOf(current)?
       <ResponsiveBannerImage slide={current} previewDevice={previewDevice}/>:
       <p>Envie sua arte para visualizar o banner inteiro aqui.</p>}
