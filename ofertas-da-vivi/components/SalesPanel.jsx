@@ -25,7 +25,7 @@ function CsvDownload({report}){
 
 export default function SalesPanel(){
  const [days,setDays]=useState('30'),[busy,setBusy]=useState(false);
- const [shareBusy,setShareBusy]=useState(false),[shareUrl,setShareUrl]=useState(''),[shareError,setShareError]=useState(''),[shareCopied,setShareCopied]=useState(false);
+ const [shareBusy,setShareBusy]=useState(false),[shareUrl,setShareUrl]=useState(''),[shareError,setShareError]=useState(''),[shareCopied,setShareCopied]=useState(false),[summaryCopied,setSummaryCopied]=useState(false);
  const [report,setReport]=useState(null),[error,setError]=useState('');
  const [validationId,setValidationId]=useState(''),[validated,setValidated]=useState(null),[valBusy,setValBusy]=useState(false),[valError,setValError]=useState('');
  const [clickImport,setClickImport]=useState(null),[clickBusy,setClickBusy]=useState(false),[clickError,setClickError]=useState('');
@@ -41,6 +41,36 @@ export default function SalesPanel(){
   finally{setBusy(false)}
  }
  useEffect(()=>{load('30')},[]);
+ async function copySummaryToChatGPT(){
+  if(!report)return;
+  setShareError('');setSummaryCopied(false);
+  const brlValue=value=>brl(value);
+  const text=[
+   'Relatório Shopee — Ofertas da Vivi',
+   'Período: '+(report.periodLabel||days),
+   'De: '+(report.from||'')+' até '+(report.to||''),
+   'Pedidos: '+(report.orders??0),
+   'Conversões: '+(report.conversions??0),
+   'Itens vendidos: '+(report.itemsSold??0),
+   'Valor aproximado: '+brlValue(report.estimatedOrderValue),
+   'Comissão estimada: '+brlValue(report.commissionEstimated),
+   'Comissão do vendedor: '+brlValue(report.sellerCommissionEstimated),
+   'Comissão Shopee: '+brlValue(report.shopeeCommissionEstimated),
+   'Situação: '+Object.entries(report.statusCounts||{}).map(([key,value])=>key+'='+value).join(', '),
+   'Mais vendidos (quantidade; valor aprox.; comissão):',
+   ...(report.topProducts||[]).slice(0,10).map(p=>
+    '- '+String(p.name||'Produto').slice(0,140)+': '+p.quantity+' item(ns); '+brlValue(p.valueApprox)+'; '+brlValue(p.commission)
+   ),
+   'Relatório parcial: '+(report.partial?'SIM — totais incompletos':'não'),
+   'Fonte: Shopee Affiliate Open API. Valores sujeitos a atraso, cancelamento e validação.'
+  ].join('\n');
+  try{
+   await navigator.clipboard.writeText(text);
+   setSummaryCopied(true);
+  }catch{
+   setShareError('Não foi possível copiar automaticamente. Use o CSV ou o link temporário.');
+  }
+ }
  async function shareWithChatGPT(){
   setShareBusy(true);setShareError('');setShareUrl('');setShareCopied(false);
   try{
@@ -85,7 +115,7 @@ export default function SalesPanel(){
    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:14,flexWrap:'wrap'}}>
     <div><div style={{fontSize:13,color:'#888'}}>Dados da conta de afiliado · Shopee Open API</div><h2 style={{fontSize:23,margin:'7px 0 3px'}}>Vendas e comissões</h2></div>
     <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-     <select aria-label="Período de vendas" style={{...action,color:'#222'}} value={days} onChange={e=>{const n=e.target.value;setDays(n);setShareUrl('');load(n)}}>
+     <select aria-label="Período de vendas" style={{...action,color:'#222'}} value={days} onChange={e=>{const n=e.target.value;setDays(n);setShareUrl('');setSummaryCopied(false);load(n)}}>
       <option value="today">Hoje (São Paulo)</option>
       <option value="yesterday">Ontem (São Paulo)</option>
       <option value={1}>Últimas 24 horas</option>
@@ -97,13 +127,14 @@ export default function SalesPanel(){
      <button style={btn} disabled={busy} onClick={()=>load()}><RefreshCw size={16} style={{verticalAlign:'middle'}}/> {busy?'Consultando…':'Atualizar'}</button>
      {report&&<CsvDownload report={report}/>}
      <button type="button" style={action} disabled={shareBusy} onClick={shareWithChatGPT}>{shareBusy?'Gerando link seguro…':'Compartilhar com ChatGPT'}</button>
+     <button type="button" style={action} disabled={!report} onClick={copySummaryToChatGPT}>{summaryCopied?'Resumo copiado!':'Copiar resumo para ChatGPT'}</button>
     </div>
    </div>
    <p style={{fontSize:13,color:'#84858d',lineHeight:1.5}}>Período: <b>{report?.periodLabel||'Carregando…'}</b>. Conversões consultadas diretamente na Shopee. Os dados podem sofrer atraso, cancelamento e validação posterior. Não há necessidade do banco Neon para consultar vendas.</p>
    {shareError&&<p role="alert" style={{color:'#b43d27',fontSize:13}}>{shareError}</p>}
    {shareUrl&&<div style={{background:'#f2f7ff',padding:14,borderRadius:12,margin:'12px 0',fontSize:13,lineHeight:1.6}}>
      <b>{shareCopied?'Link seguro copiado!':'Link seguro gerado.'}</b>
-     <p style={{margin:'7px 0'}}>Cole o link na conversa do ChatGPT. Ele permite consultar só totais e produtos agregados, sem IDs de pedidos. Expira em 10 minutos.</p>
+     <p style={{margin:'7px 0'}}>Cole o link na conversa do ChatGPT. Ele permite consultar só totais e produtos agregados, sem IDs de pedidos. Expira em 10 minutos. Se o ChatGPT não conseguir abrir o endereço, use o botão Copiar resumo para ChatGPT.</p>
      <input readOnly aria-label="Link temporário para ChatGPT" value={shareUrl} onFocus={e=>e.target.select()} style={{width:'100%',padding:10,border:'1px solid #cfdaf2',borderRadius:8,boxSizing:'border-box'}}/>
      <button type="button" style={{...action,marginTop:8}} onClick={async()=>{try{await navigator.clipboard.writeText(shareUrl);setShareCopied(true)}catch{setShareError('Copie o link selecionando o texto acima.')}}}>Copiar link</button>
    </div>}
