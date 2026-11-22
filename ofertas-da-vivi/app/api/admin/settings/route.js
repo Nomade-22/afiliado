@@ -69,10 +69,7 @@ export async function POST(req){
   if(!rows.length)return Response.json({error:'O produto destacado precisa estar ativo no site.'},{status:400,headers});
  }
  if(updates.heroMode==='banner'&&!updates.heroImage){
-  // Uma imagem previamente salva pode ser utilizada se o formulário enviou
-  // somente campos parciais. Caso o modo não tenha imagem, rejeitar.
-  const previous=await getSettings(sql);
-  if(!previous.heroImage)return Response.json({error:'Informe a URL HTTPS da imagem do banner.'},{status:400,headers});
+  return Response.json({error:'Informe a URL HTTPS da imagem do banner.'},{status:400,headers});
  }
  for(const [key,value] of Object.entries(updates)){
   await sql`INSERT INTO vivi_settings(key,value) VALUES(${key},${value}) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value`;
