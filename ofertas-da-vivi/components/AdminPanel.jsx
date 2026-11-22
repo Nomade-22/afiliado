@@ -80,22 +80,45 @@ export default function AdminPanel(){
  async function renewAllProductLinks(){
   const legacy=offers.filter(x=>x.internalCode&&!(x.affiliateStatus==='verified'&&
     x.affiliateSubIds?.includes(x.internalCode)));
-  if(!legacy.length){setMessage({type:'ok',text:'Todos os produtos cadastrados já usam seu código interno como Sub ID.'});return;}
-  setBusy(true);setMessage(null);let done=0,failed=[];
+  if(!legacy.length){
+   setMessage({type:'ok',text:'Todos os produtos já têm o código interno no Sub ID.'});
+   return;
+  }
+  if(!window.confirm('Converter '+legacy.length+' link(s) com os códigos internos de cada produto? Links anteriores serão substituídos somente se a Shopee confirmar a conversão.')){
+   return;
+  }
+  setBusy(true);setMessage(null);let done=0,failed=[],processed=0;
   setImportProgress({done:0,total:legacy.length});
-  for(const offer of legacy){
+  const convert=async offer=>{
    try{
     await api('/api/admin/offers/'+encodeURIComponent(offer.id)+'/affiliate-link',{method:'POST'});
     done++;
-   }catch(e){failed.push(offer.internalCode+': '+e.message.slice(0,90))}
-   setImportProgress({done:done+failed.length,total:legacy.length});
-  }
-  await load();
-  setBusy(false);
-  setMessage({type:failed.length?'error':'ok',
-   text:done+' links convertidos com o Sub ID interno. '+(failed.length?
-    failed.length+' falharam e preservaram o link anterior. '+failed.slice(0,2).join(' | '):
-    'Todos confirmados pela Shopee.')});
+    return true;
+   }catch(e){
+    failed.push(offer.internalCode+': '+e.message.slice(0,90));
+    return false;
+   }finally{
+    processed++;
+    setImportProgress({done:processed,total:legacy.length});
+   }
+  };
+  try{
+   // Uma conversão isolada confirma que o padrão de Sub ID é aceito antes
+   // de enviar dezenas de chamadas para a Shopee.
+   const first=await convert(legacy[0]);
+   if(first){
+    for(let i=1;i<legacy.length;i+=3){
+     await Promise.all(legacy.slice(i,i+3).map(convert));
+    }
+   }else{
+    failed.push('Interrompido após falha no primeiro produto; nenhuma conversão em massa foi tentada.');
+   }
+   await load();
+   setMessage({type:failed.length?'error':'ok',
+    text:done+' link(s) confirmados com código interno. '+(failed.length?
+     failed.length+' aviso(s): '+failed.slice(0,3).join(' | '):
+     'Todos os Sub IDs foram aceitos pela Shopee.')});
+  }finally{setBusy(false)}
  }
  function updateOffer(id,k,value){run(async()=>{await api('/api/admin/offers/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({[k]:value})});return 'Oferta atualizada.'})}
  function deleteOffer(id){if(!window.confirm('Remover essa oferta definitivamente?'))return;run(async()=>{await api('/api/admin/offers/'+encodeURIComponent(id),{method:'DELETE'});return 'Oferta removida.'})}
@@ -108,11 +131,11 @@ export default function AdminPanel(){
  {tab==='vendas'&&<SalesPanel/>}
  {tab==='links'&&<AffiliateLinksPanel initialUrl={linkOrigin} initialItemId={linkItemId}/> }
  {(tab==='ofertas'||tab==='produtos')&&<div className="admin-card"><div className="admin-card-title"><h2>{tab==='ofertas'?'Controle das ofertas':'Catálogo de produtos'}</h2><button className="btn btn-primary btn-small" onClick={()=>setTab('config')}><Plus size={16}/> Nova oferta</button></div><div className="vivi-code-repair"><div><b>Rastreamento por código interno</b><small>Produtos novos: Sub ID no formato 211126_0001. Para os antigos, regenere os links preservando seu código.</small></div><button className="btn btn-outline btn-small" disabled={busy} onClick={renewAllProductLinks}><Link2 size={16}/> Converter links antigos</button>{importProgress&&busy&&<span className="footnote">{importProgress.done}/{importProgress.total} processados</span>}</div>
- <div className="admin-search"><Search size={18}/><input placeholder="Buscar produtos cadastrados..." value={search} onChange={e=>setSearch(e.target.value)}/></div><div className="table-scroll vivi-admin-desktop-table"><table className="admin-table"><thead><tr><th>Produto</th><th>Preço</th><th>Status</th><th>Destaque</th><th>Cliques</th><th>Ações</th></tr></thead><tbody>{filtered.map(o=><tr key={o.id}><td><div className="table-prod"><img src={o.image||'/images/produto-1.webp'} alt=""/><span>{o.title}<small>{o.category} {o.internalCode?'· '+o.internalCode:''}</small>{o.origin==='shopee'&&<small>{o.affiliateSubIds?.length?'Sub IDs: '+o.affiliateSubIds.join(' · '):'Link da API Shopee · sem Sub IDs personalizados'}</small>}</span></div></td><td>{o.price==null?'Preço na Shopee':brl(o.price)}</td><td><button className={'toggle-pill '+(o.active?'on':'off')} disabled={busy} onClick={()=>updateOffer(o.id,'active',!o.active)}>{o.active?'Ativa':'Inativa'}</button></td><td><button className={'icon-toggle '+(o.featured?'chosen':'')} disabled={busy} onClick={()=>updateOffer(o.id,'featured',!o.featured)} title="Alternar destaque"><Star size={19} fill={o.featured?'currentColor':'none'}/></button></td><td>{o.clicks||0}</td><td><button className="icon-toggle" disabled={busy} onClick={()=>setEditingOffer(o)} title="Editar nome, preço, imagem e categoria"><Pencil size={18}/></button><button className="icon-toggle" disabled={busy} onClick={()=>run(async()=>{const d=await api('/api/admin/offers/'+encodeURIComponent(o.id)+'/affiliate-link',{method:'POST'});return d.message})} title="Gerar novo link de afiliado com Sub IDs"><Link2 size={18}/></button><button className="icon-toggle danger" disabled={busy} onClick={()=>deleteOffer(o.id)} title="Excluir"><Trash2 size={18}/></button></td></tr>)}</tbody></table>{!filtered.length&&<div className="no-data">Nenhum produto encontrado.</div>}</div>
+ <div className="admin-search"><Search size={18}/><input placeholder="Buscar produtos cadastrados..." value={search} onChange={e=>setSearch(e.target.value)}/></div><div className="table-scroll vivi-admin-desktop-table"><table className="admin-table"><thead><tr><th>Produto</th><th>Preço</th><th>Status</th><th>Destaque</th><th>Cliques</th><th>Ações</th></tr></thead><tbody>{filtered.map(o=><tr key={o.id}><td><div className="table-prod"><img src={o.image||'/images/produto-1.webp'} alt=""/><span>{o.title}<small>{o.category} {o.internalCode?'· '+o.internalCode:''}</small><small>{o.internalCode&&(o.affiliateStatus!=='verified'||!o.affiliateSubIds?.includes(o.internalCode))?'⚠ Sub ID antigo — converter':''}</small>{o.origin==='shopee'&&<small>{o.affiliateSubIds?.length?'Sub IDs: '+o.affiliateSubIds.join(' · '):'Link da API Shopee · sem Sub IDs personalizados'}</small>}</span></div></td><td>{o.price==null?'Preço na Shopee':brl(o.price)}</td><td><button className={'toggle-pill '+(o.active?'on':'off')} disabled={busy} onClick={()=>updateOffer(o.id,'active',!o.active)}>{o.active?'Ativa':'Inativa'}</button></td><td><button className={'icon-toggle '+(o.featured?'chosen':'')} disabled={busy} onClick={()=>updateOffer(o.id,'featured',!o.featured)} title="Alternar destaque"><Star size={19} fill={o.featured?'currentColor':'none'}/></button></td><td>{o.clicks||0}</td><td><button className="icon-toggle" disabled={busy} onClick={()=>setEditingOffer(o)} title="Editar nome, preço, imagem e categoria"><Pencil size={18}/></button><button className="icon-toggle" disabled={busy} onClick={()=>run(async()=>{const d=await api('/api/admin/offers/'+encodeURIComponent(o.id)+'/affiliate-link',{method:'POST'});return d.message})} title="Gerar novo link de afiliado com Sub IDs"><Link2 size={18}/></button><button className="icon-toggle danger" disabled={busy} onClick={()=>deleteOffer(o.id)} title="Excluir"><Trash2 size={18}/></button></td></tr>)}</tbody></table>{!filtered.length&&<div className="no-data">Nenhum produto encontrado.</div>}</div>
 <div className="vivi-admin-mobile-list">
 {filtered.map(o=><article className="vivi-admin-offer-card" key={o.id}>
  <img src={o.image||'/images/produto-1.webp'} alt=""/>
- <div><h3>{o.title}</h3><small>{o.category} · {o.active?'Publicada':'Inativa'} {o.internalCode?'· '+o.internalCode:''}</small>
+ <div><h3>{o.title}</h3><small>{o.category} · {o.active?'Publicada':'Inativa'} {o.internalCode?'· '+o.internalCode:''}</small>{o.internalCode&&(o.affiliateStatus!=='verified'||!o.affiliateSubIds?.includes(o.internalCode))&&<small style={{color:'#b35332'}}>⚠ Link com Sub ID antigo</small>}
  <strong>{o.price==null?'Preço na Shopee':brl(o.price)}</strong>
  <div className="vivi-admin-offer-actions">
   <button className="btn btn-primary btn-small" disabled={busy} onClick={()=>setEditingOffer(o)}><Pencil size={15}/> Editar</button>
