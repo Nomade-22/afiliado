@@ -1,0 +1,88 @@
+name: Sincronizar produtos Shopee da Vivi
+
+on:
+  # Horários de Brasília (UTC-3): 08:00 e 20:00.
+  schedule:
+    - cron: '0 11,23 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: vivi-product-sync
+  cancel-in-progress: false
+
+jobs:
+  sync-products:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Consultar e sincronizar catálogo com identidade GitHub OIDC
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ env.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
+          ACTIONS_ID_TOKEN_REQUEST_URL: ${{ env.ACTIONS_ID_TOKEN_REQUEST_URL }}
+        shell: bash
+        run: |
+          node <<'NODE'
+          const endpoint='https://ofertas-da-vivi.vercel.app/api/cron/products';
+          const maxBatches=175;
+          const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+          async function getToken(){
+            const urlString=process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
+            const requestToken=process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
+            if(!urlString||!requestToken)throw Error('GitHub OIDC não foi disponibilizado ao workflow');
+            const url=new URL(urlString);
+            url.searchParams.set('audience',endpoint);
+            const response=await fetch(url,{
+              headers:{Authorization:'Bearer '+requestToken},
+              signal:AbortSignal.timeout(15000)
+            });
+            if(!response.ok)throw Error('GitHub OIDC: HTTP '+response.status);
+            const token=(await response.json()).value;
+            if(typeof token!=='string'||!token)throw Error('Token GitHub OIDC inválido');
+            return token;
+          }
+          async function call(action,id){
+            const jwt=await getToken();
+            const response=await fetch(endpoint,{
+              method:'POST',
+              headers:{
+                Authorization:'Bearer '+jwt,
+                'Content-Type':'application/json'
+              },
+              body:JSON.stringify({action,id}),
+              signal:AbortSignal.timeout(110000)
+            });
+            const data=await response.json().catch(()=>({}));
+            if(!response.ok)throw Error('Etapa '+action+': HTTP '+response.status+' '+(data.error||''));
+            return data;
+          }
+          const started=await call('start');
+          if(started.alreadyRunning){
+            console.log('Uma sincronização já está em andamento. Nenhuma execução duplicada foi iniciada.');
+            process.exit(0);
+          }
+          console.log('Iniciada sincronização '+started.id+' com '+started.total+' produtos.');
+          let current=started;
+          let busyTries=0;
+          for(let index=0;index<maxBatches&&current.status==='running';index++){
+            const next=await call('batch',current.id);
+            if(next.busy){
+              busyTries++;
+              if(busyTries>36)throw Error('Sincronização ficou ocupada por mais de 3 minutos.');
+              await sleep(5000);
+              continue;
+            }
+            busyTries=0;
+            current=next;
+            console.log('Atualizados '+current.processed+'/'+current.total+
+              ' · preços '+current.pricesUpdated+' · descontos '+current.discountsFound+
+              ' · fotos '+current.newPhotos+' · avisos '+current.failed);
+            if(current.status==='running')await sleep(300);
+          }
+          if(current.status==='running')throw Error('Limite de lotes atingido antes da conclusão.');
+          console.log('Finalizado: '+current.status+' às '+current.finishedAt);
+          if(current.status==='error')process.exitCode=1;
+          NODE
