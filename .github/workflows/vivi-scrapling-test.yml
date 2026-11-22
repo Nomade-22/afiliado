@@ -19,7 +19,7 @@ concurrency:
 jobs:
   scrape-10:
     if: github.repository == 'Nomade-22/afiliado'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Checkout do coletor (sem credenciais persistentes)
