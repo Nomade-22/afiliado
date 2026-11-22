@@ -2242,3 +2242,26 @@
 .vivi-discover-details dl>div{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .vivi-discover-details dt{font-weight:600;color:#807c87}
 .vivi-discover-details dd{margin:0;font-weight:750;overflow-wrap:anywhere;text-align:right}
+
+/* Acesso rápido às ofertas e cupons imediatamente abaixo do carrossel principal.
+   Os descontos e campanhas secundárias permanecem após os produtos. */
+.site-shell .vivi-campaigns-quick-section{
+ margin:14px 0 21px;
+ position:relative;
+ z-index:1;
+}
+.site-shell .vivi-campaigns-quick-section .vivi-campaign-quicklinks{
+ gap:12px;
+}
+.site-shell .vivi-campaigns-quick-section .vivi-campaign-quick{
+ min-height:90px;
+}
+@media(max-width:720px){
+ .site-shell .vivi-campaigns-quick-section{
+  margin:11px 0 17px;
+ }
+ .site-shell .vivi-campaigns-quick-section .vivi-campaign-quick{
+  min-height:76px;
+  padding:14px 16px;
+ }
+}

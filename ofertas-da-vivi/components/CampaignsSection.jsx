@@ -3,32 +3,35 @@ import {useEffect,useState} from 'react';
 import {TicketPercent,Flame,ArrowUpRight,CalendarDays,ShieldCheck} from 'lucide-react';
 
 const safe=(u)=>{try{return new URL(u).protocol==='https:'}catch{return false}};
-export default function CampaignsSection(){
- const [data,setData]=useState(null);
+export default function CampaignsSection({part='details',data=null}){
  const [discounts,setDiscounts]=useState([]);
  useEffect(()=>{
   let live=true;
-  fetch('/api/campaigns').then(r=>r.json()).then(d=>{if(live)setData(d)}).catch(()=>{});
-  fetch('/api/discount-offers',{cache:'no-store'})
+  if(part==='details')fetch('/api/discount-offers',{cache:'no-store'})
    .then(r=>r.ok?r.json():null)
    .then(d=>{if(live&&Array.isArray(d?.offers))setDiscounts(d.offers);})
    .catch(()=>{});
   return ()=>{live=false};
- },[]);
+ },[part]);
  if(data?.enabled===false)return null;
  const links=data?.links||[],offers=data?.offers||[],flashOffers=data?.flashOffers||[];
- if(!links.length&&!offers.length&&!flashOffers.length&&!discounts.length)return null;
- return <section className="vivi-campaigns" id="cupons">
-  <div className="section-heading"><h2><TicketPercent size={25}/> Promoções e cupons</h2></div>
-  <p className="vivi-campaigns-intro">Veja os destaques e confira condições, prazos e descontos diretamente na Shopee.</p>
-  <div className="vivi-campaign-quicklinks">
+ if(part==='quick'){
+  if(!links.length)return null;
+  return <section className="vivi-campaigns-quick-section" id="cupons" aria-label="Ofertas relâmpago e cupons da Shopee">
+   <div className="vivi-campaign-quicklinks">
    {links.map(link=><a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer nofollow sponsored"
     className={'vivi-campaign-quick vivi-quick-'+link.id}>
     {link.id==='flash'?<Flame size={25}/>:<TicketPercent size={25}/>}
     <span><b>{link.title}</b><small>{link.description}</small></span>
     <ArrowUpRight size={20}/>
    </a>)}
-  </div>
+   </div>
+  </section>;
+ }
+ if(!offers.length&&!flashOffers.length&&!discounts.length)return null;
+ return <section className="vivi-campaigns" id="promocoes">
+  <div className="section-heading"><h2><TicketPercent size={25}/> Mais promoções e descontos</h2></div>
+  <p className="vivi-campaigns-intro">Confira os descontos e campanhas disponíveis. Preços e condições devem ser confirmados na Shopee.</p>
   {discounts.length>0&&<div className="vivi-discounts-section" id="descontos">
    <div className="vivi-discounts-heading">
     <ShieldCheck size={19}/>
