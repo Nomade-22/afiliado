@@ -27,7 +27,8 @@ export function newHeroSlide(type='images',id){
   type:HERO_TYPES.includes(type)?type:'images',enabled:true,
   badge:'Destaque da Vivi',title:'Novo destaque da semana',
   subtitle:'Personalize este banner com seus produtos.',buttonLabel:'Ver ofertas',
-  buttonUrl:'#ofertas',images:[],productId:''};
+  buttonUrl:'#ofertas',images:[],productId:'',mobileImage:'',placement:'carousel',
+  imageFit:'contain',imagePosition:'center',imageHeightDesktop:'auto',imageHeightMobile:'auto'};
 }
 export function readHeroSlides(settings={}){
  let raw=settings.heroSlides;
@@ -60,12 +61,21 @@ export function normalizeHeroSlides(value){
   ids.add(id);
   const text=(name,max)=>String(slide[name]||'').trim().slice(0,max);
   const images=Array.isArray(slide.images)?slide.images:[];
+  const placement=slide.type==='images'&&
+   ['carousel','after-categories','after-offers','bottom'].includes(slide.placement)?
+   slide.placement:'carousel';
+  const height=value=>['auto','180','240','320','420','520'].includes(String(value))?String(value):'auto';
   if(images.length>4)throw Error('Cada página aceita até 4 imagens.');
   return {id,type:slide.type,enabled:slide.enabled!==false,
    badge:text('badge',85),title:text('title',170),
    subtitle:text('subtitle',300),buttonLabel:text('buttonLabel',55),
    buttonUrl:text('buttonUrl',1250),images:images.map(x=>String(x||'').trim()),
-   productId:text('productId',150)};
+   productId:text('productId',150),
+   mobileImage:text('mobileImage',1250),placement,
+   imageFit:slide.imageFit==='cover'?'cover':'contain',
+   imagePosition:['center','top','bottom','left','right'].includes(slide.imagePosition)?slide.imagePosition:'center',
+   imageHeightDesktop:height(slide.imageHeightDesktop),
+   imageHeightMobile:height(slide.imageHeightMobile)};
  });
  if(!clean.some(x=>x.enabled))throw Error('Ative ao menos uma página do banner.');
  return clean;
