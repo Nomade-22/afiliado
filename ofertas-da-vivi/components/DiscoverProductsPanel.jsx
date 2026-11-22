@@ -9,6 +9,12 @@ const money=value=>Number(value).toLocaleString('pt-BR',{style:'currency',curren
 const number=value=>Number(value).toLocaleString('pt-BR');
 const pct=value=>value===null||value===undefined?'—':Number(value).toLocaleString('pt-BR',{maximumFractionDigits:2})+'%';
 const percentRate=rate=>rate===null||rate===undefined?null:(Number(rate)<=1?Number(rate)*100:Number(rate));
+const dateOf=value=>{
+ if(value===null||value===undefined)return '—';
+ const raw=Number(value);
+ const d=new Date(raw>1e12?raw:raw*1000);
+ return Number.isFinite(d.getTime())?d.toLocaleDateString('pt-BR'):'—';
+};
 const safeUrl=value=>{
  try{const u=new URL(value);return u.protocol==='https:'&&
   ['shopee.com.br','shopee.com','s.shopee.com.br','shopee.ee'].some(d=>u.hostname===d||u.hostname.endsWith('.'+d))?u.toString():null}
@@ -233,6 +239,16 @@ export default function DiscoverProductsPanel({offers=[],onImported}){
         <span><Star size={15}/> {item.ratingStar!==null?Number(item.ratingStar).toLocaleString('pt-BR',{maximumFractionDigits:1}):'Sem avaliação'}</span>
         <span><ShoppingBag size={15}/> {item.sales!==null?number(item.sales)+' vendas':'Vendas indisponíveis'}</span>
        </div>
+       <details className="vivi-discover-details">
+        <summary>Outros dados da API</summary>
+        <dl>
+         <div><dt>ID do anúncio</dt><dd>{item.itemId}</dd></div>
+         <div><dt>ID da loja</dt><dd>{item.shopId}</dd></div>
+         <div><dt>Categorias Shopee (IDs)</dt><dd>{item.productCatIds?.length?item.productCatIds.join(', '):'Não disponibilizadas'}</dd></div>
+         <div><dt>Início da campanha</dt><dd>{dateOf(item.periodStartTime)}</dd></div>
+         <div><dt>Fim da campanha</dt><dd>{dateOf(item.periodEndTime)}</dd></div>
+        </dl>
+       </details>
        <div className="vivi-discover-card-actions">
         <label className={'vivi-discover-checkbox'+(exists?' imported':'')}>
          <input type="checkbox" disabled={exists||importing||busy} checked={exists||checked}
