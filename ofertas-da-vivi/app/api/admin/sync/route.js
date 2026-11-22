@@ -42,14 +42,14 @@ export async function POST(req){
      const identity=primaryOfferKey(offer);
      const inserted=await sql`INSERT INTO vivi_offers
       (id,title,category,price,old_price,image,url,featured,active,origin,
-       item_id,shop_id,shop_name,commission_rate,price_max,price_discount_rate,
+       item_id,shop_id,shop_name,commission_rate,price_max,price_discount_rate,discount_checked_at,
        product_link,sales,rating_star,affiliate_link_source,affiliate_sub_ids,
        affiliate_status,internal_code,imported_at,dedupe_key,updated_at)
       VALUES
       (${offer.id},${offer.title},${offer.category},${offer.price},${offer.oldPrice},
        ${offer.image},${link.shortLink},false,false,'shopee',
        ${offer.itemId},${offer.shopId},${offer.shopName},
-       ${offer.commissionRate},${offer.priceMax},${offer.priceDiscountRate},
+       ${offer.commissionRate},${offer.priceMax},${offer.priceDiscountRate},NOW(),
        ${offer.productLink},${offer.sales},${offer.ratingStar},
        'generateShortLink',${link.usedSubId},'verified',${code},NOW(),${identity},NOW())
       ON CONFLICT DO NOTHING RETURNING id`;

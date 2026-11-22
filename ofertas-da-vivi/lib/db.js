@@ -1,4 +1,5 @@
 import { neon } from '@neondatabase/serverless';
+import {inferCategory} from './categories';
 let initPromise;
 export const hasDatabase = () => Boolean(process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgres'));
 export async function getDB(){
@@ -24,6 +25,7 @@ export async function getDB(){
     commission_rate NUMERIC(10,5),
     price_max NUMERIC(12,2),
     price_discount_rate NUMERIC(10,5),
+    discount_checked_at TIMESTAMPTZ,
     product_link TEXT,
     sales NUMERIC(15,0),
     rating_star NUMERIC(6,3),
@@ -46,6 +48,7 @@ export async function getDB(){
     ADD COLUMN IF NOT EXISTS commission_rate NUMERIC(10,5),
     ADD COLUMN IF NOT EXISTS price_max NUMERIC(12,2),
     ADD COLUMN IF NOT EXISTS price_discount_rate NUMERIC(10,5),
+    ADD COLUMN IF NOT EXISTS discount_checked_at TIMESTAMPTZ,
     ADD COLUMN IF NOT EXISTS product_link TEXT,
     ADD COLUMN IF NOT EXISTS sales NUMERIC(15,0),
     ADD COLUMN IF NOT EXISTS rating_star NUMERIC(6,3),
@@ -67,10 +70,21 @@ export async function getDB(){
  return sql;
 }
 const numberOrNull=x=>x===null||x===undefined?null:Number(x);
-export const mapOffer=o=>({
+export const mapOffer=o=>{
+ const lastSaleCheck=o.discount_checked_at?Date.parse(String(o.discount_checked_at)):0;
+ const fresh=Number.isFinite(lastSaleCheck)&&lastSaleCheck>0&&Date.now()-lastSaleCheck<72*3600*1000&&Date.now()>=lastSaleCheck;
+ const reported=Number(o.price_discount_rate);
+ const verifiedDiscount=fresh&&Number.isFinite(reported)&&reported>=1&&reported<=95?
+  Math.round(reported):0;
+ const manualDiscount=Number(o.old_price)>Number(o.price)&&Number(o.price)>0?
+  Math.round(100*(Number(o.old_price)-Number(o.price))/Number(o.old_price)):0;
+ return {
  id:String(o.id),title:o.title,category:o.category,
  price:numberOrNull(o.price),oldPrice:numberOrNull(o.old_price),
- discount:(Number(o.old_price)>Number(o.price)&&Number(o.price)>0)?Math.round(100*(Number(o.old_price)-Number(o.price))/Number(o.old_price)):0,
+ discount:verifiedDiscount||manualDiscount,
+ verifiedDiscount:verifiedDiscount||null,
+ discountSource:verifiedDiscount?'shopee':manualDiscount?'manual':null,
+ discountCheckedAt:o.discount_checked_at||null,
  image:o.image,url:o.url,featured:o.featured,active:o.active,origin:o.origin,
  clicks:Number(o.clicks??0),isDemo:false,
  itemId:o.item_id??null,shopId:o.shop_id??null,shopName:o.shop_name??null,
@@ -84,7 +98,7 @@ export const mapOffer=o=>({
  affiliateLinkSource:o.affiliate_link_source??null,
  dedupeKey:o.dedupe_key??null,
  affiliateSubIds:typeof o.affiliate_sub_ids==='string'?o.affiliate_sub_ids.split(',').filter(Boolean):[]
-});
+ };};
 export async function getSettings(sql){
  const rows=await sql`SELECT key,value FROM vivi_settings`;
  return Object.fromEntries(rows.map(r=>[r.key,r.value]));

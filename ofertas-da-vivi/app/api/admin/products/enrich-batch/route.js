@@ -45,7 +45,7 @@ export async function POST(request){
  const report={
   ok:true,processed:0,matched:0,identified:0,descriptionsAdded:0,
   newPhotos:0,mainPhotos:0,withoutExtraData:0,fromPublicPage:0,
-  sourceBlocked:0,errors:[],updated:[]
+  sourceBlocked:0,discountsFound:0,pricesUpdated:0,errors:[],updated:[]
  };
  for(const id of ids){
   report.processed++;
@@ -116,6 +116,17 @@ export async function POST(request){
 
   report.matched++;
   if(data.sourcePublicPage)report.fromPublicPage++;
+  const affiliateMatched=Boolean(data.sourceAffiliate);
+  const apiPrice=affiliateMatched&&Number.isFinite(Number(data.priceMin))&&Number(data.priceMin)>0?
+   Number(data.priceMin):null;
+  const apiMax=affiliateMatched&&Number.isFinite(Number(data.priceMax))&&Number(data.priceMax)>0?
+   Number(data.priceMax):null;
+  const apiDiscount=affiliateMatched&&Number.isFinite(Number(data.discountRate))&&
+    Number(data.discountRate)>=0&&Number(data.discountRate)<=95?
+    Number(data.discountRate):null;
+  const hasSale=apiDiscount!==null&&apiDiscount>=1;
+  if(hasSale)report.discountsFound++;
+  if(apiPrice!==null)report.pricesUpdated++;
   const oldDescription=String(row.product_description||'').trim();
   const description=oldDescription||String(data.description||'').trim().slice(0,6000)||null;
   const hasAddedDescription=!oldDescription&&Boolean(description);
@@ -129,6 +140,10 @@ export async function POST(request){
     image=${image},product_description=${description},
     product_images=${JSON.stringify(gallery)},
     shop_name=COALESCE(shop_name,${data.shopName||null}),
+    price=COALESCE(${apiPrice},price),
+    price_max=COALESCE(${apiMax},price_max),
+    price_discount_rate=CASE WHEN ${affiliateMatched} THEN ${apiDiscount} ELSE price_discount_rate END,
+    discount_checked_at=CASE WHEN ${affiliateMatched} THEN NOW() ELSE discount_checked_at END,
     sales=COALESCE(${data.sales??null},sales),
     rating_star=COALESCE(${data.ratingStar??null},rating_star),
     stock_quantity=COALESCE(${data.stockSource?data.stockQuantity:null},stock_quantity),
@@ -141,6 +156,7 @@ export async function POST(request){
     id,image,description,images:gallery,
     ids:fetchedIds||null,
     sourcePublicPage:Boolean(data.sourcePublicPage),
+    saleDiscount:hasSale?apiDiscount:null,priceFromShopee:apiPrice,
     fromApi:{description:Boolean(data.description),photoCount:gallery.length,
      stock:Boolean(data.stockSource)}
    });

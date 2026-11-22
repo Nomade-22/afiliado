@@ -9,7 +9,10 @@ export default function CatalogActionsPanel({offers=[],onCompleted}){
   [notice,setNotice]=useState(null);
  const stopRef=useRef(false);
  const inactive=offers.filter(item=>!item.active);
- const needsDetails=offers.filter(item=>!item.description||!Array.isArray(item.images)||item.images.length<2);
+ const needsDetails=offers.filter(item=>
+  !item.description||!Array.isArray(item.images)||item.images.length<2||
+  !item.discountCheckedAt||Date.now()-new Date(item.discountCheckedAt).getTime()>24*3600*1000
+ );
  async function execute(mode){
   if(running)return;
   const selected=mode==='publish'?inactive:needsDetails;
@@ -26,7 +29,7 @@ export default function CatalogActionsPanel({offers=[],onCompleted}){
   const stats={processed:0,total:selected.length,activated:0,alreadyActive:0,
    duplicates:0,invalidLinks:0,conversionErrors:0,
    matched:0,identified:0,fromPublicPage:0,sourceBlocked:0,
-   descriptionsAdded:0,newPhotos:0,withoutExtraData:0,failed:0};
+   descriptionsAdded:0,newPhotos:0,discountsFound:0,pricesUpdated:0,withoutExtraData:0,failed:0};
   let errors=[];
   const path=mode==='publish'?'/api/admin/products/publish-batch':'/api/admin/products/enrich-batch';
   const chunkSize=mode==='publish'?4:3;
@@ -45,7 +48,7 @@ export default function CatalogActionsPanel({offers=[],onCompleted}){
     stats.processed+=batch.length;
     for(const key of ['activated','alreadyActive','duplicates','invalidLinks','conversionErrors',
       'matched','identified','fromPublicPage','sourceBlocked',
-      'descriptionsAdded','newPhotos','withoutExtraData']){
+      'descriptionsAdded','newPhotos','discountsFound','pricesUpdated','withoutExtraData']){
      stats[key]+=Number(data[key]||0);
     }
     errors.push(...(data.errors||[]).map(e=>e.reason||'Falha ao consultar o item.'));
@@ -68,7 +71,8 @@ export default function CatalogActionsPanel({offers=[],onCompleted}){
    stats.identified+' ID(s) de anúncio identificado(s), '+stats.matched+
     ' produto(s) com dados adicionais encontrados ('+stats.fromPublicPage+
     ' via página pública); '+stats.descriptionsAdded+' descrição(ões) e '+
-    stats.newPhotos+' foto(s) adicionada(s). '+
+    stats.newPhotos+' foto(s) adicionada(s). '+stats.discountsFound+
+    ' descontos confirmados e '+stats.pricesUpdated+' preços atualizados. '+
     stats.withoutExtraData+' anúncio(s) sem detalhes adicionais disponíveis.';
   setNotice({
    kind:errors.length||stats.failed?'warning':'success',
@@ -79,7 +83,7 @@ export default function CatalogActionsPanel({offers=[],onCompleted}){
  return <section className="vivi-catalog-bulk">
   <div className="vivi-catalog-bulk-head">
    <div><h3><ShieldCheck size={20}/> Publicação e informações dos produtos</h3>
-    <p>Ative os produtos elegíveis e tente identificar os anúncios na Shopee. Os detalhes adicionais dependem da API ou dos metadados públicos permitidos.</p>
+    <p>Ative os produtos elegíveis e consulte preços, descontos, imagens e descrições disponíveis. Percentuais só são exibidos quando confirmados pela API.</p>
    </div>
    <div className="vivi-catalog-counts">
     <span><b>{offers.length}</b> cadastrados</span>
@@ -90,7 +94,7 @@ export default function CatalogActionsPanel({offers=[],onCompleted}){
    <button type="button" className="btn btn-primary" disabled={Boolean(running)||!inactive.length}
     onClick={()=>execute('publish')}><Globe2 size={18}/> Ativar todos no site ({inactive.length})</button>
    <button type="button" className="btn btn-outline" disabled={Boolean(running)||!needsDetails.length}
-    onClick={()=>execute('enrich')}><Images size={18}/> Buscar fotos e descrições ({needsDetails.length})</button>
+    onClick={()=>execute('enrich')}><Images size={18}/> Atualizar preços, descontos e fotos ({needsDetails.length})</button>
    {running&&<button type="button" className="btn btn-outline" onClick={()=>{stopRef.current=true}}>
     <PauseCircle size={17}/> Parar após o lote
    </button>}
