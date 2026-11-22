@@ -16,11 +16,22 @@ const safeDestination=value=>{
 export default function HeroCarousel({settings={},offers=[]}){
  const slides=useMemo(()=>readHeroSlides(settings).filter(s=>s.enabled!==false),[settings]);
  const [active,setActive]=useState(0);
+ const [flashCampaigns,setFlashCampaigns]=useState([]);
  const [hovered,setHovered]=useState(false);
  const [manualPause,setManualPause]=useState(false);
  const touchX=useRef(null);
  const current=slides[active%Math.max(1,slides.length)];
  const period=getHeroInterval(settings)*1000;
+ useEffect(()=>{
+  if(!slides.some(s=>s.type==='flash'))return;
+  const controller=new AbortController();
+  fetch('/api/campaigns',{signal:controller.signal})
+   .then(r=>r.ok?r.json():null)
+   .then(d=>{if(!controller.signal.aborted&&Array.isArray(d?.flashOffers))
+     setFlashCampaigns(d.flashOffers.filter(item=>safeDestination(item?.link)).slice(0,3));})
+   .catch(()=>{});
+  return ()=>controller.abort();
+ },[slides]);
  useEffect(()=>{
   if(slides.length<=1||hovered||manualPause)return;
   const interval=setInterval(()=>{
@@ -37,11 +48,12 @@ export default function HeroCarousel({settings={},offers=[]}){
  const offer=offers.find(x=>x.id===current.productId&&x.active);
  const product=current.type==='product'&&offer;
  const flash=current.type==='flash';
+ const featuredFlash=flash?flashCampaigns[0]:null;
  const images=current.type==='images';
  const mainImage=product&&isHeroImage(offer.image)?offer.image:
    (current.type==='intro'||flash)&&gallery.length?gallery[0]:null;
  const href=product?'/produto/'+encodeURIComponent(offer.id):
-  flash?settings.flashSaleUrl:current.buttonUrl||'#ofertas';
+  flash?(featuredFlash?.link||settings.flashSaleUrl):current.buttonUrl||'#ofertas';
  const destination=safeDestination(href)?href:'#ofertas';
  const external=destination.startsWith('https://');
  const title=product?offer.title:current.title;
@@ -82,6 +94,16 @@ export default function HeroCarousel({settings={},offers=[]}){
        </div>)}
       </div>:
       mainImage?<div className="vivi-hero-main-photo"><img src={mainImage} alt="" loading="eager"/></div>:
+      flash&&featuredFlash?
+       <a className="vivi-hero-live-campaign"
+        href={featuredFlash.link} target="_blank"
+        rel="noopener noreferrer nofollow sponsored">
+        {isHeroImage(featuredFlash.image)&&
+         <img src={featuredFlash.image} alt="" loading="lazy"/>}
+        <span className="vivi-hero-live-verified"><Flame size={14}/> Campanha identificada pela Shopee</span>
+        <strong>{featuredFlash.title}</strong>
+        <small>Ver condições <ArrowRight size={14}/></small>
+       </a>:
       flash?<div className="vivi-hero-flash-icon"><Flame size={76} strokeWidth={1.5}/><span>OFERTAS DA SEMANA</span></div>:
       <div className={'vivi-hero-default-art'+(decorative?' decorative':'')}>
        <div className="vivi-hero-art-ring"><ShoppingBag size={58} strokeWidth={1.5}/></div>
