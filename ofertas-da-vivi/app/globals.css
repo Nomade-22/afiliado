@@ -2486,3 +2486,17 @@
  .vivi-scrapling-stats strong{font-size:20px}
  .vivi-scrapling-stats small{font-size:9px}
 }
+
+/* Evidencia execução concluída sem fotos/descrições: não confundir com sucesso de extração. */
+.vivi-scrapling-status-no-data{
+ color:#945014!important;
+ background:#fff1d9!important;
+}
+.vivi-scrapling-diagnosis{
+ display:flex;align-items:flex-start;gap:10px;
+ margin-top:14px;padding:13px 15px;border-radius:12px;
+ background:#fff5e4;border:1px solid #f2d8a9;
+ color:#76501e;font-size:12px;line-height:1.65;
+}
+.vivi-scrapling-diagnosis svg{flex-shrink:0;margin-top:1px}
+.vivi-scrapling-diagnosis b{color:#714017}
