@@ -108,7 +108,7 @@ export async function generateProductAffiliateLink(originUrl,internalCode) {
  let response;
  try{response=await shopeeQuery(query)}catch(error){
   const message=String(error?.message||'A Shopee rejeitou a conversão.');
-  if(/invalid\\s*sub[\\s_-]*id/i.test(message)){
+  if(/invalid\s*sub[\s_-]*id/i.test(message)){
    throw Error('A Shopee recusou o Sub ID '+internalCode+'. O produto não será publicado sem rastreamento válido.');
   }
   throw Error('Conversão do produto '+internalCode+' não confirmada: '+message.slice(0,135));
