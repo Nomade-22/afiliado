@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout do coletor (sem credenciais persistentes)
-        uses: actions/checkout@11bd71901bbe95167d7a63d45b56b5e3a214ec00 # v4.2.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
       - name: Preparar navegador de teste
