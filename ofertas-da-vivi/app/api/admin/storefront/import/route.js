@@ -28,7 +28,7 @@ export async function POST(req){
    error:'A página da vitrine mudou. Atualize a lista e tente novamente.'
   },{status:409,headers});
 
-  const existing=await sql`SELECT id,url,product_link,item_id,shop_id,dedupe_key FROM vivi_offers`;
+  const existing=await sql`SELECT id,title,image,url,product_link,item_id,shop_id,dedupe_key FROM vivi_offers`;
   const seen=knownOfferKeys(existing);
   let imported=0,skipped=0;
   const importedIds=[],skippedIds=[],warnings=[],errors=[];
