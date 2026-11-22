@@ -9,7 +9,7 @@ import CampaignAdminPanel from './CampaignAdminPanel';
 import CatalogActionsPanel from './CatalogActionsPanel';
 import {actualSubIdIsCurrent} from '../lib/subid-format';
 import {LayoutDashboard,Package,Tag,Star,Settings,PlugZap,LogOut,Plus,RefreshCw,Search,Save,Trash2,ExternalLink,Eye,EyeOff,ShieldCheck,AlertCircle,CheckCircle2,MessageCircle,ArrowLeft,Menu,X,MousePointerClick,Link2,Image as ImageIcon,Pencil} from 'lucide-react';
-const TABS=[['dashboard',LayoutDashboard,'Visão geral'],['ofertas',Tag,'Ofertas'],['produtos',Package,'Produtos'],['visual',ImageIcon,'Banners e destaques'],['campanhas',Tag,'Promoções e cupons'],['vitrine',Package,'Minha Vitrine'],['vendas',MousePointerClick,'Vendas e cliques'],['links',Link2,'Links de afiliado'],['integracao',PlugZap,'Integração Shopee'],['config',Settings,'Configurações']];
+const TABS=[['dashboard',LayoutDashboard,'Visão geral'],['ofertas',Tag,'Ofertas'],['produtos',Package,'Produtos'],['visual',ImageIcon,'Personalização do site'],['campanhas',Tag,'Promoções e cupons'],['vitrine',Package,'Minha Vitrine'],['vendas',MousePointerClick,'Vendas e cliques'],['links',Link2,'Links de afiliado'],['integracao',PlugZap,'Integração Shopee'],['config',Settings,'Configurações']];
 const brl=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const cats=['Casa','Beleza','Moda','Eletrônicos','Utilidades','Infantil','Outros'];
 export default function AdminPanel(){
