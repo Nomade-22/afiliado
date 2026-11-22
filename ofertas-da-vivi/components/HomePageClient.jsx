@@ -76,6 +76,16 @@ function ProductCard({offer,mode}){
 }
 export default function HomePageClient({initialOffers=[],initialSettings=defaultSettings,initialMode='live',initialError=''}){
  const [offers,setOffers]=useState(initialOffers),[settings,setSettings]=useState(initialSettings),[mode,setMode]=useState(initialMode),[loading,setLoading]=useState(false),[retryCount,setRetryCount]=useState(0),[loadError,setLoadError]=useState(initialError),[q,setQ]=useState(''),[activeCat,setActiveCat]=useState('Todos'),[sort,setSort]=useState('destaques'),[menuOpen,setMenuOpen]=useState(false),[favorites,setFavorites]=useState([]),[showFavorites,setShowFavorites]=useState(false);
+ const [campaignData,setCampaignData]=useState(null);
+ useEffect(()=>{
+  let alive=true;
+  fetch('/api/campaigns')
+   .then(r=>r.ok?r.json():null)
+   .then(d=>{if(alive)setCampaignData(d)})
+   .catch(()=>{});
+  return ()=>{alive=false};
+ },[]);
+
  useEffect(()=>{
   // O catálogo inicial já veio do servidor. Buscar novamente somente ao clicar em Tentar novamente.
   if(retryCount===0)return;
@@ -131,14 +141,14 @@ export default function HomePageClient({initialOffers=[],initialSettings=default
      <button className="btn btn-primary" onClick={()=>setRetryCount(x=>x+1)}>Tentar novamente</button>
     </section>:<>
    <HeroCarousel settings={settings} offers={offers}/>
-   <CampaignsSection part="quick"/>
+   <CampaignsSection part="quick" data={campaignData}/>
    {mode==='demo'&&<div className="demo-alert"><Sparkles size={16}/><span><strong>Prévia do site:</strong> imagens e preços abaixo são ilustrativos. As ofertas reais aparecerão quando conectarmos a Shopee e ativarmos os produtos.</span></div>}
    <section className="categories-section" id="categorias"><div className="section-heading"><h2>Categorias</h2><button onClick={()=>setCat('Todos')} className="text-action">Todas as categorias <ChevronRight size={17}/></button></div><div className="category-grid">{shownCategories.map(c=><button key={c} className={'category-item '+(activeCat===c?'category-active':'')} onClick={()=>setCat(c)}>{catIcons[c]}<span>{c}</span></button>)}</div></section>
    <InteriorBanners settings={settings} placement="after-categories"/>
    <section className="offers-section" id="ofertas"><div className="section-heading offers-header"><div><h2><Star size={23} fill="#ff9515" color="#ff9515"/> Ofertas em destaque</h2><p>Os achadinhos que a Vivi separou para você</p></div><div className="filter-controls"><button className={'favorite-filter '+(showFavorites?'selected':'')} onClick={()=>setShowFavorites(!showFavorites)} aria-pressed={showFavorites}><Heart size={17} fill={showFavorites?'currentColor':'none'}/> Favoritos</button><select aria-label="Ordenar ofertas" value={sort} onChange={e=>setSort(e.target.value)}><option value="destaques">Destaques</option><option value="preco-crescente">Menor preço</option><option value="preco-decrescente">Maior preço</option><option value="desconto">Maior desconto</option></select></div></div>{filtered.length?<div className="product-grid">{filtered.map(o=><div className="product-wrap" key={o.id}><ProductCard offer={o} mode={mode}/><button className={'heart-btn '+(favorites.includes(o.id)?'favorited':'')} aria-label="Salvar nos favoritos" onClick={()=>{let next=favorites.includes(o.id)?favorites.filter(id=>id!==o.id):[...favorites,o.id];setFavorites(next);localStorage.setItem('vivi-favorites',JSON.stringify(next))}}><Heart size={16} fill={favorites.includes(o.id)?'currentColor':'none'}/></button></div>)}</div>:<div className="empty-offers"><Search size={28}/><strong>Nenhuma oferta encontrada</strong><p>Tente outra palavra ou escolha uma categoria diferente.</p><button className="btn btn-primary" onClick={()=>{setQ('');setActiveCat('Todos');setShowFavorites(false)}}>Limpar filtros</button></div>}</section>
    <InteriorBanners settings={settings} placement="after-offers"/>
    </>}
-   <CampaignsSection part="details"/>
+   <CampaignsSection part="details" data={campaignData}/>
    <section className="whatsapp-banner" id="whatsapp"><div className="whatsapp-graphic"><MessageCircle size={43} strokeWidth={2.8}/></div><div className="whatsapp-message"><span className="whatsapp-kicker">NOVIDADES EM PRIMEIRA MÃO</span><h2>Entre no Canal VIP da Vivi</h2><p>Receba achadinhos, cupons e promoções diretamente no seu WhatsApp.</p></div>{channel?<a className="btn btn-green whatsapp-cta" href={channel} rel="noopener noreferrer" target="_blank"><MessageCircle size={20}/> Entrar no Canal VIP <ArrowRight size={18}/></a>:<span className="btn btn-green whatsapp-cta disabled-cta"><MessageCircle size={20}/> Canal em preparação</span>}</section>
    {mode!=='loading'&&mode!=='error'&&<InteriorBanners settings={settings} placement="bottom"/>}
   </main>
