@@ -12,28 +12,59 @@ function Logo(){return <a href="/" className="brand"><span className="logo-mark"
 function ProductCard({offer,mode}){
  const active=mode==='live'&&offer.url&&!offer.isDemo;
  const link=active?'/produto/'+encodeURIComponent(offer.id):'#ofertas';
- return <article className="product-card"><a href={link}
+ const price=Number(offer.price);
+ const hasPrice=offer.price!==null&&offer.price!==undefined&&Number.isFinite(price)&&price>0;
+ const maxPrice=Number(offer.priceMax);
+ const hasRange=hasPrice&&Number.isFinite(maxPrice)&&maxPrice>price;
+ const oldPrice=Number(offer.oldPrice);
+ const manualReference=hasPrice&&Number.isFinite(oldPrice)&&oldPrice>price&&
+  offer.discountSource==='manual';
+ const lastCheck=offer.discountCheckedAt?Date.parse(offer.discountCheckedAt):0;
+ const refreshed=Number.isFinite(lastCheck)&&lastCheck>0&&
+  Date.now()-lastCheck>=0&&Date.now()-lastCheck<=72*3600*1000;
+ const discount=Number(offer.verifiedDiscount||0);
+ const confirmed=refreshed&&Number.isFinite(discount)&&discount>=1&&discount<=95;
+ const numericDiscount=confirmed?Math.round(discount):
+   manualReference&&offer.discount>0?Math.round(offer.discount):0;
+ return <article className="product-card vivi-modern-product">
+  <a href={link} className="vivi-card-link"
    target={active?'_blank':undefined} rel={active?'noopener noreferrer':undefined}
-   className="vivi-card-link" aria-label={'Ver detalhes: '+offer.title}>
+   aria-label={'Ver detalhes de '+offer.title}>
    <div className="product-media">
     <img alt={offer.title} src={offer.image||'/images/produto-1.webp'} loading="lazy"
-     onError={e=>{e.currentTarget.src='/images/produto-1.webp'}}/>
-    {offer.discount>0&&<div className="sale-badge">-{offer.discount}%</div>}
+     onError={e=>{if(!e.currentTarget.src.endsWith('/images/produto-1.webp'))
+      e.currentTarget.src='/images/produto-1.webp';}}/>
+    {numericDiscount>0&&<span className="sale-badge" title={confirmed?
+      'Percentual informado pela API Shopee':'Comparação com preço de referência cadastrado'}>
+      <Tag size={13}/> -{numericDiscount}%
+     </span>}
    </div>
    <div className="product-content">
-    <div className={'verified-label '+(active?'':'sample-label')}>
-     <ShieldCheck size={13}/> {active?'Oferta selecionada':'Produto ilustrativo'}
+    <div className="vivi-card-strap">
+     <ShieldCheck size={13}/>
+     <span>{confirmed?'Desconto Shopee':
+       refreshed?'Preço consultado na Shopee':'Selecionado pela Vivi'}</span>
     </div>
     <h3>{offer.title}</h3>
-    <div className="price-zone">
-     {offer.price!=null&&offer.oldPrice>offer.price&&<del>{brl(offer.oldPrice)}</del>}
-     <strong className={offer.price==null?'price-unavailable':''}>{offer.price==null?'Ver preço na Shopee':brl(offer.price)}</strong>
+    <div className="price-zone vivi-card-price">
+     {manualReference&&<del>{brl(oldPrice)}</del>}
+     {hasPrice?<>
+      {hasRange&&<small className="vivi-price-caption">A partir de</small>}
+      <strong>{brl(price)}</strong>
+      <small className="vivi-price-foot">{refreshed?
+       'Preço consultado · confirme na loja':'Confira o valor atualizado na loja'}</small>
+     </>:<>
+      <strong className="price-unavailable">Ver preço na Shopee</strong>
+      <small className="vivi-price-foot">Valor e descontos na loja</small>
+     </>}
     </div>
     <span className={'offer-button '+(active?'':'disabled-offer')}>
-     {active?'Ver detalhes':'Em preparação'} {active?<ArrowRight size={15}/>:<Clock size={15}/>}
+     {active?'Ver detalhes':'Em preparação'}
+     {active?<ArrowRight size={16}/>:<Clock size={16}/>}
     </span>
    </div>
-  </a></article>;
+  </a>
+ </article>;
 }
 export default function HomePage(){
  const [offers,setOffers]=useState([]),[settings,setSettings]=useState(defaultSettings),[mode,setMode]=useState('loading'),[loading,setLoading]=useState(true),[retryCount,setRetryCount]=useState(0),[loadError,setLoadError]=useState(''),[q,setQ]=useState(''),[activeCat,setActiveCat]=useState('Todos'),[sort,setSort]=useState('destaques'),[menuOpen,setMenuOpen]=useState(false),[favorites,setFavorites]=useState([]),[showFavorites,setShowFavorites]=useState(false);
