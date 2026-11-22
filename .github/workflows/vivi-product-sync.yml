@@ -20,9 +20,6 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Consultar e sincronizar catálogo com identidade GitHub OIDC
-        env:
-          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ env.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
-          ACTIONS_ID_TOKEN_REQUEST_URL: ${{ env.ACTIONS_ID_TOKEN_REQUEST_URL }}
         shell: bash
         run: |
           node <<'NODE'
