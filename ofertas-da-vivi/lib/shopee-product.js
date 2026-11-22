@@ -1,165 +1,171 @@
 import {shopeeQuery,hasShopeeCredentials} from './shopee';
-import {isShopeeLink} from './shopee-links';
+import {parseShopeeItemIds,identifyShopeeLink,getPublicShopeeItemMetadata} from './shopee-public-metadata';
 
-// Descobre somente campos realmente expostos na conta do afiliado.
-// A API de Afiliados normalmente NÃO expõe estoque ou descrição completa.
-const optionalFields=[
+// productOfferV2 é uma API de afiliados. Descrição completa, galeria e estoque
+// não devem ser presumidos: consultamos o schema e os dados disponíveis.
+const wantedFields=[
  'itemId','shopId','productName','productLink','imageUrl','priceMin','priceMax',
- 'priceDiscountRate','sales','ratingStar','shopName','shopType',
- 'commissionRate','sellerCommissionRate','shopeeCommissionRate','commission',
- 'periodStartTime','periodEndTime','productCatIds',
- 'description','productDescription','stock','stockQuantity','availableStock',
- 'images','imageUrls','galleryImages','productImages','brandName','brand'
+ 'priceDiscountRate','sales','ratingStar','shopName','commissionRate',
+ 'sellerCommissionRate','shopeeCommissionRate','commission',
+ 'periodStartTime','periodEndTime','description','productDescription',
+ 'images','imageUrls','productImages','galleryImages','stock','stockQuantity',
+ 'availableStock','brand','brandName'
 ];
-let schemaCache=null;
-const nameOf=t=>t?.name||t?.ofType?.name||t?.ofType?.ofType?.name||t?.ofType?.ofType?.ofType?.name||null;
-const numeric=x=>x===null||x===undefined||x===''?null:Number.isFinite(Number(x))?Number(x):null;
-const str=x=>x===null||x===undefined?null:String(x);
-
-function getIdsFromUrl(raw){
+const fallbackFields=['itemId','shopId','productName','imageUrl',
+ 'priceMin','priceMax','priceDiscountRate','sales','ratingStar','shopName'];
+let schemaCache;
+function typename(type){
+ for(let i=0;i<6&&type;i++,type=type.ofType)if(type.name)return type.name;
+ return null;
+}
+function fieldIsScalar(type){
+ let current=type;
+ for(let i=0;i<6&&current;i++,current=current.ofType){
+  if(current.kind==='OBJECT'||current.kind==='INPUT_OBJECT')return false;
+  if(current.kind==='SCALAR'||current.kind==='ENUM')return true;
+ }
+ return false;
+}
+function numberOrNull(value){
+ if(value===null||value===undefined||value==='')return null;
+ const n=Number(value);return Number.isFinite(n)?n:null;
+}
+function normalized(value){
+ return String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+  .toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+}
+function imageFingerprint(url){
  try{
-  const u=new URL(String(raw||''));
-  const path=decodeURIComponent(u.pathname);
-  const m=path.match(/\/product\/(\d+)\/(\d+)/i)||path.match(/-i\.(\d+)\.(\d+)/i);
-  if(m)return {shopId:m[1],itemId:m[2]};
-  const shopId=u.searchParams.get('shopid'), itemId=u.searchParams.get('itemid');
-  if(shopId&&itemId&&/^\d+$/.test(shopId)&&/^\d+$/.test(itemId))return {shopId,itemId};
+  const u=new URL(String(url||''));
+  return u.pathname.split('/').pop()||'';
+ }catch{return ''}
+}
+function strongMatch(node,offer,ids){
+ if(ids)return String(node.itemId)===String(ids.itemId)&&String(node.shopId)===String(ids.shopId);
+ const fingerprint=imageFingerprint(offer.image);
+ if(!fingerprint||fingerprint!==imageFingerprint(node.imageUrl))return false;
+ const expected=normalized(offer.title),received=normalized(node.productName);
+ if(!expected||!received)return false;
+ const words=expected.split(' ').filter(t=>t.length>3).slice(0,8);
+ const actual=new Set(received.split(' '));
+ return words.length>=2&&words.filter(t=>actual.has(t)).length>=Math.min(3,words.length);
+}
+async function getOfferFields(){
+ if(schemaCache&&Date.now()-schemaCache.at<3600000)return schemaCache.fields;
+ const query=`{ __type(name:"ProductOfferV2"){
+  fields {name type{kind name ofType{kind name ofType{kind name ofType{kind name}}}}}}
+ } `;
+ try{
+  const data=await shopeeQuery(query);
+  const supported=new Map((data?.__type?.fields||[]).map(f=>[f.name,f]));
+  const fields=wantedFields.filter(name=>supported.has(name)&&fieldIsScalar(supported.get(name).type));
+  if(fields.includes('itemId')&&fields.includes('shopId')){
+   schemaCache={at:Date.now(),fields};
+   return fields;
+  }
  }catch{}
- return null;
+ return fallbackFields;
 }
-async function resolveProductIds(offer){
- const known=(offer.item_id||offer.itemId) && (offer.shop_id||offer.shopId);
- if(known)return {itemId:String(offer.item_id||offer.itemId),shopId:String(offer.shop_id||offer.shopId)};
- for(const source of [offer.product_link||offer.productLink,offer.url]){
-  const parsed=getIdsFromUrl(source);
-  if(parsed)return parsed;
- }
- let url=String(offer.product_link||offer.url||'');
- for(let i=0;i<4&&isShopeeLink(url);i++){
-  try{
-   const response=await fetch(url,{
-    method:'GET',redirect:'manual',cache:'no-store',signal:AbortSignal.timeout(3500),
-    headers:{'User-Agent':'Mozilla/5.0'}
-   });
-   if(![301,302,303,307,308].includes(response.status))break;
-   const loc=response.headers.get('location');
-   if(!loc)break;
-   const next=new URL(loc,url).toString();
-   // Nunca segue redirecionamentos para domínios de terceiros.
-   if(!isShopeeLink(next))break;
-   const parsed=getIdsFromUrl(next);
-   if(parsed)return parsed;
-   url=next;
-  }catch{break}
- }
- return null;
-}
-
-async function getSchema(){
- if(schemaCache&&Date.now()-schemaCache.at<21600000)return schemaCache.value;
- const query=`{ __schema {
-  queryType { fields { name args { name type { kind name ofType { kind name ofType { kind name } } } } type { kind name ofType { kind name ofType { kind name } } } } }
-  types { name fields { name type { kind name ofType {kind name ofType {kind name}} } } }
- } }`;
- const data=await shopeeQuery(query);
- const allTypes=data?.__schema?.types||[];
- const root=(data?.__schema?.queryType?.fields||[]).find(x=>x.name==='productOfferV2');
- if(!root)throw Error('A conta Shopee não expõe productOfferV2.');
- const connectionName=nameOf(root.type);
- const connection=allTypes.find(x=>x.name===connectionName);
- const nodes=connection?.fields?.find(x=>x.name==='nodes');
- const nodeName=nameOf(nodes?.type);
- const node=allTypes.find(x=>x.name===nodeName);
- const fields=new Set((node?.fields||[]).map(f=>f.name));
- const scalarTypes=new Set(['String','Int','Float','Boolean','ID','Long','BigInt','Decimal','DateTime']);
- // Evita consultar objetos complexos que exigiriam seleção adicional.
- const allowed=optionalFields.filter(f=>{
-  const definition=node?.fields?.find(item=>item.name===f);
-  return definition&&scalarTypes.has(nameOf(definition.type));
+function cleanImages(values){
+ const all=values.flatMap(v=>Array.isArray(v)?v:[v]);
+ const valid=all.map(v=>v&&typeof v==='object'?v.url||v.contentUrl:v).filter(x=>{
+  try{const u=new URL(String(x||''));return u.protocol==='https:'&&!u.username&&!u.password}catch{return false}
  });
- const args=new Map((root.args||[]).map(x=>[x.name,nameOf(x.type)]));
- const value={fields:allowed,args:[...args]};
- schemaCache={at:Date.now(),value};
- return value;
+ return [...new Set(valid)].slice(0,12);
 }
-function queryArg(name,value,type){
- if(type==='Int'){
-  const n=Number(value);
-  if(!Number.isSafeInteger(n)||n<0||n>2147483647)return null;
-  return name+':'+n;
+function shortKeywords(title){
+ const words=String(title||'').trim().split(/\s+/).filter(Boolean);
+ return [...new Set([words.slice(0,7).join(' ').slice(0,75),
+  words.slice(0,4).join(' ').slice(0,55)].filter(Boolean))];
+}
+async function findExactAffiliateOffer(offer,ids){
+ if(!hasShopeeCredentials())return {matched:false,reason:'AFFILIATE_CREDENTIALS_MISSING'};
+ const fields=await getOfferFields();
+ const selection=fields.join(' ');
+ const terms=shortKeywords(offer.title);
+ for(const term of terms){
+  try{
+   const query=`{productOfferV2(keyword:${JSON.stringify(term)},page:1,limit:50){nodes{${selection}}}}`;
+   const data=await shopeeQuery(query);
+   const matched=(data?.productOfferV2?.nodes||[]).find(n=>strongMatch(n,offer,ids));
+   if(matched)return {matched:true,item:matched};
+  }catch(error){
+   return {matched:false,reason:'AFFILIATE_QUERY_UNAVAILABLE',
+    warning:'A consulta de ofertas Shopee falhou: '+String(error?.message||'Erro').slice(0,95)};
+  }
  }
- if(['String','ID','Long','BigInt'].includes(type))return name+':'+JSON.stringify(String(value));
- return null;
+ return {matched:false,reason:ids?'PRODUCT_NOT_IN_AFFILIATE_RESULTS':'AFFILIATE_ITEM_NOT_IDENTIFIED'};
+}
+function identifyWarning(reason){
+ const messages={
+  INVALID_SHOPEE_URL:'O endereço salvo não é uma URL Shopee válida.',
+  SHOPEE_ACCESS_RESTRICTED:'A Shopee restringiu a resolução automática do link curto.',
+  SHORT_LINK_NOT_RESOLVED:'O link curto não revelou o ID da loja e do produto.',
+  REDIRECT_OUTSIDE_SHOPEE:'O link direciona para fora da Shopee.',
+  SHORT_LINK_NETWORK_ERROR:'Não foi possível seguir o redirecionamento da Shopee.',
+  TOO_MANY_REDIRECTS:'O link possui redirecionamentos demais.',
+  PUBLIC_PRODUCT_METADATA_NOT_AVAILABLE:'A página pública não trouxe descrição ou galeria identificáveis.',
+  PRODUCT_PAGE_ACCESS_RESTRICTED:'A Shopee bloqueou a leitura dos metadados públicos.',
+  PRODUCT_PAGE_NETWORK_ERROR:'A página pública não respondeu à consulta.',
+  PRODUCT_TITLE_MISMATCH:'A página retornou outro título; dados ignorados para evitar troca de produtos.',
+  PRODUCT_NOT_IN_AFFILIATE_RESULTS:'O item não apareceu nos resultados de afiliados pesquisados.',
+  AFFILIATE_ITEM_NOT_IDENTIFIED:'A oferta não pôde ser identificada com segurança nos resultados da API.'
+ };
+ return messages[reason]||null;
 }
 export async function getShopeeProductMetadata(offer){
- const base={apiAvailable:false,matched:false,stockSource:false,descriptionSource:false,
-  imagesSource:false,warning:null};
- if(!hasShopeeCredentials())return {...base,warning:'API de Afiliados não configurada.'};
- const ids=await resolveProductIds(offer);
- try{
-  let schema;
-  try{schema=await getSchema()}
-  catch{
-   // Uma conta pode bloquear introspecção completa, embora o endpoint
-   // productOfferV2 continue funcionando. Neste caso, usa campos já
-   // confirmados na consulta autenticada de produtos.
-   schema={
-    fields:['itemId','shopId','productName','imageUrl','priceMin','priceMax',
-     'priceDiscountRate','sales','ratingStar','shopName'],
-    args:[]
-   };
+ const knownId=offer.item_id||offer.itemId;
+ const knownShop=offer.shop_id||offer.shopId;
+ let ids=knownId&&knownShop?{itemId:String(knownId),shopId:String(knownShop)}:null;
+ let identified={reason:ids?'SAVED_PRODUCT_IDS':'UNRESOLVED'};
+ if(!ids){
+  for(const raw of [offer.product_link||offer.productLink,offer.url]){
+   if(!raw)continue;
+   const direct=parseShopeeItemIds(raw);
+   if(direct){ids=direct;identified={reason:'RESOLVED_FROM_PRODUCT_LINK'};break}
+   identified=await identifyShopeeLink(raw);
+   if(identified.ids){ids=identified.ids;break}
   }
-  if(!schema.fields.includes('itemId')||!schema.fields.includes('shopId')){
-   return {...base,warning:'Não foi possível confirmar os IDs do produto na API de Afiliados.'};
-  }
-  const args=new Map(schema.args);
-  const selection=schema.fields.join(' ');
-  const idFilter=ids&&args.has('itemId')?queryArg('itemId',ids.itemId,args.get('itemId')):null;
-  const query=idFilter?
-   `{ productOfferV2(${idFilter},page:1,limit:20){nodes{${selection}}} }`:
-   `{ productOfferV2(keyword:${JSON.stringify(String(offer.title||'').slice(0,75))},page:1,limit:40){nodes{${selection}}} }`;
-  const data=await shopeeQuery(query);
-  const list=data?.productOfferV2?.nodes||[];
-  // Se o encurtador não revelou IDs, só aceita correspondência forte:
-  // mesma imagem de anúncio e título semelhante, sem escolher itens aleatórios.
-  const imgTail=value=>{try{return new URL(value).pathname.split('/').pop()||''}catch{return ''}};
-  const normalize=value=>String(value||'').normalize('NFKD').toLowerCase()
-    .replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean).join(' ');
-  const normalizedTitle=normalize(offer.title);
-  const match=list.find(x=>{
-    if(ids)return String(x.itemId)===ids.itemId&&String(x.shopId)===ids.shopId;
-    const sameImage=imgTail(x.imageUrl)!==''&&imgTail(x.imageUrl)===imgTail(offer.image);
-    const name=normalize(x.productName);
-    return sameImage&&name.length>15&&normalizedTitle.length>15&&
-      (name===normalizedTitle||name.startsWith(normalizedTitle.slice(0,35))||
-       normalizedTitle.startsWith(name.slice(0,35)));
-  });
-  if(!match)return {...base,apiAvailable:true,warning:'Produto não localizado no catálogo de ofertas de afiliados no momento.'};
-  const firstImage=str(match.imageUrl);
-  const imageCandidates=[...(Array.isArray(match.imageUrls)?match.imageUrls:[]),
-   ...(Array.isArray(match.images)?match.images:[]),
-   ...(Array.isArray(match.productImages)?match.productImages:[]),
-   ...(Array.isArray(match.galleryImages)?match.galleryImages:[]),firstImage,offer.image];
-  const images=[...new Set(imageCandidates.filter(v=>{
-   try{return new URL(v).protocol==='https:'}catch{return false}
-  }))].slice(0,12);
-  const rawStock=match.stockQuantity??match.availableStock??match.stock??null;
-  const description=String(match.productDescription||match.description||'').trim()||null;
-  return {
-   apiAvailable:true,matched:true,ids:ids||{shopId:String(match.shopId),itemId:String(match.itemId)},
-   title:match.productName||null,shopName:match.shopName||null,
-   priceMin:numeric(match.priceMin),priceMax:numeric(match.priceMax),
-   discountRate:numeric(match.priceDiscountRate),
-   sales:numeric(match.sales),ratingStar:numeric(match.ratingStar),
-   image:firstImage,images,
-   stockQuantity:numeric(rawStock),description,
-   stockSource:rawStock!==null,descriptionSource:!!description,
-   imagesSource:images.length>1,
-   periodStartTime:numeric(match.periodStartTime),
-   periodEndTime:numeric(match.periodEndTime),
-   warning:null,updatedAt:new Date().toISOString()
-  };
- }catch(error){
-  return {...base,ids,warning:'A consulta complementar da Shopee não está disponível: '+String(error?.message||'Erro').slice(0,125)};
  }
+ const affiliate=await findExactAffiliateOffer(offer,ids);
+ const a=affiliate.matched?affiliate.item:null;
+ if(!ids&&a?.itemId&&a?.shopId)ids={itemId:String(a.itemId),shopId:String(a.shopId)};
+ const publicData=ids?await getPublicShopeeItemMetadata(ids,offer.title):null;
+ const matched=Boolean(a||publicData?.matched);
+ if(!matched){
+  const reason=publicData?.reason||affiliate.reason||identified.reason||'PRODUCT_DETAILS_UNAVAILABLE';
+  return {apiAvailable:hasShopeeCredentials(),matched:false,ids,reason,
+   identificationReason:identified.reason,
+   warning:[identifyWarning(identified.reason),identifyWarning(reason),affiliate.warning]
+    .filter(Boolean).join(' ')||'A fonte não disponibilizou detalhes verificáveis.',
+   descriptionSource:null,imagesSource:false,stockSource:false};
+ }
+ const image=publicData?.image||a?.imageUrl||offer.image||null;
+ const images=cleanImages([publicData?.images,a?.images,a?.imageUrls,a?.galleryImages,
+  a?.productImages,a?.imageUrl,offer.image]);
+ const description=String(publicData?.description||a?.productDescription||a?.description||'').trim()||null;
+ const stock=a?.stockQuantity??a?.availableStock??a?.stock??null;
+ return {
+  apiAvailable:hasShopeeCredentials(),
+  matched:true,
+  ids,reason:null,
+  identificationReason:identified.reason,
+  sourcePublicPage:Boolean(publicData?.matched),
+  sourceAffiliate:Boolean(a),
+  title:a?.productName||offer.title,
+  shopName:a?.shopName||null,
+  priceMin:numberOrNull(a?.priceMin),
+  priceMax:numberOrNull(a?.priceMax),
+  discountRate:numberOrNull(a?.priceDiscountRate),
+  sales:numberOrNull(a?.sales),
+  ratingStar:numberOrNull(a?.ratingStar),
+  image,images,description,
+  stockQuantity:numberOrNull(stock),stockSource:stock!==null,
+  descriptionSource:description?(publicData?.description?'public_html_metadata':'affiliate_api'):null,
+  imagesSource:images.length>1,
+  warning:images.length<=1&&!description?
+   'A fonte acessível oferece apenas a foto principal, sem descrição detalhada.':
+   null,
+  updatedAt:new Date().toISOString()
+ };
 }
