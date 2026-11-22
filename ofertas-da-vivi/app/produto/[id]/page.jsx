@@ -1,6 +1,7 @@
 import {notFound} from 'next/navigation';
 import {getDB,mapOffer,getSettings} from '../../../lib/db';
 import ProductDetail from '../../../components/ProductDetail';
+import {defaultSettings} from '../../../lib/demo';
 export const dynamic='force-dynamic';
 export const metadata={title:'Detalhes do produto | Ofertas da Vivi'};
 export default async function ProductPage({params}){
@@ -16,7 +17,7 @@ export default async function ProductPage({params}){
   offer=mapOffer(found[0]);
   try{themeSettings=await getSettings(sql)}catch{}
  }catch{notFound()}
- return <ProductDetail themeSettings={themeSettings} offer={{
+ return <ProductDetail themeSettings={{...defaultSettings,...themeSettings}} offer={{
   id:offer.id,internalCode:offer.internalCode,title:offer.title,
   category:offer.category,price:offer.price,oldPrice:offer.oldPrice,
   image:offer.image,images:offer.images,shopName:offer.shopName,
