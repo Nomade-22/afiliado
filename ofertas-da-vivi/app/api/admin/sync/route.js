@@ -25,7 +25,7 @@ export async function POST(req){
   if(chosen.length!==ids.length)return Response.json({
    error:'Alguns produtos mudaram nesta pesquisa. Atualize a lista para importar.'
   },{status:409,headers});
-  const existing=await sql`SELECT id,url,product_link,item_id,shop_id,dedupe_key FROM vivi_offers`;
+  const existing=await sql`SELECT id,title,image,url,product_link,item_id,shop_id,dedupe_key FROM vivi_offers`;
   const seen=knownOfferKeys(existing);
   let imported=0,skipped=0,withSubIds=0,fromOfferLink=0;
   const warnings=[];
