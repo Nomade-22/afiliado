@@ -40,6 +40,12 @@ export async function getDB(){
     updated_from_api_at TIMESTAMPTZ
   )`;
   await sql`CREATE TABLE IF NOT EXISTS vivi_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`;
+  await sql`CREATE TABLE IF NOT EXISTS vivi_banner_media (
+    id TEXT PRIMARY KEY,
+    content_type TEXT NOT NULL,
+    body_base64 TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`;
   await sql`ALTER TABLE vivi_offers
     ADD COLUMN IF NOT EXISTS item_id TEXT,
     ADD COLUMN IF NOT EXISTS shop_id TEXT,
