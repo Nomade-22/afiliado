@@ -2,6 +2,7 @@ import {isAdmin,forbidden} from '../../../../../lib/auth';
 import {getDB} from '../../../../../lib/db';
 import {isShopeeLink,generateProductAffiliateLink} from '../../../../../lib/shopee-links';
 import {allocateInternalCode,internalCodeIsValid} from '../../../../../lib/product-codes';
+import {actualSubIdIsCurrent} from '../../../../../lib/subid-format';
 import {knownOfferKeys,matchExisting,offerIdentityKeys} from '../../../../../lib/product-identity';
 
 export const dynamic='force-dynamic';
@@ -42,13 +43,14 @@ export async function POST(request){
    if(!isShopeeLink(source)){result.invalidLinks++;result.errors.push({id,reason:'Link de origem não é uma URL Shopee válida.'});continue}
    let code=row.internal_code;
    let url=row.url;
-   const tracked=internalCodeIsValid(code)&&row.affiliate_status==='verified'&&
-    String(row.affiliate_sub_ids||'').split(',').includes(code)&&isShopeeLink(url);
+   let actualSubId=String(row.affiliate_sub_ids||'');
+   const tracked=internalCodeIsValid(code)&&actualSubIdIsCurrent(code,row.affiliate_sub_ids,row.affiliate_status)&&isShopeeLink(url);
    if(!tracked){
     try{
      if(!internalCodeIsValid(code))code=await allocateInternalCode(sql);
-     const link=await generateProductAffiliateLink(source,code);
+     const link=await generateProductAffiliateLink(source,code,{shopId:row.shop_id,itemId:row.item_id,fallbackUrl:row.url});
      url=link.shortLink;
+     actualSubId=link.usedSubId;
     }catch(error){
      result.conversionErrors++;
      result.errors.push({id,reason:'A Shopee não confirmou o Sub ID. '+String(error?.message||'Conversão recusada').slice(0,125)});
@@ -57,7 +59,7 @@ export async function POST(request){
    }
    try{
     const updated=await sql`UPDATE vivi_offers SET
-      active=true,url=${url},internal_code=${code},affiliate_sub_ids=${code},
+      active=true,url=${url},internal_code=${code},affiliate_sub_ids=${actualSubId},
       affiliate_status='verified',affiliate_link_source='generateShortLink',
       imported_at=COALESCE(imported_at,NOW()),updated_at=NOW()
       WHERE id=${id} AND active=false RETURNING id`;
