@@ -70,6 +70,20 @@ export async function getDB(){
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS vivi_offers_unique_identity ON vivi_offers (dedupe_key) WHERE dedupe_key IS NOT NULL`;
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS vivi_offers_unique_code ON vivi_offers (internal_code) WHERE internal_code IS NOT NULL`;
   await sql`CREATE TABLE IF NOT EXISTS vivi_product_code_counters (day_key TEXT PRIMARY KEY, last_number INTEGER NOT NULL DEFAULT 0)`;
+  // Proteção distribuída do login; compartilhada entre as instâncias serverless.
+  await sql`CREATE TABLE IF NOT EXISTS vivi_admin_login_limits (
+    bucket TEXT PRIMARY KEY,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    window_start TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_attempt TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`;
+  // Permite encerrar sessões no servidor, não apenas apagar o cookie.
+  await sql`CREATE TABLE IF NOT EXISTS vivi_admin_sessions (
+    token_hash TEXT PRIMARY KEY,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`;
+  await sql`CREATE INDEX IF NOT EXISTS vivi_admin_sessions_expiry ON vivi_admin_sessions (expires_at)`;
  })().catch(e=>{initPromise=null;throw e});
  await initPromise;
  return sql;
