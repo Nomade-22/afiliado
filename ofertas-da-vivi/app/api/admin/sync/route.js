@@ -38,7 +38,7 @@ export async function POST(req){
     try{
      const code=await allocateInternalCode(sql);
      const source=offer.productLink||offer.url;
-     const link=await generateProductAffiliateLink(source,code);
+     const link=await generateProductAffiliateLink(source,code,{shopId:offer.shopId,itemId:offer.itemId,fallbackUrl:offer.url});
      const identity=primaryOfferKey(offer);
      const inserted=await sql`INSERT INTO vivi_offers
       (id,title,category,price,old_price,image,url,featured,active,origin,
@@ -51,7 +51,7 @@ export async function POST(req){
        ${offer.itemId},${offer.shopId},${offer.shopName},
        ${offer.commissionRate},${offer.priceMax},${offer.priceDiscountRate},
        ${offer.productLink},${offer.sales},${offer.ratingStar},
-       'generateShortLink',${code},'verified',${code},NOW(),${identity},NOW())
+       'generateShortLink',${link.usedSubId},'verified',${code},NOW(),${identity},NOW())
       ON CONFLICT DO NOTHING RETURNING id`;
      return inserted.length?{kind:'imported'}:{kind:'skipped'};
     }catch(e){return {kind:'error',id:offer.id,message:String(e?.message||'Falha').slice(0,155)}}
