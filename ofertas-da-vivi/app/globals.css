@@ -1150,3 +1150,90 @@
 .site-shell .site-header{background:#fff}
 .site-shell .site-footer{background:#26252e}
 .vivi-product-page{background:var(--vivi-page-bg,#f8f9fb)}
+
+
+/* Campanhas relâmpago confirmadas pelo nome na Open API de Afiliados */
+.site-shell .vivi-hero-live-campaign{
+ width:min(100%,285px);min-width:0;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:8px;text-align:center;
+ padding:14px 16px;background:#fff;
+ border:1px solid #ffe2e4;border-radius:18px;
+ color:#9f1a32;box-shadow:0 11px 24px #460e2f38;
+ transform:rotate(-2deg);transition:transform .2s;
+}
+.site-shell .vivi-hero-live-campaign:hover{transform:rotate(0)}
+.site-shell .vivi-hero-live-campaign img{
+ display:block;width:auto;max-width:100%;height:91px;object-fit:contain
+}
+.site-shell .vivi-hero-live-verified{
+ display:inline-flex;align-items:center;justify-content:center;gap:4px;
+ font-size:10px;color:#af3f4c;font-weight:800;line-height:1.3
+}
+.site-shell .vivi-hero-live-campaign strong{
+ color:#282832;font-size:14px;line-height:1.3;
+ display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+ overflow:hidden;overflow-wrap:anywhere
+}
+.site-shell .vivi-hero-live-campaign small{
+ display:inline-flex;align-items:center;gap:5px;
+ color:#b91b40;font-weight:800;font-size:11px;
+}
+.vivi-live-flash-section{margin:18px 0 23px}
+.vivi-live-flash-heading{
+ display:flex;align-items:flex-start;gap:10px;margin-bottom:11px;color:#d82946
+}
+.vivi-live-flash-heading svg{flex-shrink:0;margin-top:3px}
+.vivi-live-flash-heading h3{
+ margin:0 0 4px;font-size:16px;line-height:1.3;color:#30323b
+}
+.vivi-live-flash-heading p{margin:0;font-size:12px;line-height:1.4;color:#848b95}
+.vivi-live-flash-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px
+}
+.vivi-live-flash-card{
+ display:flex;align-items:center;gap:12px;min-width:0;
+ border:1px solid #f1dfe4;border-radius:14px;
+ background:#fff;box-shadow:0 5px 14px #22222a0a;
+ padding:13px 14px;color:#31343e;
+}
+.vivi-live-flash-card img{
+ width:76px;height:78px;object-fit:contain;flex:0 0 76px;
+}
+.vivi-live-flash-card-copy{
+ min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+}
+.vivi-live-flash-card-copy strong{
+ font-size:12px;line-height:1.3;
+ display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+ overflow:hidden;overflow-wrap:anywhere
+}
+.vivi-live-flash-card-copy small{
+ font-size:10px;color:#888e9a;display:inline-flex;gap:4px;align-items:center;
+}
+.vivi-live-flash-card-copy em{
+ display:inline-flex;align-items:center;gap:5px;
+ font-style:normal;color:#bd2746;font-size:11px;font-weight:800;
+}
+.vivi-live-flash-card:hover{
+ border-color:#d94b66;box-shadow:0 9px 17px #af2f451b
+}
+@media(max-width:760px){
+ .site-shell .vivi-hero-live-campaign{
+  width:min(100%,290px);padding:9px 13px;gap:5px;
+  border-radius:13px;transform:none;
+ }
+ .site-shell .vivi-hero-live-campaign img{height:60px}
+ .site-shell .vivi-hero-live-verified{font-size:9px}
+ .site-shell .vivi-hero-live-campaign strong{font-size:12px;-webkit-line-clamp:2}
+ .site-shell .vivi-hero-live-campaign small{font-size:10px}
+ .vivi-live-flash-grid{
+  display:flex;overflow-x:auto;padding:0 0 9px;scroll-snap-type:x mandatory;
+ }
+ .vivi-live-flash-card{
+  flex:0 0 min(265px,78vw);scroll-snap-align:start;
+  padding:10px 12px;gap:9px;
+ }
+ .vivi-live-flash-card img{width:65px;height:68px;flex-basis:65px}
+ .vivi-live-flash-heading h3{font-size:15px}
+}
