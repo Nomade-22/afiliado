@@ -1,11 +1,12 @@
 import {isAdmin,forbidden} from '../../../../../lib/auth';
 import {getStorefrontPage} from '../../../../../lib/storefront';
-import {isShopeeLink,generateAffiliateLink,defaultSubIds} from '../../../../../lib/shopee-links';
+import {generateProductAffiliateLink,isShopeeLink} from '../../../../../lib/shopee-links';
+import {allocateInternalCode} from '../../../../../lib/product-codes';
 import {getDB} from '../../../../../lib/db';
 import {knownOfferKeys,matchExisting,primaryOfferKey,offerIdentityKeys} from '../../../../../lib/product-identity';
 
 export const runtime='nodejs';
-export const maxDuration=60;
+export const maxDuration=120;
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
 const BATCH_SIZE=8;
 
@@ -14,70 +15,68 @@ export async function POST(req){
  const input=await req.json().catch(()=>({}));
  const ids=Array.isArray(input.linkIds)?
   [...new Set(input.linkIds.filter(x=>typeof x==='string'&&x.length<120))]:[];
- if(!ids.length||ids.length>BATCH_SIZE){
-  return Response.json({error:'Envie de 1 a 8 itens por lote. O painel processa páginas inteiras automaticamente.'},{status:400,headers});
- }
+ if(!ids.length||ids.length>BATCH_SIZE)return Response.json({
+  error:'Envie de 1 a 8 itens por lote; o painel importa a página inteira automaticamente.'
+ },{status:400,headers});
  let sql;
- try{sql=await getDB();if(!sql)throw Error('DATABASE_URL não configurada')}
- catch{return Response.json({error:'O Neon não está pronto para salvar os produtos.'},{status:503,headers})}
-
+ try{sql=await getDB();if(!sql)throw Error('DATABASE_URL')}
+ catch{return Response.json({error:'Não foi possível acessar o banco Neon.'},{status:503,headers})}
  try{
   const page=await getStorefrontPage(input.page);
-  const selected=page.items.filter(item=>ids.includes(item.linkId));
-  if(selected.length!==ids.length)return Response.json({
-   error:'A página da vitrine mudou. Atualize a lista e tente novamente.'
-  },{status:409,headers});
-
+  const chosen=page.items.filter(x=>ids.includes(x.linkId));
+  if(chosen.length!==ids.length)return Response.json({error:'A página da vitrine mudou. Atualize antes de importar.'},{status:409,headers});
   const existing=await sql`SELECT id,title,image,url,product_link,item_id,shop_id,dedupe_key FROM vivi_offers`;
   const seen=knownOfferKeys(existing);
   let imported=0,skipped=0;
-  const importedIds=[],skippedIds=[],warnings=[],errors=[];
-  for(const item of selected){
+  const importedIds=[],skippedIds=[],errors=[];
+  const processing=[];
+  for(const item of chosen){
    if(matchExisting(item,seen)){
     skipped++;skippedIds.push(item.linkId);
     continue;
    }
-   if(!item.affiliateLinkEligible || !isShopeeLink(item.url)){
+   if(!item.affiliateLinkEligible||!isShopeeLink(item.url)){
     skipped++;skippedIds.push(item.linkId);
-    errors.push({id:item.linkId,message:'Link não reconhecido como destino Shopee.'});
+    errors.push({id:item.linkId,message:'O link não aponta para um endereço Shopee válido.'});
     continue;
    }
-   let generated;
-   try{
-    generated=await generateAffiliateLink(item.url,defaultSubIds({channel:'site'}));
-   }catch{
-    // O endereço foi selecionado pela dona da vitrine e não é substituído
-    // por uma URL não relacionada. A origem do link permanece explícita.
-    generated={
-      shortLink:item.url,subIds:[],generatedBy:'collshp_original',
-      warning:'O link da vitrine foi preservado. Não foi possível confirmar novos Sub IDs pela Open API.'
-    };
-   }
-   const identity=primaryOfferKey(item);
-   try{
-    const inserted=await sql`INSERT INTO vivi_offers (
-      id,title,category,price,old_price,image,url,featured,active,origin,
-      affiliate_link_source,affiliate_sub_ids,product_link,dedupe_key,updated_at)
-      VALUES (${item.id},${item.title},${item.category},NULL,NULL,${item.image||''},
-       ${generated.shortLink},false,false,'vitrine',
-       ${generated.generatedBy},${generated.subIds.join(',')},${item.url},${identity},NOW())
+   for(const k of offerIdentityKeys(item))seen.add(k);
+   processing.push(item);
+  }
+  // Duas a três conversões por vez evitam sobrecarga; cada uma envia
+  // somente o Sub ID próprio no padrão 211126_0001.
+  for(let i=0;i<processing.length;i+=3){
+   const group=processing.slice(i,i+3);
+   const result=await Promise.all(group.map(async item=>{
+    let code;
+    try{
+     code=await allocateInternalCode(sql);
+     const converted=await generateProductAffiliateLink(item.url,code);
+     const identity=primaryOfferKey(item);
+     const saved=await sql`INSERT INTO vivi_offers
+      (id,title,category,price,old_price,image,url,featured,active,origin,
+       affiliate_link_source,affiliate_sub_ids,affiliate_status,internal_code,
+       imported_at,product_link,dedupe_key,updated_at)
+      VALUES (${item.id},${item.title},${item.category},NULL,NULL,
+       ${item.image||''},${converted.shortLink},false,false,'vitrine',
+       'generateShortLink',${code},'verified',${code},NOW(),
+       ${item.url},${identity},NOW())
       ON CONFLICT DO NOTHING RETURNING id`;
-    if(inserted.length){
-     imported++;importedIds.push(item.linkId);
-     for(const key of offerIdentityKeys({...item,productLink:item.url,dedupeKey:identity}))seen.add(key);
-     if(generated.warning)warnings.push({id:item.linkId,message:generated.warning});
-    }else{skipped++;skippedIds.push(item.linkId);}
-   }catch(error){
-    errors.push({id:item.linkId,message:'Não foi possível gravar este item no banco.'});
+     return saved.length?{kind:'imported',id:item.linkId,code}:{kind:'skipped',id:item.linkId};
+    }catch(e){return {kind:'error',id:item.linkId,message:String(e?.message||'Erro ao converter').slice(0,160)}}
+   }));
+   for(const r of result){
+    if(r.kind==='imported'){imported++;importedIds.push(r.id)}
+    else if(r.kind==='skipped'){skipped++;skippedIds.push(r.id)}
+    else errors.push({id:r.id,message:r.message});
    }
   }
   return Response.json({
-   ok:true,imported,skipped,importedIds,skippedIds,warnings,errors,
-   message:`${imported} novo(s), ${skipped} já existente(s) ou ignorado(s).`+
-     ' Produtos novos ficam inativos até revisão.'
+    ok:true,imported,skipped,importedIds,skippedIds,errors,
+    message:imported+' novo(s) com código interno e Sub ID confirmado pela Shopee; '+skipped+
+     ' ignorado(s). '+(errors.length?errors.length+' falha(s) de conversão (não publicados).':'')
   },{headers});
  }catch(error){
-  const message=String(error?.message||'Erro inesperado').slice(0,160);
-  return Response.json({error:'Falha na leitura/importação desta página: '+message},{status:502,headers});
+  return Response.json({error:'Não foi possível concluir a importação: '+String(error?.message||'erro').slice(0,140)},{status:502,headers});
  }
 }
