@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Ofertas da Vivi — coração branco em degradê vinho e rosa">
+  <defs>
+    <linearGradient id="vivi-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#45172f"/>
+      <stop offset=".48" stop-color="#931a4b"/>
+      <stop offset="1" stop-color="#e62672"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="117" fill="url(#vivi-grad)"/>
+  <path fill="#fff" d="M256 381 C237 365 122 277 119 209 C117 165 147 139 184 139 C217 139 244 156 256 174 C270 155 295 139 328 139 C369 139 395 169 393 209 C389 280 274 363 256 381 Z"/>
+</svg>
