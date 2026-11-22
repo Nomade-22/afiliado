@@ -242,7 +242,7 @@ def analyze_one(product):
                 seen_title = metatag(soup, "og:title") or (
                     soup.title.get_text(" ", strip=True) if soup.title else "")
                 # Apenas diagnóstico textual curto, nunca guardar HTML ou cookies.
-                seen_title = re.sub(r"\\s+", " ", seen_title).strip()[:65]
+                seen_title = re.sub(r"\s+", " ", seen_title).strip()[:65]
                 messages.append("Rota " + str(index+1) + " página genérica: " +
                                 (seen_title or "sem título"))
                 result.update(status="unavailable", description="", images=[])
