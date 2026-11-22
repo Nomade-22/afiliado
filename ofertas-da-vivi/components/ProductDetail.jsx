@@ -31,11 +31,12 @@ export default function ProductDetail({offer,themeSettings={}}){
    (Number(live.discountRate)<=1?Number(live.discountRate)*100:Number(live.discountRate)):
    offer.discount;
  const code=offer.internalCode||'Não atribuído';
- return <main className={"vivi-product-page"+(themeSettings.christmasTheme==="on"?" vivi-christmas-product":"")} data-vivi-theme={themeSettings.heroTheme||"orange"} style={getPublicThemeCssVars(themeSettings)}>
+ return <main className={"vivi-product-page"+(themeSettings.blackFridayTheme==="on"?" vivi-bf-product":themeSettings.christmasTheme==="on"?" vivi-christmas-product":"")} data-vivi-theme={themeSettings.heroTheme||"orange"} style={getPublicThemeCssVars(themeSettings)}>
   <div className="vivi-product-top">
    <a href="/" aria-label="Voltar para ofertas"><ArrowLeft size={19}/> Voltar às ofertas</a>
    <strong>♡ Ofertas da <em>Vivi</em></strong>
-   {themeSettings.christmasTheme==="on"&&<span className="vivi-product-christmas-pill">🎄 Natal da Vivi</span>}
+   {themeSettings.blackFridayTheme==="on"?<span className="vivi-product-bf-pill">✦ Black Friday da Vivi</span>:
+    themeSettings.christmasTheme==="on"&&<span className="vivi-product-christmas-pill">🎄 Natal da Vivi</span>}
   </div>
   <div className="vivi-product-layout">
    <section className="vivi-product-gallery">
