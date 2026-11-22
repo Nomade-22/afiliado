@@ -26,7 +26,9 @@ export default function ProductDetail({offer}){
  const sales=live?.matched?live.sales:offer.sales;
  const rating=live?.matched?live.ratingStar:offer.ratingStar;
  const shop=live?.matched?live.shopName:offer.shopName;
- const discount=live?.matched?live.discountRate:offer.discount;
+ const discount=live?.matched&&live.discountRate!=null?
+   (Number(live.discountRate)<=1?Number(live.discountRate)*100:Number(live.discountRate)):
+   offer.discount;
  const code=offer.internalCode||'Não atribuído';
  return <main className="vivi-product-page">
   <div className="vivi-product-top">
@@ -48,7 +50,7 @@ export default function ProductDetail({offer}){
     <p className="vivi-product-code">Código da Vivi: <b>{code}</b></p>
     <div className="vivi-product-price">{price==null?<strong className="vivi-product-no-price">Confira o preço na Shopee</strong>:
       <strong>{money(price)}{priceMax!=null&&priceMax>price&&<small> até {money(priceMax)}</small>}</strong>}
-     {Number(discount)>0&&<span>Desconto informado: {Number(discount)<=1?(Number(discount)*100).toFixed(0):Number(discount).toFixed(0)}%</span>}
+     {Number(discount)>0&&<span>Desconto informado: {Number(discount).toFixed(0)}%</span>}
     </div>
     <div className="vivi-product-stats">
      <div><Store size={18}/><small>Loja</small><b>{shop||'Consulte a Shopee'}</b></div>

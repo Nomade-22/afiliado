@@ -96,7 +96,6 @@ export async function getShopeeProductMetadata(offer){
   imagesSource:false,warning:null};
  if(!hasShopeeCredentials())return {...base,warning:'API de Afiliados não configurada.'};
  const ids=await resolveProductIds(offer);
- if(!ids)return {...base,warning:'O link encurtado não revelou os IDs do item. Dados da vitrine permanecem disponíveis.'};
  try{
   const schema=await getSchema();
   if(!schema.fields.includes('itemId')||!schema.fields.includes('shopId')){
@@ -104,12 +103,26 @@ export async function getShopeeProductMetadata(offer){
   }
   const args=new Map(schema.args);
   const selection=schema.fields.join(' ');
-  const idFilter=args.has('itemId')?queryArg('itemId',ids.itemId,args.get('itemId')):null;
+  const idFilter=ids&&args.has('itemId')?queryArg('itemId',ids.itemId,args.get('itemId')):null;
   const query=idFilter?
    `{ productOfferV2(${idFilter},page:1,limit:20){nodes{${selection}}} }`:
    `{ productOfferV2(keyword:${JSON.stringify(String(offer.title||'').slice(0,75))},page:1,limit:40){nodes{${selection}}} }`;
   const data=await shopeeQuery(query);
-  const match=(data?.productOfferV2?.nodes||[]).find(x=>String(x.itemId)===ids.itemId&&String(x.shopId)===ids.shopId);
+  const list=data?.productOfferV2?.nodes||[];
+  // Se o encurtador não revelou IDs, só aceita correspondência forte:
+  // mesma imagem de anúncio e título semelhante, sem escolher itens aleatórios.
+  const imgTail=(value)=>{try{return new URL(value).pathname.replace(/^\\/file\\//,'')}catch{return ''}};
+  const normalize=value=>String(value||'').normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'')
+    .toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().replace(/\\s+/g,' ');
+  const normalizedTitle=normalize(offer.title);
+  const match=list.find(x=>{
+    if(ids)return String(x.itemId)===ids.itemId&&String(x.shopId)===ids.shopId;
+    const sameImage=imgTail(x.imageUrl)!==''&&imgTail(x.imageUrl)===imgTail(offer.image);
+    const name=normalize(x.productName);
+    return sameImage&&name.length>15&&normalizedTitle.length>15&&
+      (name===normalizedTitle||name.startsWith(normalizedTitle.slice(0,35))||
+       normalizedTitle.startsWith(name.slice(0,35)));
+  });
   if(!match)return {...base,apiAvailable:true,warning:'Produto não localizado no catálogo de ofertas de afiliados no momento.'};
   const firstImage=str(match.imageUrl);
   const imageCandidates=[...(Array.isArray(match.imageUrls)?match.imageUrls:[]),
@@ -122,7 +135,7 @@ export async function getShopeeProductMetadata(offer){
   const rawStock=match.stockQuantity??match.availableStock??match.stock??null;
   const description=String(match.productDescription||match.description||'').trim()||null;
   return {
-   apiAvailable:true,matched:true,ids,
+   apiAvailable:true,matched:true,ids:ids||{shopId:String(match.shopId),itemId:String(match.itemId)},
    title:match.productName||null,shopName:match.shopName||null,
    priceMin:numeric(match.priceMin),priceMax:numeric(match.priceMax),
    discountRate:numeric(match.priceDiscountRate),
