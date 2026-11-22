@@ -1,10 +1,11 @@
 import {isAdmin,forbidden} from '../../../../lib/auth';
 import {getDB,getSettings} from '../../../../lib/db';
 import {defaultSettings} from '../../../../lib/demo';
+import {isShopeeLink} from '../../../../lib/shopee-links';
 
 export const dynamic='force-dynamic';
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
-const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150};
+const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150,flashSaleUrl:1000,couponUrl:1000,flashSaleLabel:65,couponLabel:65};
 const trustedImage=value=>{
  if(!value)return true;
  try{
@@ -56,6 +57,16 @@ export async function POST(req){
  }
  if(updates.heroButtonUrl!==undefined&&!trustedLink(updates.heroButtonUrl)){
   return Response.json({error:'Botão do banner deve apontar para HTTPS ou #ofertas.'},{status:400,headers});
+ }
+ for(const key of ['flashSaleUrl','couponUrl']){
+  if(updates[key]!==undefined && updates[key] && !isShopeeLink(updates[key])){
+   return Response.json({error:'A campanha '+key+' deve apontar para uma URL Shopee HTTPS válida.'},{status:400,headers});
+  }
+ }
+ for(const key of ['campaignsEnabled','autoCampaigns']){
+  if(updates[key]!==undefined&&!['on','off'].includes(updates[key])){
+   return Response.json({error:'Opção de campanhas inválida.'},{status:400,headers});
+  }
  }
  for(const key of ['whatsapp','instagram','tiktok']){
   if(updates[key]&&!trustedLink(updates[key])){

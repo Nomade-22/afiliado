@@ -17,5 +17,11 @@ export const defaultSettings = {
  heroImage:'',
  heroProductId:'',
  heroButtonLabel:'Ver ofertas',
- heroButtonUrl:'#ofertas'
+ heroButtonUrl:'#ofertas',
+ flashSaleUrl:'https://s.shopee.com.br/7AY1zz0yVWe',
+ couponUrl:'https://s.shopee.com.br/1gCfltrIRT',
+ flashSaleLabel:'Ofertas relâmpago',
+ couponLabel:'Cupons da Shopee',
+ campaignsEnabled:'on',
+ autoCampaigns:'on'
 };
