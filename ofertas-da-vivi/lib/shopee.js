@@ -52,6 +52,8 @@ const limitedInteger=(value,options,fallback)=>options.includes(Number(value))?N
 const FIELD_SETS=[
  'itemId shopId productName imageUrl priceMin priceMax priceDiscountRate offerLink productLink commissionRate shopName sales ratingStar sellerCommissionRate shopeeCommissionRate commission shopType productCatIds periodStartTime periodEndTime',
  'itemId shopId productName imageUrl priceMin priceMax priceDiscountRate offerLink productLink commissionRate shopName sales ratingStar sellerCommissionRate shopeeCommissionRate commission shopType',
+ 'itemId shopId productName imageUrl priceMin priceMax priceDiscountRate offerLink productLink commissionRate shopName sales ratingStar sellerCommissionRate shopeeCommissionRate shopType',
+ 'itemId shopId productName imageUrl priceMin priceMax priceDiscountRate offerLink productLink commissionRate shopName sales ratingStar sellerCommissionRate shopeeCommissionRate commission',
  'itemId shopId productName imageUrl priceMin priceMax priceDiscountRate offerLink productLink commissionRate shopName sales ratingStar shopType',
  'itemId shopId productName imageUrl priceMin priceMax priceDiscountRate offerLink productLink commissionRate shopName sales ratingStar'
 ];
