@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
 import {Image as ImageIcon,Palette,Save,CheckCircle2,AlertCircle,ExternalLink,
- Plus,Trash2,ArrowLeft,ArrowRight,Upload,Flame,Images,FileText,Package,ImagePlus} from 'lucide-react';
+ Plus,Trash2,ArrowLeft,ArrowRight,Upload,Flame,Images,FileText,Package,ImagePlus,ShoppingBag} from 'lucide-react';
 import {readHeroSlides,getHeroInterval,newHeroSlide,MAX_HERO_SLIDES,MIN_HERO_SLIDES} from '../lib/hero-slides';
 import {VIVI_THEMES,getThemeConfig,getThemeCssVars,isHeroImage} from '../lib/site-theme';
 
