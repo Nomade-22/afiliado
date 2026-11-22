@@ -2265,3 +2265,57 @@
   padding:14px 16px;
  }
 }
+
+/* Promoções e cupons junto ao banner, antes das categorias e da vitrine. */
+.site-shell .vivi-campaigns-quick-section{
+ margin:14px 0 24px;
+}
+.site-shell .vivi-campaigns-quick-heading{
+ display:flex;
+ flex-direction:column;
+ gap:6px;
+ margin:0 0 14px;
+}
+.site-shell .vivi-campaigns-quick-heading h2{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ margin:0;
+ color:#282a34;
+ font-size:clamp(20px,2.6vw,25px);
+ font-weight:850;
+ line-height:1.25;
+}
+.site-shell .vivi-campaigns-quick-heading h2 svg{
+ color:var(--vivi-accent,#d32967);
+ flex-shrink:0;
+}
+.site-shell .vivi-campaigns-quick-heading p{
+ margin:0;
+ color:#858c98;
+ font-size:13px;
+ line-height:1.5;
+}
+.site-shell .vivi-campaigns-quick-section .vivi-campaign-quick{
+ text-decoration:none;
+ min-height:100px;
+}
+@media(max-width:720px){
+ .site-shell .vivi-campaigns-quick-section{
+  margin:12px 0 22px;
+ }
+ .site-shell .vivi-campaigns-quick-heading{
+  gap:5px;
+  margin-bottom:11px;
+ }
+ .site-shell .vivi-campaigns-quick-heading h2{
+  font-size:20px;
+ }
+ .site-shell .vivi-campaigns-quick-heading p{
+  font-size:12px;
+ }
+ .site-shell .vivi-campaigns-quick-section .vivi-campaign-quick{
+  min-height:78px;
+  padding:15px 17px;
+ }
+}
