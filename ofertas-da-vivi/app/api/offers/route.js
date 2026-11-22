@@ -1,4 +1,4 @@
-import {demoOffers,defaultSettings} from '../../../lib/demo';
+import {defaultSettings} from '../../../lib/demo';
 import {getDB,mapOffer,getSettings} from '../../../lib/db';
 import {matchExisting,offerIdentityKeys} from '../../../lib/product-identity';
 
@@ -20,8 +20,10 @@ export async function GET() {
   try {
     const sql=await getDB();
     if (!sql) {
-      return Response.json({offers:demoOffers,settings:defaultSettings,mode:'demo'},
-        {headers:{'Cache-Control':'no-store'}});
+      return Response.json({
+        error:'O catálogo está temporariamente indisponível.',
+        diagnostic:'DB_NOT_CONFIGURED'
+      },{status:503,headers:{'Cache-Control':'no-store'}});
     }
     const [rows,settings]=await Promise.all([
       sql`SELECT * FROM vivi_offers WHERE active=true ORDER BY featured DESC, updated_at DESC LIMIT 300`,
