@@ -1764,3 +1764,277 @@
  .vivi-season-toggle-track,.vivi-season-toggle-track::after,
  .vivi-christmas-admin-preview{transition:none}
 }
+
+
+/* ===== VIVI: BLACK FRIDAY + MICROINTERAÇÕES (2026) ===== */
+/* Aparência Black Friday: original, elegante, sem alterar dados da Shopee. */
+.site-shell.vivi-black-friday{
+ background:
+  radial-gradient(ellipse at 10% 480px,#ffe8f266 0,transparent 490px),
+  radial-gradient(ellipse at 85% 1000px,#fff1d988 0,transparent 620px),
+  var(--vivi-page-bg,#fffafc);
+}
+.site-shell.vivi-black-friday .site-header{
+ background:#fffcff;
+ border-bottom:2px solid #e3b76a;
+ box-shadow:0 8px 22px #2a102016;
+}
+.site-shell.vivi-black-friday .site-footer{
+ background:linear-gradient(130deg,#14121b,#291a2a 58%,#451d39);
+}
+.site-shell.vivi-black-friday .brand em,
+.site-shell.vivi-black-friday .brand-heart{color:#cf2563}
+.site-shell.vivi-black-friday .logo-mark{
+ background:linear-gradient(135deg,#241524,#ee2c77);
+ box-shadow:0 5px 18px #ef2b7450;
+}
+.site-shell.vivi-black-friday .category-item{
+ background:#fffafd;border-color:#f0dce9;
+}
+.site-shell.vivi-black-friday .category-active{
+ background:#ffebf4;border-color:#e32b70;
+}
+.site-shell.vivi-black-friday .vivi-modern-product{
+ background:#fff;border-color:#f5dce9;
+ box-shadow:0 7px 18px #7b21530d;
+}
+.site-shell.vivi-black-friday .sale-badge{
+ background:linear-gradient(115deg,#de1f66,#f24482);
+ color:#fff;box-shadow:0 3px 9px #d5236055;
+}
+.site-shell.vivi-black-friday .vivi-hero-slider.vivi-hero-flash{
+ background:linear-gradient(118deg,#1a1421 0%,#55203e 55%,#ea2e73 100%);
+}
+.site-shell.vivi-black-friday .vivi-hero-slider:not(.vivi-slide-type-images){
+ box-shadow:0 12px 28px #d52a7050;
+}
+.site-shell.vivi-black-friday .vivi-hero-flash .vivi-hero-cta{
+ color:#9e2258;background:#fff2f8;
+}
+.site-shell.vivi-black-friday .vivi-quick-flash{
+ background:linear-gradient(100deg,#251324,#d11c63)!important;
+}
+.site-shell.vivi-black-friday .whatsapp-banner{
+ border-color:#eac69c;
+}
+.vivi-bf-announcement{
+ display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
+ gap:7px 14px;min-height:38px;padding:7px 12px;
+ background:linear-gradient(100deg,#19131d,#461b38 60%,#7f1c4c);
+ color:#fff;text-align:center;line-height:1.4;font-size:12px;
+ border-bottom:1px solid #d0a96f;
+}
+.vivi-bf-announcement strong{
+ font-size:13px;letter-spacing:1px;font-weight:950;
+}
+.vivi-bf-announcement em{
+ font-style:normal;color:#f7cf84;
+}
+.vivi-bf-announcement>span:first-child,
+.vivi-bf-announcement>span:last-child{
+ color:#f0cd7d;opacity:.95;
+}
+.vivi-bf-atmosphere{
+ position:absolute;top:0;left:0;right:0;height:335px;
+ pointer-events:none;overflow:hidden;z-index:4;
+}
+.vivi-bf-particle{
+ position:absolute;top:-20px;opacity:0;
+ color:#f2bd62;text-shadow:0 0 9px #ff6da8ab,0 0 3px #ffce8c;
+ animation:vivi-bf-float 8s linear infinite;
+}
+.vivi-bf-particle:nth-child(odd){color:#f9e0a3}
+.vivi-bf-particle:nth-child(3n){color:#fb7dad}
+@keyframes vivi-bf-float{
+ 0%{transform:translate3d(0,-15px,0) rotate(0);opacity:0}
+ 17%{opacity:.9}
+ 80%{opacity:.8}
+ 100%{transform:translate3d(12px,320px,0) rotate(80deg);opacity:0}
+}
+.vivi-product-page.vivi-bf-product{
+ background:linear-gradient(130deg,#fff6fb,#fffefd 50%,#fff2e9);
+}
+.vivi-product-bf-pill{
+ display:inline-flex;align-items:center;padding:6px 11px;
+ border-radius:100px;background:#241729;color:#ffd48e;
+ font-size:11px;letter-spacing:.15px;font-weight:850;
+ box-shadow:0 3px 13px #ac2d6750;
+}
+
+/* Painel: prévia e ativação independente dos temas. */
+.vivi-season-divider{
+ height:1px;background:linear-gradient(90deg,transparent,#dfd2cb,transparent);
+ margin:4px 0;
+}
+.vivi-bf-admin-preview{
+ position:relative;overflow:hidden;min-height:145px;
+ display:flex;align-items:center;justify-content:center;flex-direction:column;
+ gap:7px;text-align:center;padding:20px 15px;
+ color:#fff6e9;border-radius:16px;
+ background:radial-gradient(circle at 50% 15%,#d9337455 0,transparent 60%),
+  linear-gradient(115deg,#16131a,#381a32 60%,#9b245c);
+ border:1px solid #c59a6a;
+ transition:filter .2s ease,opacity .2s ease;
+}
+.vivi-bf-admin-preview>span{
+ font-size:22px;font-weight:950;letter-spacing:1px;
+}
+.vivi-bf-admin-preview>span i{
+ color:#f9cb88;font-style:normal;
+}
+.vivi-bf-admin-preview>strong{font-size:13px}
+.vivi-bf-admin-preview>small{font-size:11px;color:#f9d294}
+.vivi-bf-admin-preview:not(.enabled){filter:saturate(.58);opacity:.73}
+.vivi-bf-preview-glow{
+ position:absolute;top:8px;width:100%;color:#f9cf89;
+ font-size:16px;letter-spacing:10px;
+}
+.vivi-seasonal-editor .vivi-season-toggle:has(input:checked){
+ border-color:#c5af86;box-shadow:inset 0 0 0 1px #f4dfb4;
+}
+
+/* Movimentos em estado normal, sem mexer no conteúdo dos banners de imagem. */
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .logo-mark{
+ animation:vivi-soft-heartbeat 5s ease-in-out infinite;
+ transform-origin:center;
+}
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .vivi-hero-slider:not(.vivi-slide-type-images)::after{
+ content:"";position:absolute;top:-50%;left:-100%;z-index:1;
+ width:60%;height:180%;pointer-events:none;
+ background:linear-gradient(90deg,transparent,#ffffff11,transparent);
+ transform:skewX(-18deg);
+ animation:vivi-hero-light-sweep 9s ease-in-out infinite;
+}
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .vivi-hero-slider.vivi-slide-type-images .vivi-responsive-banner-picture{
+ animation:vivi-image-breathe 10s ease-in-out infinite;
+ transform-origin:center center;
+}
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .sale-badge{
+ animation:vivi-discount-glow 4.8s ease-in-out infinite;
+}
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .vivi-modern-product{
+ transition:transform .23s ease,box-shadow .23s ease,border-color .23s ease;
+}
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .category-item{
+ transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) a,
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) button{
+ -webkit-tap-highlight-color:transparent;
+}
+@media(hover:hover){
+ .site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .vivi-modern-product:hover,
+ .site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .vivi-discount-card:hover{
+  transform:translateY(-4px);box-shadow:0 12px 26px #a3246b30;
+ }
+ .site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .category-item:hover{
+  transform:translateY(-3px);
+ }
+}
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .vivi-modern-product:active,
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .vivi-discount-card:active,
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .category-item:active{
+ transform:scale(.975);
+}
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .vivi-hero-slider .vivi-hero-current{
+ transform:translate3d(var(--vivi-swipe-shift,0px),0,0);
+ transition:transform .2s cubic-bezier(.2,.7,.2,1);
+ will-change:transform;
+}
+.site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .vivi-hero-controls button:active{
+ transform:scale(.86);
+}
+@keyframes vivi-soft-heartbeat{
+ 0%,88%,100%{transform:scale(1)}
+ 91%{transform:scale(1.07)}
+ 95%{transform:scale(.98)}
+}
+@keyframes vivi-hero-light-sweep{
+ 0%,28%{left:-100%;opacity:0}
+ 32%{opacity:1}
+ 47%{left:160%;opacity:.7}
+ 48%,100%{left:160%;opacity:0}
+}
+@keyframes vivi-image-breathe{
+ 0%,100%{transform:scale(1)}
+ 50%{transform:scale(1.013)}
+}
+@keyframes vivi-discount-glow{
+ 0%,86%,100%{filter:brightness(1);box-shadow:0 0 0 transparent}
+ 91%{filter:brightness(1.17);box-shadow:0 0 10px #fbe6b599}
+}
+.site-shell[data-vivi-effects="soft"] .vivi-bf-particle:nth-child(2n),
+.site-shell[data-vivi-effects="soft"] .vivi-christmas-snow .flake:nth-child(2n){
+ display:none;
+}
+.site-shell[data-vivi-effects="soft"] .logo-mark{animation-duration:9s}
+.site-shell[data-vivi-effects="soft"] .vivi-hero-slider:not(.vivi-slide-type-images)::after{
+ animation-duration:15s;
+}
+.site-shell[data-vivi-effects="soft"] .vivi-hero-slider.vivi-slide-type-images .vivi-responsive-banner-picture{
+ animation-duration:15s;
+}
+.site-shell[data-vivi-effects="off"] .vivi-christmas-lights .bulb{
+ animation:none;
+}
+.site-shell[data-vivi-effects="off"] .vivi-bf-particle,
+.site-shell[data-vivi-effects="off"] .vivi-christmas-snow .flake{
+ display:none;
+}
+
+/* Efeitos de toque e de arrasto: camada fora do fluxo, sem capturar eventos. */
+.vivi-interaction-layer{
+ position:fixed;inset:0;z-index:100;pointer-events:none;
+ contain:layout style;overflow:hidden;
+}
+.vivi-fx-particle{
+ position:absolute;display:block;
+ width:24px;height:24px;margin:-12px 0 0 -12px;
+ pointer-events:none;user-select:none;
+ color:#e04483;
+ filter:drop-shadow(0 0 3px #f471b27a);
+}
+.vivi-fx-tap{
+ border:2px solid currentColor;border-radius:50%;
+ animation:vivi-fx-pop .62s ease-out forwards;
+}
+.vivi-fx-trail{
+ font-size:19px;line-height:24px;text-align:center;
+ animation:vivi-fx-drift .82s ease-out forwards;
+}
+.vivi-fx-theme-christmas{color:#d3a34b}
+.vivi-fx-theme-black-friday{color:#f6bc60}
+@keyframes vivi-fx-pop{
+ 0%{opacity:.95;transform:scale(.2)}
+ 60%{opacity:.68}
+ 100%{opacity:0;transform:scale(2.3)}
+}
+@keyframes vivi-fx-drift{
+ 0%{opacity:.93;transform:translate3d(0,0,0) scale(.8) rotate(-15deg)}
+ 100%{opacity:0;transform:translate3d(var(--vivi-fx-dx,12px),var(--vivi-fx-dy,-27px),0) scale(1.45) rotate(30deg)}
+}
+@media(max-width:720px){
+ .vivi-bf-announcement{font-size:10px;gap:4px 7px;min-height:34px;padding:6px 8px}
+ .vivi-bf-announcement strong{font-size:11px;letter-spacing:.45px}
+ .vivi-bf-particle:nth-child(n+8){display:none}
+ .vivi-bf-admin-preview{min-height:130px}
+ .vivi-bf-admin-preview>span{font-size:19px}
+ .site-shell[data-vivi-effects]:not([data-vivi-effects="off"]) .vivi-modern-product:active{
+  transform:scale(.985);
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .site-shell[data-vivi-effects] .logo-mark,
+ .site-shell[data-vivi-effects] .vivi-hero-slider::after,
+ .site-shell[data-vivi-effects] .vivi-responsive-banner-picture,
+ .site-shell[data-vivi-effects] .sale-badge,
+ .site-shell[data-vivi-effects] .vivi-hero-current,
+ .vivi-bf-particle,
+ .vivi-christmas-snow .flake,
+ .vivi-christmas-lights .bulb,
+ .vivi-fx-particle{
+  animation:none!important;transition:none!important;
+ }
+ .site-shell[data-vivi-effects] .vivi-hero-current{transform:none!important}
+ .vivi-bf-particle,.vivi-fx-particle{display:none!important}
+}

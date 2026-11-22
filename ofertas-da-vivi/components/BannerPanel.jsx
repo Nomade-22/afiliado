@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
 import {Image as ImageIcon,Palette,Save,CheckCircle2,AlertCircle,ExternalLink,
- Plus,Trash2,ArrowLeft,ArrowRight,Upload,Flame,Images,FileText,Package,ImagePlus,ShoppingBag,Gift,Snowflake} from 'lucide-react';
+ Plus,Trash2,ArrowLeft,ArrowRight,Upload,Flame,Images,FileText,Package,ImagePlus,ShoppingBag,Gift,Snowflake,Zap,MousePointerClick} from 'lucide-react';
 import {readHeroSlides,getHeroInterval,newHeroSlide,MAX_HERO_SLIDES,MIN_HERO_SLIDES} from '../lib/hero-slides';
 import {VIVI_THEMES,getThemeConfig,getPublicThemeCssVars,isHeroImage} from '../lib/site-theme';
 import ResponsiveBannerImage,{bannerImageOf,bannerMobileImageOf} from './ResponsiveBannerImage';
@@ -69,6 +69,8 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
  const [palette,setPalette]=useState(()=>getThemeConfig(settings));
  const [seconds,setSeconds]=useState(getHeroInterval(settings));
  const [christmasTheme,setChristmasTheme]=useState(settings.christmasTheme==='on');
+ const [blackFridayTheme,setBlackFridayTheme]=useState(settings.blackFridayTheme==='on');
+ const [effectsMode,setEffectsMode]=useState(settings.effectsMode||'lively');
  const [saving,setSaving]=useState(false);
  const [uploading,setUploading]=useState(false);
  const [uploadCount,setUploadCount]=useState({done:0,total:0});
@@ -79,12 +81,16 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
   setPalette(getThemeConfig(settings));
   setSeconds(getHeroInterval(settings));
   setChristmasTheme(settings.christmasTheme==='on');
+  setBlackFridayTheme(settings.blackFridayTheme==='on');
+  setEffectsMode(settings.effectsMode||'lively');
  },[settings]);
  const current=slides[selected]||slides[0];
  const activeOffers=offers.filter(o=>o.active&&o.url);
  const themeSettings={
   heroTheme:themeId,
   christmasTheme:christmasTheme?'on':'off',
+  blackFridayTheme:blackFridayTheme?'on':'off',
+  effectsMode,
   heroColorStart:palette.start,
   heroColorEnd:palette.end,
   heroAccent:palette.accent,
@@ -92,7 +98,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
   heroFillMode:palette.fill
  };
  const themeVars=useMemo(()=>getPublicThemeCssVars(themeSettings),[
-  themeId,christmasTheme,palette.start,palette.end,palette.accent,palette.angle,palette.fill
+  themeId,christmasTheme,blackFridayTheme,palette.start,palette.end,palette.accent,palette.angle,palette.fill
  ]);
  function updateSlide(field,value){
   setSlides(old=>old.map((s,i)=>i===selected?{...s,[field]:value}:s));
@@ -188,7 +194,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
    if(r.status===401){window.location.href='/adm/login';return}
    const data=await r.json();
    if(!r.ok)throw Error(data.error||'Não foi possível salvar.');
-   setNotice({error:false,text:'Personalização salva: tema '+(christmasTheme?'de Natal ativado':'natalino desativado')+' e '+slides.length+' banners.'});
+   setNotice({error:false,text:'Personalização salva: '+(blackFridayTheme?'Black Friday':christmasTheme?'Natal':'visual normal')+' · animações '+(effectsMode==='off'?'desligadas':effectsMode==='soft'?'suaves':'dinâmicas')+' · '+slides.length+' banners.'});
    await onSaved?.();
   }catch(e){setNotice({error:true,text:String(e?.message||'Falha ao salvar')})}
   finally{setSaving(false)}
@@ -211,7 +217,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
      <small>{christmasTheme?'Tema pronto para aparecer no site após salvar.':'Use quando quiser e desligue para voltar às suas cores de sempre.'}</small>
     </span>
     <input type="checkbox" checked={christmasTheme}
-     onChange={e=>{setChristmasTheme(e.target.checked);setNotice(null)}} disabled={saving||uploading}/>
+     onChange={e=>{setChristmasTheme(e.target.checked);if(e.target.checked)setBlackFridayTheme(false);setNotice(null)}} disabled={saving||uploading}/>
     <span className="vivi-season-toggle-track" aria-hidden="true"/>
    </label>
    <div className={'vivi-christmas-admin-preview'+(christmasTheme?' enabled':'')}>
@@ -220,10 +226,41 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
     <strong>Achadinhos para presentear com carinho</strong>
     <small>{christmasTheme?'Prévia do tema natalino':'Prévia do Natal · ative para usar'}</small>
    </div>
+   <div className="vivi-season-divider"/>
+   <div className="admin-card-title"><h2><Zap size={21}/> Tema Black Friday</h2>
+    <span className={'vivi-season-status'+(blackFridayTheme?' active':'')}>{blackFridayTheme?'Ativo':'Desativado'}</span>
+   </div>
+   <p className="muted-text">Preto, rosa elétrico e dourado, com brilho nas ofertas, partículas e detalhes de promoção. Sem alterar preços nem criar descontos fictícios.</p>
+   <label className="vivi-season-toggle">
+    <span className="vivi-season-toggle-copy">
+     <strong><Zap size={19}/> Ativar Black Friday da Vivi</strong>
+     <small>{blackFridayTheme?'Visual Black Friday selecionado para publicação.':'Troque do Natal para a Black Friday com um toque.'}</small>
+    </span>
+    <input type="checkbox" checked={blackFridayTheme}
+     onChange={e=>{setBlackFridayTheme(e.target.checked);if(e.target.checked)setChristmasTheme(false);setNotice(null)}}
+     disabled={saving||uploading}/>
+    <span className="vivi-season-toggle-track" aria-hidden="true"/>
+   </label>
+   <div className={'vivi-bf-admin-preview'+(blackFridayTheme?' enabled':'')}>
+    <div className="vivi-bf-preview-glow" aria-hidden="true">✦ &nbsp; ✧ &nbsp; ✦</div>
+    <span>BLACK FRIDAY <i>DA VIVI</i></span>
+    <strong>Achadinhos, cupons e oportunidades</strong>
+    <small>{blackFridayTheme?'Prévia do tema Black Friday':'Prévia Black Friday · ative para usar'}</small>
+   </div>
+   <div className="vivi-season-divider"/>
+   <div className="admin-card-title"><h2><MousePointerClick size={21}/> Animações do site</h2></div>
+   <p className="muted-text">Toques com brilhos, arrastos com rastros, cartões com movimento e pequenos efeitos na página. Respeita a preferência de movimento reduzido do celular.</p>
+   <label style={label}>Intensidade das animações
+    <select style={input} value={effectsMode} onChange={e=>{setEffectsMode(e.target.value);setNotice(null)}}>
+     <option value="lively">Dinâmicas (recomendado)</option>
+     <option value="soft">Suaves</option>
+     <option value="off">Desligadas</option>
+    </select>
+   </label>
    <button type="button" className="btn btn-primary btn-wide" onClick={save} disabled={saving||uploading}>
     <Save size={17}/>{saving?'Salvando…':'Aplicar personalização no site'}
    </button>
-   <p className="footnote">O tema de Natal está disponível nesta temporada. Desative e salve quando quiser voltar às cores anteriores.</p>
+   <p className="footnote">Apenas um tema especial pode ficar ligado de cada vez. Ao desligar os dois, suas cores personalizadas voltam automaticamente.</p>
   </section>
   <section className="admin-card vivi-theme-editor">
    <div className="admin-card-title">

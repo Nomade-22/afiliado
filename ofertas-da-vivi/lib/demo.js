@@ -14,6 +14,8 @@ export const defaultSettings = {
  heroIntervalSeconds:'7',
  heroTheme:'orange',
  christmasTheme:'on',
+ blackFridayTheme:'off',
+ effectsMode:'lively',
  heroColorStart:'#f4511e',
  heroColorEnd:'#ff982c',
  heroAccent:'#f45c23',

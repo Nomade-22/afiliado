@@ -80,6 +80,22 @@ export function getThemeCssVars(settings={}){
 // Ao desativar, o site volta imediatamente à paleta escolhida no painel.
 export function getPublicThemeCssVars(settings={}){
  const palette=getThemeCssVars(settings);
+ if(settings.blackFridayTheme==='on')return {
+  ...palette,
+  '--vivi-accent':'#ee2a73',
+  '--vivi-accent-deep':'#a81c58',
+  '--vivi-accent-soft':'#ffe7f1',
+  '--vivi-page-bg':'#fffafc',
+  '--vivi-accent-glow':'#f52d7145',
+  '--vivi-accent-gradient':'linear-gradient(118deg,#17111c 0%,#52203d 54%,#e92e74 100%)',
+  '--vivi-on-accent':'#ffffff',
+  '--vivi-hero-ink':'#ffffff',
+  '--vivi-hero-control':'#ffffff33',
+  '--vivi-hero-border':'#f7c7dd5e',
+  '--vivi-hero-card':'#ffffff26',
+  '--vivi-hero-button-bg':'#fff4f8',
+  '--vivi-hero-button-ink':'#9b2454'
+ };
  if(settings.christmasTheme!=='on')return palette;
  return {
   ...palette,
