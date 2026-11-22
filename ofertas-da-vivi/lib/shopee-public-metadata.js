@@ -138,9 +138,9 @@ export async function getPublicShopeeItemMetadata(ids,expectedTitle){
  const descriptionCandidate=textContent(publicDescription);
  // Muitos anúncios têm metadados genéricos de marketing, não a descrição do
  // produto. Não usamos slogans genéricos como ficha técnica.
- const description=/^(compre online|encontre (os )?melhores|compre na shopee|descubra ofertas)/i
+ const nonGenericDescription=/^(compre online|encontre (os )?melhores|compre na shopee|descubra ofertas)/i
   .test(descriptionCandidate)?'':descriptionCandidate;
- const description=description.length>=25?description:'';
+ const description=nonGenericDescription.length>=25?nonGenericDescription:'';
  const inputs=[...(Array.isArray(product?.image)?product.image:[product?.image]),
   getMeta(html,'og:image')];
  const images=[...new Set(inputs.map(v=>typeof v==='object'?v?.url||v?.contentUrl:v)
