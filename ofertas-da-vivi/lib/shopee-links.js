@@ -1,4 +1,5 @@
 import {shopeeQuery} from './shopee';
+import {subIdCandidates} from './subid-format';
 
 /**
  * A Shopee pode rejeitar alguns Sub IDs com error 11001.
@@ -93,27 +94,73 @@ export async function resolveOfferAffiliateLink(offer){
 }
 
 /**
- * Identificador único da Vivi, enviado como ÚNICO Sub ID na Shopee.
- * Modo estrito: não troca o Sub ID, não usa offerLink preexistente e
- * jamais considera válida uma conversão que tenha sido recusada.
+ * Converte cada produto com seu código interno, sem alterar o link anterior
+ * caso a Shopee não confirme a operação.
+ *
+ * Se a Shopee recusar o formato DDMMYY_NNNN, testa vDDMMYYNNNN.
+ * O código da Vivi permanece intacto; retorna usedSubId realmente aceito.
  */
-export async function generateProductAffiliateLink(originUrl,internalCode) {
- if(!/^\d{6}_\d{4}$/.test(String(internalCode||''))){
-  throw Error('Código interno inválido; esperado DDMMAA_0001.');
- }
- const source=String(originUrl||'').trim();
- if(!isShopeeLink(source))throw Error('O destino original precisa ser um link HTTPS da Shopee.');
- const ids=[internalCode];
- const query=`mutation { generateShortLink(input: { originUrl: ${JSON.stringify(source)}, subIds: ${JSON.stringify(ids)} }) { shortLink } }`;
- let response;
- try{response=await shopeeQuery(query)}catch(error){
-  const message=String(error?.message||'A Shopee rejeitou a conversão.');
-  if(/invalid\s*sub[\s_-]*id/i.test(message)){
-   throw Error('A Shopee recusou o Sub ID '+internalCode+'. O produto não será publicado sem rastreamento válido.');
+export async function generateProductAffiliateLink(originUrl,internalCode,options={}) {
+ const candidates=subIdCandidates(internalCode);
+ const origin=String(originUrl||'').trim();
+ if(!isShopeeLink(origin))throw Error('A origem não é uma URL HTTPS da Shopee.');
+
+ const sources=[];
+ const pushSource=url=>{
+  if(isShopeeLink(url)&&!sources.includes(url))sources.push(url);
+ };
+ const canonical=(shopId,itemId)=>{
+  const s=String(shopId||''),p=String(itemId||'');
+  return /^\d{1,24}$/.test(s)&&/^\d{1,24}$/.test(p)?
+   'https://shopee.com.br/product/'+s+'/'+p:null;
+ };
+ const fromUrl=raw=>{
+  try{
+   const u=new URL(raw);
+   const m=u.pathname.match(/\/product\/(\d+)\/(\d+)/i)||
+    u.pathname.match(/-i\.(\d+)\.(\d+)/i);
+   return m?canonical(m[1],m[2]):null;
+  }catch{return null}
+ };
+
+ pushSource(canonical(options.shopId,options.itemId));
+ pushSource(fromUrl(origin));
+ pushSource(fromUrl(options.fallbackUrl));
+ pushSource(origin);
+ pushSource(options.fallbackUrl);
+
+ // Não compartilhamos segredos nem URLs completas em mensagens de erro.
+ const invalidSub=error=>/invalid\s*sub[\s_-]*id|sub[\s_-]*id.*invalid/i.test(String(error?.message||error));
+ const invalidOrigin=error=>/invalid\s*(origin|url|link)|unsupported\s*(url|link)/i.test(String(error?.message||error));
+ const issues=[];
+ for(const source of sources.slice(0,3)){
+  for(const id of candidates){
+   const mutation='mutation { generateShortLink(input: { originUrl: '+
+     JSON.stringify(source)+', subIds: '+JSON.stringify([id])+
+     ' }) { shortLink } }';
+   try{
+    const data=await shopeeQuery(mutation);
+    const url=String(data?.generateShortLink?.shortLink||'').trim();
+    if(!isShopeeLink(url))throw Error('A Shopee não retornou uma URL válida.');
+    return {
+     shortLink:url,originUrl:source,subIds:[id],
+     usedSubId:id,internalCode,verified:true,generatedBy:'generateShortLink',
+     alternativeFormat:id!==internalCode
+    };
+   }catch(error){
+    if(invalidSub(error)){
+     issues.push('Sub ID recusado: '+id);
+     continue;
+    }
+    if(invalidOrigin(error)){
+     issues.push('Endereço de origem recusado pela Shopee.');
+     break;
+    }
+    // Não repete erros de autenticação, cota, rede, servidor ou assinatura.
+    throw Error('A conversão não foi confirmada: '+String(error?.message||error).slice(0,120));
+   }
   }
-  throw Error('Conversão do produto '+internalCode+' não confirmada: '+message.slice(0,135));
  }
- const shortLink=String(response?.generateShortLink?.shortLink||'').trim();
- if(!isShopeeLink(shortLink))throw Error('A Shopee não retornou um link afiliado válido para '+internalCode+'.');
- return {shortLink,subIds:ids,generatedBy:'generateShortLink',internalCode,verified:true};
+ throw Error('A Shopee não aceitou os formatos de Sub ID testados ou o link de origem. '+
+   issues.slice(0,3).join(' | ')+'. Link anterior preservado.');
 }
