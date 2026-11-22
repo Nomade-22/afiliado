@@ -124,6 +124,19 @@ export default function HomePageClient({initialOffers=[],initialSettings=default
  const christmas=!blackFriday&&settings.christmasTheme==='on';
  const effectsMode=['off','soft','lively'].includes(settings.effectsMode)?settings.effectsMode:'lively';
  const theme=blackFriday?'black-friday':christmas?'christmas':'normal';
+  // Mostra os dois acessos promocionais desde o primeiro carregamento, com
+  // links já cadastrados. A API atualiza os links quando responde.
+  const quickCampaignData={
+   enabled:settings.campaignsEnabled!=='off'&&campaignData?.enabled!==false,
+   links:Array.isArray(campaignData?.links)&&campaignData.links.length
+    ?campaignData.links
+    :[
+     {id:'flash',title:settings.flashSaleLabel||'Ofertas relâmpago',
+      url:settings.flashSaleUrl,description:'Confira as ofertas disponíveis na Shopee.'},
+     {id:'coupon',title:settings.couponLabel||'Cupons da Shopee',
+      url:settings.couponUrl,description:'Consulte os cupons disponíveis e suas regras na Shopee.'}
+    ]
+  };
  return <div className={'site-shell'+(christmas?' vivi-christmas':'')+(blackFriday?' vivi-black-friday':'')} data-vivi-theme={settings.heroTheme||"orange"} data-vivi-effects={effectsMode} style={getPublicThemeCssVars(settings)}>
   <SiteInteractionEffects theme={theme} mode={effectsMode}/>
   {christmas&&<ChristmasAnnouncement/>}
@@ -141,7 +154,7 @@ export default function HomePageClient({initialOffers=[],initialSettings=default
      <button className="btn btn-primary" onClick={()=>setRetryCount(x=>x+1)}>Tentar novamente</button>
     </section>:<>
    <HeroCarousel settings={settings} offers={offers}/>
-   <CampaignsSection part="quick" data={campaignData}/>
+   <CampaignsSection part="quick" data={quickCampaignData}/>
    {mode==='demo'&&<div className="demo-alert"><Sparkles size={16}/><span><strong>Prévia do site:</strong> imagens e preços abaixo são ilustrativos. As ofertas reais aparecerão quando conectarmos a Shopee e ativarmos os produtos.</span></div>}
    <section className="categories-section" id="categorias"><div className="section-heading"><h2>Categorias</h2><button onClick={()=>setCat('Todos')} className="text-action">Todas as categorias <ChevronRight size={17}/></button></div><div className="category-grid">{shownCategories.map(c=><button key={c} className={'category-item '+(activeCat===c?'category-active':'')} onClick={()=>setCat(c)}>{catIcons[c]}<span>{c}</span></button>)}</div></section>
    <InteriorBanners settings={settings} placement="after-categories"/>
