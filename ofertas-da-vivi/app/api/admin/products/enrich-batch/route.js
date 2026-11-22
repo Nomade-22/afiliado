@@ -26,7 +26,7 @@ export async function POST(request){
  try{sql=await getDB();if(!sql)throw Error('Neon ausente')}
  catch{return Response.json({error:'Não foi possível acessar o Neon.'},{status:503,headers})}
  const report={ok:true,processed:0,matched:0,descriptionsAdded:0,
-  newPhotos:0,mainPhotos:0,withoutExtraData:0,errors:[]};
+  newPhotos:0,mainPhotos:0,withoutExtraData:0,errors:[],updated:[]};
  for(const id of ids){
   report.processed++;
   let row;
@@ -70,6 +70,11 @@ export async function POST(request){
    if(gotDescription)report.descriptionsAdded++;
    if(newlyAdded.length)report.newPhotos+=newlyAdded.length;
    if(!safeImage(row.image)&&image)report.mainPhotos++;
+   report.updated.push({
+    id,description,image,images:gallery,updatedAt:new Date().toISOString(),
+    fromApi:{description:Boolean(data.description),photoCount:(data.images||[]).length,
+      stock:Boolean(data.stockSource)}
+   });
   }catch{
    report.errors.push({id,reason:'Falha ao salvar informações retornadas pela Shopee.'});
   }
