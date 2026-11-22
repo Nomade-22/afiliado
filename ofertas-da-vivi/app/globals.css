@@ -463,3 +463,156 @@
  .vivi-catalog-counts{width:100%}
  .vivi-catalog-bulk-note{font-size:11px}
 }
+
+
+/* 2026 — filtro único ilustrado e carrossel editorial da Vivi */
+.site-shell .category-grid{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px;
+}
+.site-shell .category-item{
+ min-height:84px;height:auto;display:flex;flex-direction:column;gap:8px;
+ justify-content:center;text-align:center;padding:12px 7px;
+}
+.site-shell .category-item svg{width:26px;height:26px;flex-shrink:0}
+.site-shell .category-item span{font-size:13px;line-height:1.25}
+.site-shell .category-active{
+ border:2px solid var(--vivi-accent);background:var(--vivi-accent-soft);
+ box-shadow:0 4px 14px var(--vivi-accent-glow);
+}
+.site-shell .categories-section .section-heading{gap:10px}
+.vivi-hero-slider{
+ position:relative;overflow:hidden;isolation:isolate;
+ background:var(--vivi-accent-gradient);
+ color:#fff;border-radius:19px;min-height:320px;
+ margin-top:18px;box-shadow:0 12px 28px #b53b1a19;
+}
+.vivi-hero-slider.vivi-hero-flash{
+ background:linear-gradient(112deg,#a51232 0%,#df2440 53%,#fa4a3c 100%);
+}
+.vivi-hero-current{
+ min-height:315px;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.85fr);
+ animation:vivi-slide-enter .36s ease both;align-items:stretch;
+}
+@keyframes vivi-slide-enter{from{opacity:.3;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+.vivi-hero-content{
+ padding:31px 20px 55px 41px;
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+ min-width:0;position:relative;z-index:2;
+}
+.vivi-hero-eyebrow{
+ display:inline-flex;align-items:center;gap:7px;padding:7px 12px;
+ background:#ffffff27;border:1px solid #ffffff42;border-radius:100px;
+ font-size:12px;font-weight:750;max-width:100%;line-height:1.4;
+}
+.vivi-hero-content h1{
+ font-size:clamp(27px,3.5vw,44px);font-weight:850;line-height:1.09;letter-spacing:-1.15px;
+ margin:16px 0 11px;max-width:650px;overflow-wrap:anywhere;
+ display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
+}
+.vivi-hero-content p{
+ font-size:15px;line-height:1.45;max-width:610px;
+ margin:0 0 18px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.vivi-hero-buttons{display:flex;align-items:center;gap:10px;max-width:100%}
+.vivi-hero-cta{
+ display:inline-flex;gap:10px;align-items:center;justify-content:center;text-align:center;
+ min-height:44px;max-width:100%;padding:12px 17px;border-radius:10px;
+ color:var(--vivi-accent-deep);background:#fff;
+ font-size:13px;font-weight:800;box-shadow:0 4px 15px #5d242323;transition:transform .2s;
+}
+.vivi-hero-cta:hover{transform:translateY(-2px)}
+.vivi-hero-flash .vivi-hero-cta{color:#ad1530}
+.vivi-hero-visual{min-width:0;display:flex;align-items:center;justify-content:center;
+ padding:28px 36px 54px 0;position:relative}
+.vivi-hero-photo-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));
+ gap:9px;width:min(100%,370px);height:240px;transform:rotate(-3deg);
+}
+.vivi-hero-photo{min-width:0;min-height:0;background:#fff;border:3px solid #ffffffb8;
+ border-radius:16px;box-shadow:0 7px 18px #32201024;overflow:hidden}
+.vivi-hero-photo img{display:block;width:100%;height:100%;object-fit:contain}
+.vivi-hero-main-photo{display:flex;justify-content:center;align-items:center;
+ width:min(95%,295px);height:245px;background:#fff;border:6px solid #ffffffb8;
+ border-radius:20px;box-shadow:0 9px 20px #32201024;transform:rotate(3deg)}
+.vivi-hero-main-photo img{width:100%;height:100%;object-fit:contain}
+.vivi-hero-default-art{width:100%;height:200px;display:flex;align-items:center;
+ justify-content:center;gap:13px;color:#ffffffbd}
+.vivi-hero-default-art span{font-size:140px;line-height:1;font-family:serif;color:#fff9}
+.vivi-hero-flash-icon{display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:9px;color:#fff7}
+.vivi-hero-flash-icon>span{font-size:26px;font-weight:900;letter-spacing:5px;color:#fff;
+ transform:rotate(-8deg)}
+.vivi-hero-controls{
+ position:absolute;left:35px;bottom:12px;right:18px;z-index:4;
+ display:flex;align-items:center;gap:10px;min-height:29px;
+}
+.vivi-hero-control{width:28px;height:28px;display:grid;place-items:center;
+ background:#ffffff2c;border:1px solid #ffffff54;border-radius:100px;color:#fff;
+ padding:0;cursor:pointer}
+.vivi-hero-control:hover,.vivi-hero-control:focus-visible{background:#ffffff56}
+.vivi-hero-dots{display:flex;gap:7px;align-items:center}
+.vivi-hero-dots button{width:10px;height:10px;border-radius:99px;padding:0;
+ border:1px solid #ffffffb4;background:#ffffff69;cursor:pointer;transition:all .2s}
+.vivi-hero-dots button.active{width:29px;background:#fff;border-color:#fff}
+.vivi-hero-count{font-size:11px;color:#fff;font-weight:750;white-space:nowrap}
+.vivi-hero-pause{margin-left:auto}
+.vivi-carousel-global{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:17px 0}
+.vivi-carousel-slidebar{display:flex;gap:9px;overflow-x:auto;padding:9px 0 12px;scroll-snap-type:x mandatory}
+.vivi-carousel-slide-tab{display:flex;align-items:center;justify-content:center;gap:7px;
+ background:#fff;color:#4e515f;border:1px solid #e5e6ec;border-radius:10px;
+ padding:12px;min-height:52px;flex:0 0 auto;scroll-snap-align:start;font-size:12px;font-weight:750}
+.vivi-carousel-slide-tab.chosen{border:2px solid #f5672c;background:#fff7f0;color:#b94c20}
+.vivi-carousel-slide-tab.disabled{opacity:.52}
+.vivi-carousel-slide-tools{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 13px}
+.vivi-carousel-add{display:flex;align-items:center;gap:7px;flex-wrap:wrap;border-top:1px solid #ededf2;padding-top:13px}
+.vivi-carousel-add>span{font-size:12px;font-weight:750;color:#555c69;margin-right:4px}
+.vivi-carousel-add>button{display:flex;gap:4px;align-items:center;justify-content:center;padding:9px 10px;
+ border-radius:9px;border:1px solid #dfe2e9;background:#fafbfc;color:#5a5e68;font-size:12px;font-weight:700}
+.vivi-carousel-add button:disabled{opacity:.4;cursor:not-allowed}
+.vivi-carousel-active{display:flex;gap:9px;align-items:center;font-size:13px;color:#475364;font-weight:750}
+.vivi-carousel-active input{width:18px;height:18px;accent-color:#ed6027}
+.vivi-carousel-tip{display:flex;align-items:flex-start;gap:8px;background:#fff0f0;
+ color:#9f2631;font-size:12px;line-height:1.5;border-radius:10px;padding:12px}
+.vivi-carousel-tip svg{flex-shrink:0}
+.vivi-carousel-admin-preview{min-height:260px;gap:16px}
+.vivi-carousel-admin-preview.flash{background:linear-gradient(110deg,#9d1930,#f33c3b)}
+.vivi-carousel-admin-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ grid-template-rows:repeat(2,minmax(0,1fr));gap:6px;width:35%;height:170px;flex-shrink:0}
+.vivi-carousel-admin-gallery img{display:block;min-width:0;min-height:0;width:100%;
+ height:100%;object-fit:contain;background:#fff;border-radius:9px}
+.vivi-carousel-preview-heart{font-size:96px;color:#fff8}
+@media(max-width:760px){
+ .site-shell .category-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .site-shell .category-item{min-height:88px;padding:8px 5px;gap:5px}
+ .site-shell .category-item svg{width:22px;height:22px}
+ .site-shell .category-item span{font-size:11px;overflow-wrap:anywhere}
+ .vivi-hero-slider{border-radius:15px;margin-top:11px;min-height:0}
+ .vivi-hero-current{display:flex;flex-direction:column;min-height:290px}
+ .vivi-hero-content{padding:21px 18px 15px;flex:1;justify-content:flex-start}
+ .vivi-hero-eyebrow{font-size:10px;padding:6px 9px}
+ .vivi-hero-content h1{font-size:clamp(24px,6.6vw,31px);margin:13px 0 9px;line-height:1.12;-webkit-line-clamp:4}
+ .vivi-hero-content p{font-size:12px;line-height:1.45;margin:0 0 13px;-webkit-line-clamp:2}
+ .vivi-hero-cta{font-size:12px;min-height:41px;padding:10px 14px}
+ .vivi-hero-visual{padding:0 18px 47px;height:142px;min-height:142px}
+ .vivi-slide-type-intro .vivi-hero-visual:not(.has-photos){display:none}
+ .vivi-slide-type-intro .vivi-hero-content{padding-bottom:65px}
+ .vivi-hero-photo-grid{height:132px;width:min(100%,320px);transform:rotate(-2deg)}
+ .vivi-hero-photo{border-width:2px;border-radius:10px}
+ .vivi-hero-main-photo{height:130px;width:200px}
+ .vivi-hero-flash-icon>svg{height:63px;width:63px}
+ .vivi-hero-flash-icon>span{font-size:16px;letter-spacing:3px}
+ .vivi-hero-controls{left:15px;bottom:10px;right:12px;gap:7px}
+ .vivi-hero-control{width:25px;height:25px}
+ .vivi-hero-count{font-size:10px}
+ .vivi-hero-dots{gap:5px}
+ .vivi-hero-dots button{width:8px;height:8px}
+ .vivi-hero-dots button.active{width:23px}
+ .vivi-carousel-global{grid-template-columns:1fr}
+ .vivi-carousel-slide-tab{min-height:45px;padding:9px}
+ .vivi-carousel-admin-preview{min-height:210px}
+ .vivi-carousel-admin-gallery{height:130px}
+}
+@media(prefers-reduced-motion:reduce){
+ .vivi-hero-current{animation:none}
+ .vivi-hero-slider *{transition:none!important}
+}
