@@ -14,13 +14,16 @@ export default function OfferEditor({offer,onClose,onSaved}){
   active:Boolean(offer.active),featured:Boolean(offer.featured)
  });
  const [busy,setBusy]=useState(false),[fetching,setFetching]=useState(false),[error,setError]=useState(''),[fetchResult,setFetchResult]=useState('');
+ const [sourceUrl,setSourceUrl]=useState(offer.productLink||'');
  const update=(name,value)=>setForm(old=>({...old,[name]:value}));
  async function fetchShopeeDetails(){
   setFetching(true);setError('');setFetchResult('');
   try{
    const response=await fetch('/api/admin/products/enrich-batch',{
     method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',
-    body:JSON.stringify({ids:[offer.id]})
+    body:JSON.stringify({ids:[offer.id],
+      ...(sourceUrl.trim()&&sourceUrl.trim()!==String(offer.productLink||'').trim()?
+        {originalProductUrl:sourceUrl.trim()}:{})})
    });
    if(response.status===401){window.location.href='/adm/login';return}
    const data=await response.json();
@@ -36,13 +39,16 @@ export default function OfferEditor({offer,onClose,onSaved}){
        imagesText:images.join('\n')
      };
     });
-    setFetchResult('Consulta concluída. '+(updated.fromApi?.description?
-     'Descrição localizada. ':'A API não forneceu descrição completa. ')+
-     (updated.fromApi?.photoCount>1?'Fotos adicionais encontradas.':
-      'Somente imagem principal disponível ou nenhuma foto adicional.'));
+    setFetchResult('Produto identificado. '+
+     (updated.fromApi?.description?'Descrição encontrada. ':'A fonte não forneceu a descrição completa. ')+
+     (updated.fromApi?.photoCount>1?updated.fromApi.photoCount+' fotos disponíveis.':
+      'Somente a foto principal está disponível. ')+
+     (updated.sourcePublicPage?' Dados da página pública da Shopee.':' Dados da API de Afiliados.'));
     await onSaved?.();
    }else{
-    setFetchResult('A Shopee não retornou dados adicionais que pudessem ser associados com segurança a este produto.');
+    const detail=(data.errors||[]).map(e=>e.reason).filter(Boolean)[0];
+    setFetchResult((data.identified?'Os IDs do anúncio foram identificados e salvos. ':'')+
+      (detail||'A Shopee não forneceu fotos ou descrições adicionais verificáveis.'));
    }
   }catch(e){setError(String(e?.message||'Falha ao buscar informações'))}
   finally{setFetching(false)}
@@ -84,6 +90,11 @@ export default function OfferEditor({offer,onClose,onSaved}){
     </div>
     <label>URL HTTPS da imagem<input type="url" value={form.image} placeholder="https://..."
      onChange={e=>update('image',e.target.value)}/></label>
+    <label>Link original do anúncio na Shopee
+     <input type="url" value={sourceUrl} onChange={e=>setSourceUrl(e.target.value)}
+      placeholder="https://shopee.com.br/product/ID_DA_LOJA/ID_DO_PRODUTO"/>
+     <small style={{fontWeight:400,color:'#7c8590',lineHeight:1.5}}>Quando os links curtos não revelarem os IDs, abra o anúncio na Shopee e copie o endereço completo. Esse campo é usado somente para buscar os detalhes; seu link de afiliado com Sub ID permanece inalterado.</small>
+    </label>
     <div className="vivi-editor-fetch">
      <button className="btn btn-outline" type="button" disabled={busy||fetching}
        onClick={fetchShopeeDetails}><RefreshCw size={17}/> {fetching?'Buscando na Shopee…':'Buscar descrição e fotos na Shopee'}</button>

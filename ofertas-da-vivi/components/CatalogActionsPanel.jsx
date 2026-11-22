@@ -25,7 +25,8 @@ export default function CatalogActionsPanel({offers=[],onCompleted}){
   setRunning(mode);setNotice(null);
   const stats={processed:0,total:selected.length,activated:0,alreadyActive:0,
    duplicates:0,invalidLinks:0,conversionErrors:0,
-   matched:0,descriptionsAdded:0,newPhotos:0,withoutExtraData:0,failed:0};
+   matched:0,identified:0,fromPublicPage:0,sourceBlocked:0,
+   descriptionsAdded:0,newPhotos:0,withoutExtraData:0,failed:0};
   let errors=[];
   const path=mode==='publish'?'/api/admin/products/publish-batch':'/api/admin/products/enrich-batch';
   const chunkSize=mode==='publish'?4:3;
@@ -43,7 +44,8 @@ export default function CatalogActionsPanel({offers=[],onCompleted}){
     if(!response.ok)throw Error(data.error||'Falha ao processar lote.');
     stats.processed+=batch.length;
     for(const key of ['activated','alreadyActive','duplicates','invalidLinks','conversionErrors',
-      'matched','descriptionsAdded','newPhotos','withoutExtraData']){
+      'matched','identified','fromPublicPage','sourceBlocked',
+      'descriptionsAdded','newPhotos','withoutExtraData']){
      stats[key]+=Number(data[key]||0);
     }
     errors.push(...(data.errors||[]).map(e=>e.reason||'Falha ao consultar o item.'));
@@ -63,8 +65,11 @@ export default function CatalogActionsPanel({offers=[],onCompleted}){
   const headline=mode==='publish'?
    stats.activated+' produto(s) ativado(s) no site. '+
     (stats.duplicates+' duplicado(s), '+stats.conversionErrors+' conversão(ões) não confirmada(s).'):
-   stats.matched+' produto(s) reconhecido(s) pela API; '+stats.descriptionsAdded+
-    ' descrição(ões) nova(s) e '+stats.newPhotos+' foto(s) adicionada(s).';
+   stats.identified+' ID(s) de anúncio identificado(s), '+stats.matched+
+    ' produto(s) com dados adicionais encontrados ('+stats.fromPublicPage+
+    ' via página pública); '+stats.descriptionsAdded+' descrição(ões) e '+
+    stats.newPhotos+' foto(s) adicionada(s). '+
+    stats.withoutExtraData+' anúncio(s) sem detalhes adicionais disponíveis.';
   setNotice({
    kind:errors.length||stats.failed?'warning':'success',
    message:headline+(terminated?' Interrompido após o lote atual.':'')+
@@ -74,7 +79,7 @@ export default function CatalogActionsPanel({offers=[],onCompleted}){
  return <section className="vivi-catalog-bulk">
   <div className="vivi-catalog-bulk-head">
    <div><h3><ShieldCheck size={20}/> Publicação e informações dos produtos</h3>
-    <p>Ative todos os produtos elegíveis e consulte fotos e descrições disponíveis na API de Afiliados.</p>
+    <p>Ative os produtos elegíveis e tente identificar os anúncios na Shopee. Os detalhes adicionais dependem da API ou dos metadados públicos permitidos.</p>
    </div>
    <div className="vivi-catalog-counts">
     <span><b>{offers.length}</b> cadastrados</span>
@@ -100,6 +105,6 @@ export default function CatalogActionsPanel({offers=[],onCompleted}){
    {notice.kind==='warning'?<AlertCircle size={19}/>:<CheckCircle2 size={19}/>}
    <span>{notice.message}</span>
   </div>}
-  <p className="vivi-catalog-bulk-note"><BookOpen size={15}/> Produtos repetidos são ignorados. A publicação exige link de afiliado com Sub ID confirmado; fotos extras e descrição só são incluídas quando a Shopee efetivamente fornecer esses dados. Informações manuais são preservadas.</p>
+  <p className="vivi-catalog-bulk-note"><BookOpen size={15}/> A API de Afiliados geralmente oferece somente a imagem principal. Para obter uma descrição ou galeria ausente, abra o produto em Editar e informe o link original completo do anúncio. Não garantimos dados que a Shopee não disponibiliza; conteúdo manual não é apagado.</p>
  </section>;
 }
