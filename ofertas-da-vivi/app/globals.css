@@ -2229,3 +2229,16 @@
  .vivi-discover-card,.vivi-discover-field input,.vivi-discover-field select{transition:none!important}
  .vivi-discover-spin{animation:none}
 }
+
+/* Dados suplementares da API, recolhidos para manter cards compactos. */
+.vivi-discover-details{
+ background:#faf9fc;border:1px solid #ede9f0;border-radius:9px;
+ padding:8px 10px;color:#676271;font-size:11px;
+}
+.vivi-discover-details summary{
+ cursor:pointer;font-weight:800;color:#6c4d66;outline-offset:3px;
+}
+.vivi-discover-details dl{margin:9px 0 1px;display:flex;flex-direction:column;gap:6px}
+.vivi-discover-details dl>div{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.vivi-discover-details dt{font-weight:600;color:#807c87}
+.vivi-discover-details dd{margin:0;font-weight:750;overflow-wrap:anywhere;text-align:right}
