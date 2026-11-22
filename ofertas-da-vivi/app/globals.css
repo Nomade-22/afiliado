@@ -424,3 +424,42 @@
 @media(hover:hover){
  .site-shell .vivi-campaign-offer:hover{box-shadow:0 9px 20px var(--vivi-accent-glow)}
 }
+
+/* ADM — ações de publicação e enriquecimento do catálogo */
+.vivi-catalog-bulk{
+ border:1px solid #e9e9ef;
+ border-radius:14px;
+ background:linear-gradient(145deg,#ffffff 55%,#fff8f4);
+ padding:17px 19px;
+ margin:0 0 16px;
+ min-width:0;
+}
+.vivi-catalog-bulk-head{display:flex;align-items:start;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.vivi-catalog-bulk-head h3{margin:0 0 6px;font-size:17px;display:flex;align-items:center;gap:8px}
+.vivi-catalog-bulk-head h3 svg{color:#e96a2d}
+.vivi-catalog-bulk-head p{margin:0;color:#77808f;font-size:12px;line-height:1.55;max-width:580px}
+.vivi-catalog-counts{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.vivi-catalog-counts span{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;
+ border:1px solid #ecebf0;border-radius:8px;background:#fff;color:#747b8b;font-size:11px}
+.vivi-catalog-counts b{color:#2c303d;font-size:13px}
+.vivi-catalog-bulk-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:15px 0 10px}
+.vivi-catalog-bulk-actions button{min-height:43px;white-space:normal;text-align:center}
+.vivi-catalog-bulk-note{display:flex;align-items:flex-start;gap:7px;font-size:11px;line-height:1.55;
+ color:#777f8c;margin:10px 0 0}
+.vivi-catalog-bulk-note svg{flex-shrink:0;margin-top:1px}
+.vivi-catalog-bulk-progress{background:#f2f5fa;border-radius:11px;padding:12px;margin:12px 0}
+.vivi-catalog-bulk-progress>div{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px}
+.vivi-catalog-bulk-progress progress{width:100%;height:11px;margin-top:9px;accent-color:#f3652e}
+.vivi-editor-fetch{display:flex;flex-direction:column;gap:7px;padding:12px;border:1px solid #efebf3;
+ border-radius:10px;background:#f9fafc}
+.vivi-editor-fetch>button{width:100%}
+.vivi-editor-fetch>small{color:#818896;font-size:11px;line-height:1.5}
+.vivi-editor-fetch .vivi-notice{margin-top:3px}
+@media(max-width:760px){
+ .vivi-catalog-bulk{padding:13px}
+ .vivi-catalog-bulk-head h3{font-size:15px;line-height:1.3}
+ .vivi-catalog-bulk-actions{display:grid;grid-template-columns:1fr}
+ .vivi-catalog-bulk-actions button{width:100%;padding:11px 12px}
+ .vivi-catalog-counts{width:100%}
+ .vivi-catalog-bulk-note{font-size:11px}
+}
