@@ -7,4 +7,15 @@ export const demoOffers = [
  {id:'demo-6',title:'Headset Gamer com Microfone',category:'Eletrônicos',price:121.90,oldPrice:189.90,discount:36,image:'/images/produto-6.webp',featured:false,clicks:0,isDemo:true}
 ];
 export const categories = ['Todos','Casa','Beleza','Moda','Eletrônicos','Utilidades','Infantil'];
-export const defaultSettings = {whatsapp:'',instagram:'',tiktok:'',heroTitle:'Achadinhos, cupons e ofertas selecionadas pela Vivi',heroSubtitle:'Uma seleção especial de achadinhos para você economizar!'};
+export const defaultSettings = {
+ whatsapp:'',instagram:'',tiktok:'',
+ heroMode:'default',
+ heroTheme:'orange',
+ heroBadge:'Seu cantinho de achadinhos',
+ heroTitle:'Achadinhos, cupons e ofertas selecionadas pela Vivi ♡',
+ heroSubtitle:'Uma seleção especial de achadinhos para você economizar!',
+ heroImage:'',
+ heroProductId:'',
+ heroButtonLabel:'Ver ofertas',
+ heroButtonUrl:'#ofertas'
+};
