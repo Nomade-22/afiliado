@@ -51,7 +51,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
     <div className="admin-card-title"><h2><Palette size={21}/> Banners e destaques</h2>
       <button type="button" className="btn btn-outline btn-small" onClick={onManageOffers}>Gerenciar ofertas</button>
     </div>
-    <p className="muted-text">Escolha o que aparece na área laranja do início do site. Você pode destacar uma oferta cadastrada, usar uma imagem de banner ou manter a apresentação padrão.</p>
+    <p className="muted-text">Escolha o banner ou produto em destaque e defina a identidade visual da Vivi. A paleta escolhida também altera as cores dos botões, ícones, cupons, categorias e destaques do site.</p>
     <div className="vivi-mode-grid" role="group" aria-label="Tipo do banner">
      {modeOptions.map(option=><button key={option.value} type="button"
        className={'vivi-mode-card '+(form.heroMode===option.value?'active':'')}
@@ -63,12 +63,13 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
    <form onSubmit={save} className="vivi-banner-admin-grid">
     <section className="admin-card vivi-banner-form">
      <h2><ImageIcon size={20}/> Conteúdo principal</h2>
-     <label style={label}>Cor de fundo
+     <label style={label}>Paleta de cores do site
       <select style={input} value={form.heroTheme||'orange'} onChange={e=>set('heroTheme',e.target.value)}>
        <option value="orange">Laranja Vivi</option>
        <option value="pink">Rosa</option>
        <option value="purple">Roxo</option>
       </select>
+      <small style={{fontWeight:400,color:"#7c8590"}}>A cor do banner também acompanha o site inteiro; Ofertas Relâmpago fica sempre em vermelho e o WhatsApp em verde.</small>
      </label>
      {form.heroMode==='product'&&<label style={label}>Produto em destaque
       <select style={input} required value={form.heroProductId||''} onChange={e=>set('heroProductId',e.target.value)}>

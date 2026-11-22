@@ -77,7 +77,7 @@ export default function CampaignAdminPanel({settings={},onSaved}){
    </form>
   </section>
   <section className="admin-card">
-   <h2><Flame size={20}/> Campanhas retornadas pela Shopee</h2>
+   <h2><Flame size={20}/> Campanhas de marcas e categorias</h2>
    <p className="muted-text">Busca autenticada via API Shopee, com cache para não sobrecarregar suas credenciais. As campanhas podem mudar ou não estar disponíveis para a conta.</p>
    <button className="btn btn-outline btn-wide" type="button" onClick={test} disabled={testBusy}>
     <RefreshCw size={17}/>{testBusy?'Consultando…':'Testar campanhas via API'}

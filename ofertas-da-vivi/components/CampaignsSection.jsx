@@ -25,7 +25,7 @@ export default function CampaignsSection(){
    </a>)}
   </div>
   {offers.length>0&&<>
-   <div className="vivi-campaign-secondary"><ShieldCheck size={17}/> Campanhas identificadas pela API Shopee</div>
+   <div className="vivi-campaign-secondary"><ShieldCheck size={17}/> Campanhas de marcas e categorias</div>
    <div className="vivi-campaign-offers">
     {offers.map(offer=><a key={offer.link} className="vivi-campaign-offer" href={offer.link}
       target="_blank" rel="noopener noreferrer nofollow sponsored">

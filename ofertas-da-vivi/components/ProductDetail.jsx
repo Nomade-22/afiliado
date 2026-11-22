@@ -5,7 +5,7 @@ import {ArrowLeft,ArrowUpRight,ShoppingBag,ShieldCheck,Images,Star,Store,Package
 const money=value=>Number(value).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const number=n=>Number(n).toLocaleString('pt-BR');
 const onlyHTTPS=value=>{try{const u=new URL(value);return u.protocol==='https:'}catch{return false}};
-export default function ProductDetail({offer}){
+export default function ProductDetail({offer,theme='orange'}){
  const [live,setLive]=useState(null),[warning,setWarning]=useState('');
  const [loading,setLoading]=useState(true),[selected,setSelected]=useState(0);
  useEffect(()=>{
@@ -30,7 +30,7 @@ export default function ProductDetail({offer}){
    (Number(live.discountRate)<=1?Number(live.discountRate)*100:Number(live.discountRate)):
    offer.discount;
  const code=offer.internalCode||'Não atribuído';
- return <main className="vivi-product-page">
+ return <main className="vivi-product-page" data-vivi-theme={theme}>
   <div className="vivi-product-top">
    <a href="/" aria-label="Voltar para ofertas"><ArrowLeft size={19}/> Voltar às ofertas</a>
    <strong>♡ Ofertas da <em>Vivi</em></strong>

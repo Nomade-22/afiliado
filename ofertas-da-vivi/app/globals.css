@@ -329,3 +329,98 @@
  .vivi-code-repair{align-items:stretch}
  .vivi-code-repair .btn{width:100%}
 }
+
+
+/* Tema global do site controlado em ADM > Banners e destaques.
+   A promoção relâmpago sempre usa o vermelho próprio; WhatsApp mantém seu verde. */
+.site-shell,
+.vivi-product-page{
+ --vivi-accent:#ee5d22;
+ --vivi-accent-deep:#cf4b1c;
+ --vivi-accent-soft:#fff1e9;
+ --vivi-accent-glow:#f1652935;
+ --vivi-accent-gradient:linear-gradient(115deg,#ff8c26,#f45120);
+}
+.site-shell[data-vivi-theme="pink"],
+.vivi-product-page[data-vivi-theme="pink"]{
+ --vivi-accent:#c72f69;
+ --vivi-accent-deep:#a72253;
+ --vivi-accent-soft:#fff0f5;
+ --vivi-accent-glow:#d44a7940;
+ --vivi-accent-gradient:linear-gradient(115deg,#c7356e,#f16a94);
+}
+.site-shell[data-vivi-theme="purple"],
+.vivi-product-page[data-vivi-theme="purple"]{
+ --vivi-accent:#7147bc;
+ --vivi-accent-deep:#583499;
+ --vivi-accent-soft:#f4efff;
+ --vivi-accent-glow:#7446bd39;
+ --vivi-accent-gradient:linear-gradient(115deg,#6340ac,#a579d9);
+}
+.site-shell{
+ min-height:100vh;
+ background:var(--bg);
+}
+.site-shell .brand em,
+.site-shell .brand-heart,
+.site-shell .header-side-label strong,
+.site-shell .text-action,
+.site-shell .subtle-link,
+.site-shell .nav-content button:first-child,
+.site-shell .nav-content svg,
+.site-shell .category-item svg,
+.site-shell .price-zone strong,
+.site-shell .filter-controls .selected,
+.site-shell .vivi-campaign-offer>span,
+.site-shell .vivi-campaign-secondary svg{
+ color:var(--vivi-accent);
+}
+.site-shell .nav-content button:first-child{border-bottom-color:var(--vivi-accent)}
+.site-shell .nav-content .nav-whatsapp,
+.site-shell .nav-content .nav-whatsapp svg{color:#078c38}
+.site-shell .logo-mark,
+.site-shell .searchbox button,
+.site-shell .btn-primary,
+.site-shell .offer-button,
+.site-shell .filter-pills .active,
+.site-shell .coupon-icon,
+.site-shell .vivi-quick-coupon{
+ background:var(--vivi-accent-gradient);
+ color:#fff;
+}
+.site-shell .logo-mark,
+.site-shell .offer-button,
+.site-shell .vivi-quick-coupon{box-shadow:0 5px 15px var(--vivi-accent-glow)}
+.site-shell .category-item:hover,
+.site-shell .category-active{
+ border-color:var(--vivi-accent);
+ background:var(--vivi-accent-soft);
+}
+.site-shell .filter-pills .active{border-color:var(--vivi-accent)}
+.site-shell .btn-light,
+.site-shell .btn-outline{color:var(--vivi-accent)}
+.site-shell .btn-outline{border-color:var(--vivi-accent)}
+.site-shell .vivi-campaigns .section-heading svg{color:var(--vivi-accent)}
+.site-shell .vivi-campaign-offer:hover{border-color:var(--vivi-accent)}
+.site-shell .vivi-quick-flash{
+ background:linear-gradient(115deg,#b6102d,#ed253a 63%,#ff4541);
+ box-shadow:0 7px 18px #d3283a29;
+ color:#fff;
+}
+.site-shell .vivi-quick-coupon{background:var(--vivi-accent-gradient);color:#fff}
+.site-shell .vivi-quick-flash:hover,
+.site-shell .vivi-quick-coupon:hover{transform:translateY(-2px);filter:brightness(1.03)}
+.site-shell .vivi-campaign-offer:focus-visible,
+.site-shell .vivi-campaign-quick:focus-visible{
+ outline:3px solid var(--vivi-accent);outline-offset:3px;
+}
+.vivi-product-page .vivi-product-top a,
+.vivi-product-page .vivi-product-top em,
+.vivi-product-page .vivi-product-price>strong,
+.vivi-product-page .vivi-product-stats svg{color:var(--vivi-accent)}
+.vivi-product-page .vivi-product-buy{background:var(--vivi-accent-gradient);box-shadow:0 8px 20px var(--vivi-accent-glow)}
+.vivi-product-page .vivi-product-price>span{background:var(--vivi-accent-soft);color:var(--vivi-accent-deep)}
+.vivi-product-page .vivi-product-thumbs button.selected{border-color:var(--vivi-accent)}
+@media(hover:hover){
+ .site-shell .vivi-campaign-offer:hover{box-shadow:0 9px 20px var(--vivi-accent-glow)}
+}
