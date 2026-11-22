@@ -50,6 +50,7 @@ export default function ProductDetail({offer,themeSettings={}}){
    <section className="vivi-product-info">
     <span className="vivi-product-eyebrow"><ShieldCheck size={15}/> Selecionado pela Vivi</span>
     <h1>{offer.title}</h1>
+    {offer.isOfficialShop===true&&<span className="vivi-product-official-badge"><ShieldCheck size={16}/> Loja oficial · Shopee Mall (API)</span>
     <p className="vivi-product-code">Código da Vivi: <b>{code}</b></p>
     <div className="vivi-product-price">{price==null?<strong className="vivi-product-no-price">Confira o preço na Shopee</strong>:
       <strong>{money(price)}{priceMax!=null&&priceMax>price&&<small> até {money(priceMax)}</small>}</strong>}
