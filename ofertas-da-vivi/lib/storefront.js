@@ -1,3 +1,4 @@
+import {inferCategory} from './categories';
 import {createHash} from 'node:crypto';
 import {isShopeeLink} from './shopee-links';
 
@@ -37,13 +38,6 @@ function validImage(raw){
  try{const u=new URL(String(raw||''));return u.protocol==='https:'?u.toString():null}catch{return null}
 }
 
-function categoryOf(name){
- if(/sand[aá]lia|cal[cç]ado|vestido|camisa|cal[cç]a|short|saia|bolsa|sapatilha|suti[aã]|lingerie|moda/i.test(name))return 'Moda';
- if(/cozinha|jogo de|utens[ií]lio|pote|jarra|panela|organizador/i.test(name))return 'Casa';
- if(/perfume|maquiagem|batom|beleza|hidratante/i.test(name))return 'Beleza';
- if(/fone|celular|smartwatch|computador|cabo|eletr[oô]nico/i.test(name))return 'Eletrônicos';
- return 'Outros';
-}
 
 export async function getStorefrontPage(page=1){
  const pageNumber=numberBetween(page,1,100,1);
@@ -74,7 +68,7 @@ export async function getStorefrontPage(page=1){
   const name=String(item.linkName||'').trim().slice(0,210);
   const linkId=String(item.linkId??'').trim();
   const id='vitrine-'+createHash('sha256').update(PROFILE+':'+linkId).digest('hex').slice(0,20);
-  return {id,linkId,title:name,category:categoryOf(name),image:validImage(item.image),
+  return {id,linkId,title:name,category:inferCategory(name),image:validImage(item.image),
    url:source,linkType:'ITEM',groups:Array.isArray(item.groupIds)?item.groupIds.map(String).slice(0,10):[],
    affiliateLinkEligible:isShopeeLink(source),price:null,oldPrice:null,active:false,origin:'vitrine'};
  }).filter(item=>item.linkId&&item.title);

@@ -1,3 +1,4 @@
+import {inferCategory} from './categories';
 import {createHash} from 'node:crypto';
 
 const ENDPOINT='https://open-api.affiliate.shopee.com.br/graphql';
@@ -45,7 +46,7 @@ export async function searchShopeePage(keyword='',limit=24,page=1){
   itemId:String(n.itemId??''),
   shopId:String(n.shopId??''),
   title:String(n.productName??'').slice(0,220),
-  category:'Outros',
+  category:inferCategory(n.productName),
   price:finite(n.priceMin),
   priceMax:finite(n.priceMax),
   oldPrice:null,

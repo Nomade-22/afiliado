@@ -1,3 +1,4 @@
+import {categories} from '../../../../../lib/categories';
 import {isAdmin,forbidden} from '../../../../../lib/auth';
 import {getDB} from '../../../../../lib/db';
 import {isShopeeLink} from '../../../../../lib/shopee-links';
@@ -5,7 +6,6 @@ import {knownOfferKeys,matchExisting} from '../../../../../lib/product-identity'
 
 export const runtime='nodejs';
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
-const categories=['Casa','Beleza','Moda','Eletrônicos','Utilidades','Infantil','Outros'];
 
 export async function PATCH(req,{params}){
  if(!await isAdmin())return forbidden();

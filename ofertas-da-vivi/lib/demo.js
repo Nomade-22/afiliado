@@ -6,7 +6,7 @@ export const demoOffers = [
  {id:'demo-5',title:'Ring Light LED 26cm com Tripé',category:'Beleza',price:65.90,oldPrice:119.90,discount:45,image:'/images/produto-5.webp',featured:false,clicks:0,isDemo:true},
  {id:'demo-6',title:'Headset Gamer com Microfone',category:'Eletrônicos',price:121.90,oldPrice:189.90,discount:36,image:'/images/produto-6.webp',featured:false,clicks:0,isDemo:true}
 ];
-export const categories = ['Todos','Casa','Beleza','Moda','Eletrônicos','Utilidades','Infantil'];
+export {categories} from './categories';
 export const defaultSettings = {
  whatsapp:'',instagram:'',tiktok:'',
  heroMode:'default',

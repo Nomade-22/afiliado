@@ -1,9 +1,9 @@
+import {categories} from '../lib/categories';
 'use client';
 
 import {useState} from 'react';
 import {X,Save,Image as ImageIcon,AlertCircle,RefreshCw,CheckCircle2} from 'lucide-react';
 
-const categories=['Casa','Beleza','Moda','Eletrônicos','Utilidades','Infantil','Outros'];
 export default function OfferEditor({offer,onClose,onSaved}){
  const [form,setForm]=useState({
   title:offer.title||'',category:offer.category||'Outros',
