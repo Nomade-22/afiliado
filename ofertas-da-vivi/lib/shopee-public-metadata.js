@@ -134,7 +134,13 @@ export async function getPublicShopeeItemMetadata(ids,expectedTitle){
  if(!titleMatches(expectedTitle,rawTitle))return {
   matched:false,reason:product?'PRODUCT_TITLE_MISMATCH':'PUBLIC_PRODUCT_METADATA_NOT_AVAILABLE'
  };
- const description=textContent(product?.description||getMeta(html,'og:description'));
+ const publicDescription=product?.description||getMeta(html,'og:description');
+ const descriptionCandidate=textContent(publicDescription);
+ // Muitos anúncios têm metadados genéricos de marketing, não a descrição do
+ // produto. Não usamos slogans genéricos como ficha técnica.
+ const description=/^(compre online|encontre (os )?melhores|compre na shopee|descubra ofertas)/i
+  .test(descriptionCandidate)?'':descriptionCandidate;
+ const description=description.length>=25?description:'';
  const inputs=[...(Array.isArray(product?.image)?product.image:[product?.image]),
   getMeta(html,'og:image')];
  const images=[...new Set(inputs.map(v=>typeof v==='object'?v?.url||v?.contentUrl:v)
