@@ -4,12 +4,13 @@ import {Image as ImageIcon,Palette,Save,CheckCircle2,AlertCircle,ExternalLink,
  Plus,Trash2,ArrowLeft,ArrowRight,Upload,Flame,Images,FileText,Package,ImagePlus,ShoppingBag} from 'lucide-react';
 import {readHeroSlides,getHeroInterval,newHeroSlide,MAX_HERO_SLIDES,MIN_HERO_SLIDES} from '../lib/hero-slides';
 import {VIVI_THEMES,getThemeConfig,getThemeCssVars,isHeroImage} from '../lib/site-theme';
+import ResponsiveBannerImage,{bannerImageOf,bannerMobileImageOf} from './ResponsiveBannerImage';
 
 const input={width:'100%',minWidth:0,padding:'11px 12px',
  border:'1px solid #e1e2e9',borderRadius:10,fontSize:14,
  color:'#252735',background:'#fff'};
 const label={fontSize:13,fontWeight:700,color:'#363743',display:'flex',flexDirection:'column',gap:7};
-const TYPE_LABEL={intro:'Texto e apresentação',images:'Fotos da galeria',
+const TYPE_LABEL={intro:'Texto e apresentação',images:'Banner de imagem inteira',
  flash:'Ofertas relâmpago',product:'Produto em destaque'};
 const TYPE_ICON={intro:FileText,images:Images,flash:Flame,product:Package};
 const MAX_IMAGES=4;
@@ -37,7 +38,7 @@ async function compressImage(file){
  const w=src.width||src.naturalWidth;
  const h=src.height||src.naturalHeight;
  if(!w||!h||w*h>45000000)throw Error('Dimensões inválidas. Escolha outra foto.');
- const width=Math.max(1,Math.round(w*Math.min(1,1500/Math.max(w,h))));
+ const width=Math.max(1,Math.round(w*Math.min(1,1920/Math.max(w,h))));
  const height=Math.max(1,Math.round(h*Math.min(1,1500/Math.max(w,h))));
  const canvas=document.createElement('canvas');
  canvas.width=width;canvas.height=height;
@@ -63,6 +64,7 @@ async function compressImage(file){
 export default function BannerPanel({settings={},offers=[],onSaved,onManageOffers}){
  const [slides,setSlides]=useState(()=>readHeroSlides(settings));
  const [selected,setSelected]=useState(0);
+ const [previewDevice,setPreviewDevice]=useState('mobile');
  const [themeId,setThemeId]=useState(settings.heroTheme||'orange');
  const [palette,setPalette]=useState(()=>getThemeConfig(settings));
  const [seconds,setSeconds]=useState(getHeroInterval(settings));
@@ -125,21 +127,22 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
   setSlides(old=>old.filter((_,i)=>i!==selected));
   setSelected(i=>Math.max(0,Math.min(i,slides.length-2)));
  }
- async function uploadFiles(event){
+ async function uploadFiles(event,variant='desktop'){
   const files=Array.from(event.target.files||[]);
   event.target.value='';
   if(!files.length||!current)return;
   const id=current.id;
+  const single=current.type==='images'||variant==='mobile';
   const currentList=[...(current.images||[])];
-  const capacity=MAX_IMAGES-currentList.length;
+  const capacity=single?1:MAX_IMAGES-currentList.length;
   if(capacity<=0){
    setNotice({error:true,text:'Esta página já contém 4 imagens. Remova uma antes de adicionar outra.'});return;
   }
   if(files.length>capacity){
-   setNotice({error:true,text:'Restam '+capacity+' espaço(s). Selecione até 4 imagens por página.'});return;
+   setNotice({error:true,text:single?'Escolha uma imagem de cada vez.':'Restam '+capacity+' espaço(s).'});return;
   }
   setUploading(true);setUploadCount({done:0,total:files.length});setNotice(null);
-  let completed=0;let imageList=currentList;
+  let completed=0;let imageList=single?[]:currentList;
   try{
    for(const file of files){
     const optimized=await compressImage(file);
@@ -149,12 +152,16 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
     if(r.status===401){window.location.href='/adm/login';return}
     const data=await r.json();
     if(!r.ok||!isHeroImage(data.url))throw Error(data.error||'Erro ao enviar a foto.');
-    imageList=[...imageList,data.url].slice(0,MAX_IMAGES);
-    updateImages(id,imageList);
+    if(variant==='mobile'){
+     setSlides(old=>old.map(slide=>slide.id===id?{...slide,mobileImage:data.url}:slide));
+    }else{
+     imageList=single?[data.url]:[...imageList,data.url].slice(0,MAX_IMAGES);
+     updateImages(id,imageList);
+    }
     completed++;
     setUploadCount({done:completed,total:files.length});
    }
-   setNotice({error:false,text:completed+' imagem(ns) enviada(s). Clique em Salvar todas as páginas para publicar no site.'});
+   setNotice({error:false,text:'Imagem enviada. Clique em Salvar banners e cores para publicar.'});
   }catch(e){
    setNotice({error:true,text:'Enviadas '+completed+' de '+files.length+'. '+String(e?.message||'Erro no upload.')});
   }finally{setUploading(false)}
@@ -240,7 +247,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
     <h2><Images size={21}/> Páginas do banner</h2>
     <button className="btn btn-outline btn-small" onClick={onManageOffers} type="button">Gerenciar ofertas</button>
    </div>
-   <p className="muted-text">Tenha de 3 a 10 páginas, reorganize a ordem e programe a troca automática. No celular o conteúdo e as fotos ficam em áreas separadas, sem sobreposição.</p>
+   <p className="muted-text">Tenha de 3 a 10 banners. Os banners de imagem inteira ocupam toda a largura e podem ficar no carrossel, entre as seções ou no final da página, sem textos sobrepostos.</p>
    <div className="vivi-carousel-global">
     <label style={label}>Tempo entre banners
      <select value={seconds} style={input} onChange={e=>setSeconds(Number(e.target.value))}>
@@ -286,38 +293,78 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
       {Object.entries(TYPE_LABEL).map(([value,name])=><option key={value} value={value}>{name}</option>)}
      </select>
     </label>
+    {current.type==='images'&&<>
+     <label style={label}>Onde mostrar o banner
+      <select style={input} value={current.placement||'carousel'} onChange={e=>updateSlide('placement',e.target.value)}>
+       <option value="carousel">Carrossel principal (largura total)</option>
+       <option value="after-categories">Banner interno: depois das categorias</option>
+       <option value="after-offers">Banner interno: depois dos produtos</option>
+       <option value="bottom">Banner inteiro no final da página</option>
+      </select>
+     </label>
+     <div className="vivi-banner-layout-controls">
+      <label style={label}>Enquadramento
+       <select style={input} value={current.imageFit||'contain'} onChange={e=>updateSlide('imageFit',e.target.value)}>
+        <option value="contain">Mostrar imagem inteira (sem cortar)</option>
+        <option value="cover">Preencher a altura (pode cortar)</option>
+       </select>
+      </label>
+      <label style={label}>Posição da imagem
+       <select style={input} value={current.imagePosition||'center'} onChange={e=>updateSlide('imagePosition',e.target.value)}>
+        <option value="center">Centro</option><option value="top">Topo</option>
+        <option value="bottom">Parte inferior</option>
+        <option value="left">Esquerda</option><option value="right">Direita</option>
+       </select>
+      </label>
+      <label style={label}>Altura no computador
+       <select style={input} value={current.imageHeightDesktop||'auto'} onChange={e=>updateSlide('imageHeightDesktop',e.target.value)}>
+        <option value="auto">Automática: proporção original</option>
+        {[180,240,320,420,520].map(n=><option key={n} value={n}>{n} px</option>)}
+       </select>
+      </label>
+      <label style={label}>Altura no celular
+       <select style={input} value={current.imageHeightMobile||'auto'} onChange={e=>updateSlide('imageHeightMobile',e.target.value)}>
+        <option value="auto">Automática: proporção original</option>
+        {[180,240,320,420,520].map(n=><option key={n} value={n}>{n} px</option>)}
+       </select>
+      </label>
+     </div>
+     <p className="vivi-photo-info">Recomendamos 1920 × 640 px no computador e 1080 × 810 px no celular. No modo automático, a imagem aparece inteira, sem cortes.</p>
+    </>}
     {current.type==='product'&&<label style={label}>Escolher produto ativo
      <select style={input} value={current.productId||''} onChange={e=>updateSlide('productId',e.target.value)}>
       <option value="">Selecione um produto</option>
       {activeOffers.map(o=><option key={o.id} value={o.id}>{o.title.slice(0,100)}</option>)}
      </select>
     </label>}
-    <label style={label}>Etiqueta superior
+    {current.type!=='images'&&<label style={label}>Etiqueta superior
      <input style={input} value={current.badge||''} maxLength={85}
       onChange={e=>updateSlide('badge',e.target.value)}/>
-    </label>
-    <label style={label}>Título do banner
+    </label>}
+    <label style={label}>{current.type==='images'?'Descrição da arte (acessibilidade)':'Título do banner'}
      <textarea style={{...input,minHeight:78,resize:'vertical'}} maxLength={170}
       value={current.title||''} onChange={e=>updateSlide('title',e.target.value)}/>
     </label>
-    <label style={label}>Texto de apoio
+    {current.type!=='images'&&<label style={label}>Texto de apoio
      <textarea style={{...input,minHeight:85,resize:'vertical'}} maxLength={300}
       value={current.subtitle||''} onChange={e=>updateSlide('subtitle',e.target.value)}/>
-    </label>
+    </label>}
     {current.type!=='product'&&<div className="vivi-banner-images-editor">
      <div className="vivi-banner-images-header">
-      <strong><ImagePlus size={18}/> Fotos do banner</strong>
-      <small>{(current.images||[]).length} / {MAX_IMAGES}</small>
+      <strong><ImagePlus size={18}/> {current.type==='images'?'Arte principal · computador':'Fotos do banner'}</strong>
+      <small>{(current.images||[]).length} / {current.type==='images'?1:MAX_IMAGES}</small>
      </div>
      <label className={'vivi-upload-button'+(uploading?' uploading':'')}>
       <Upload size={20}/>
       {uploading?'Enviando '+uploadCount.done+'/'+uploadCount.total+'…':
-       'Escolher fotos do celular ou computador'}
-      <input type="file" accept="image/*" multiple
-       disabled={uploading||saving||(current.images||[]).length>=MAX_IMAGES}
-       onChange={uploadFiles}/>
+       current.type==='images'?'Escolher ou substituir arte do computador':'Escolher fotos do celular ou computador'}
+      <input type="file" accept="image/*" multiple={current.type!=='images'}
+       disabled={uploading||saving||(current.type!=='images'&&(current.images||[]).length>=MAX_IMAGES)}
+       onChange={e=>uploadFiles(e,'desktop')}/>
      </label>
-     <p className="vivi-photo-info">Fotos JPG, PNG ou WebP. O site otimiza automaticamente para carregar rápido. Até quatro imagens por página.</p>
+     <p className="vivi-photo-info">{current.type==='images'?
+      'Uma arte principal por banner. A imagem é otimizada para carregar rápido e pode ser substituída quando quiser.':
+      'Fotos JPG, PNG ou WebP. O site otimiza automaticamente para carregar rápido. Até quatro imagens por página.'}</p>
      {!!(current.images||[]).length&&<div className="vivi-admin-photo-list">
       {current.images.map((url,i)=><div key={url+i} className="vivi-admin-photo-card">
        {isHeroImage(url)?<img src={url} alt={'Imagem '+(i+1)}/>:<div>Link inválido</div>}
@@ -333,13 +380,34 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
        placeholder="https://exemplo.com/foto.webp"/>
      </details>
     </div>}
+    {current.type==='images'&&<div className="vivi-banner-images-editor">
+     <div className="vivi-banner-images-header">
+      <strong><ImagePlus size={18}/> Versão para celular (opcional)</strong>
+     </div>
+     <label className={'vivi-upload-button'+(uploading?' uploading':'')}>
+      <Upload size={19}/>{uploading?'Enviando...':'Escolher ou substituir arte do celular'}
+      <input type="file" accept="image/*" disabled={uploading||saving}
+       onChange={e=>uploadFiles(e,'mobile')}/>
+     </label>
+     {bannerMobileImageOf(current)&&<div className="vivi-banner-mobile-uploaded">
+      <img src={current.mobileImage} alt="Arte para celular"/>
+      <button type="button" className="btn btn-outline btn-small"
+       onClick={()=>updateSlide('mobileImage','')}><Trash2 size={15}/> Remover versão mobile</button>
+     </div>}
+     <details className="vivi-image-url-details">
+      <summary>Ou usar URL HTTPS da imagem mobile</summary>
+      <input style={input} value={current.mobileImage||''}
+       onChange={e=>updateSlide('mobileImage',e.target.value)} placeholder="https://..."/>
+     </details>
+     <p className="vivi-photo-info">Sem arte para celular? Usaremos automaticamente a arte principal, sempre sem cortar no modo automático.</p>
+    </div>}
     {current.type==='flash'&&<p className="vivi-carousel-tip"><Flame size={17}/>
      Este banner mantém o vermelho de Ofertas Relâmpago e utiliza o link configurado no painel de promoções.</p>}
-    <label style={label}>Texto do botão
+    {current.type!=='images'&&<label style={label}>Texto do botão
      <input style={input} value={current.buttonLabel||''} maxLength={55}
       onChange={e=>updateSlide('buttonLabel',e.target.value)}/>
-    </label>
-    {current.type!=='flash'&&current.type!=='product'&&<label style={label}>Link do botão
+    </label>}
+    {current.type!=='flash'&&current.type!=='product'&&<label style={label}>{current.type==='images'?'Link ao tocar na imagem':'Link do botão'}
      <input style={input} value={current.buttonUrl||''}
       onChange={e=>updateSlide('buttonUrl',e.target.value)} placeholder="#ofertas ou https://..."/>
     </label>}
@@ -355,7 +423,15 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
    <aside className="admin-card">
     <h2>Prévia da página {selected+1}</h2>
     <p className="muted-text">Esta visualização ajuda a conferir a disposição dos elementos antes de publicar.</p>
-    <div className="vivi-banner-preview vivi-carousel-admin-preview"
+    {current.type==='images'&&<div className="vivi-banner-preview-device">
+     <button type="button" className={previewDevice==='mobile'?'selected':''} onClick={()=>setPreviewDevice('mobile')}>Celular</button>
+     <button type="button" className={previewDevice==='desktop'?'selected':''} onClick={()=>setPreviewDevice('desktop')}>Computador</button>
+    </div>}
+    {current.type==='images'?<div className={'vivi-banner-full-preview device-'+previewDevice}>
+     {bannerImageOf(current)||bannerMobileImageOf(current)?
+      <ResponsiveBannerImage slide={current} previewDevice={previewDevice}/>:
+      <p>Envie sua arte para visualizar o banner inteiro aqui.</p>}
+    </div>:<div className="vivi-banner-preview vivi-carousel-admin-preview"
      style={{background:previewBackground,color:current.type==='flash'?'white':themeVars['--vivi-hero-ink']}}>
      <div className="vivi-preview-copy">
       <span>{current.badge||'Destaque Vivi'}</span>
@@ -369,7 +445,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
       </div>:previewImages[0]?<img src={previewImages[0]} alt="Prévia"/>:
       <div className="vivi-carousel-preview-illustration">{current.type==='flash'?
        <Flame size={62}/>:<ShoppingBag size={64}/>}</div>}
-    </div>
+    </div>}
     <p className="footnote">Página {selected+1} de {slides.length}. Troca automática a cada {seconds} segundos.</p>
     <a href="/" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-wide">
      <ExternalLink size={17}/> Ver site público
