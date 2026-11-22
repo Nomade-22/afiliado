@@ -3,12 +3,10 @@ import {useEffect,useState} from 'react';
 import {TicketPercent,Flame,ArrowUpRight,CalendarDays,ShieldCheck} from 'lucide-react';
 
 const safe=(u)=>{try{return new URL(u).protocol==='https:'}catch{return false}};
-export default function CampaignsSection({part='details'}){
- const [data,setData]=useState(null);
+export default function CampaignsSection({part='details',data=null}){
  const [discounts,setDiscounts]=useState([]);
  useEffect(()=>{
   let live=true;
-  fetch('/api/campaigns').then(r=>r.json()).then(d=>{if(live)setData(d)}).catch(()=>{});
   if(part==='details')fetch('/api/discount-offers',{cache:'no-store'})
    .then(r=>r.ok?r.json():null)
    .then(d=>{if(live&&Array.isArray(d?.offers))setDiscounts(d.offers);})
