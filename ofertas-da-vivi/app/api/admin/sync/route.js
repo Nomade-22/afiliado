@@ -18,7 +18,10 @@ export async function POST(req){
  try{sql=await getDB();if(!sql)throw Error('Neon')}
  catch{return Response.json({error:'O Neon não está conectado.'},{status:503,headers})}
  try{
-  const page=await searchShopeePage(input.keyword,input.limit??24,input.page??1);
+  const page=await searchShopeePage(input.keyword,input.limit??24,input.page??1,{
+   sortType:input.sortType,listType:input.listType,
+   isAMSOffer:input.isAMSOffer===true,isKeySeller:input.isKeySeller===true
+  });
   const chosen=page.offers.filter(x=>ids.includes(x.id));
   if(chosen.length!==ids.length)return Response.json({
    error:'A Shopee alterou os resultados da pesquisa. Atualize a página antes de importar.'
@@ -42,14 +45,19 @@ export async function POST(req){
      const identity=primaryOfferKey(offer);
      const inserted=await sql`INSERT INTO vivi_offers
       (id,title,category,price,old_price,image,url,featured,active,origin,
-       item_id,shop_id,shop_name,commission_rate,price_max,price_discount_rate,discount_checked_at,
+       item_id,shop_id,shop_name,shop_type,commission_rate,
+       seller_commission_rate,shopee_commission_rate,commission_amount,product_cat_ids,
+       offer_period_start,offer_period_end,price_max,price_discount_rate,discount_checked_at,
        product_link,sales,rating_star,affiliate_link_source,affiliate_sub_ids,
        affiliate_status,internal_code,imported_at,dedupe_key,updated_at)
       VALUES
       (${offer.id},${offer.title},${offer.category},${offer.price},${offer.oldPrice},
        ${offer.image},${link.shortLink},false,false,'shopee',
-       ${offer.itemId},${offer.shopId},${offer.shopName},
-       ${offer.commissionRate},${offer.priceMax},${offer.priceDiscountRate},NOW(),
+       ${offer.itemId},${offer.shopId},${offer.shopName},${offer.shopType},
+       ${offer.commissionRate},${offer.sellerCommissionRate},${offer.shopeeCommissionRate},
+       ${offer.commission},${JSON.stringify(offer.productCatIds||[])},
+       ${offer.periodStartTime},${offer.periodEndTime},
+       ${offer.priceMax},${offer.priceDiscountRate},NOW(),
        ${offer.productLink},${offer.sales},${offer.ratingStar},
        'generateShortLink',${link.usedSubId},'verified',${code},NOW(),${identity},NOW())
       ON CONFLICT DO NOTHING RETURNING id`;
