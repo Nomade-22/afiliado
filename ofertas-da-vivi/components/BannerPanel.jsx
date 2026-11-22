@@ -223,7 +223,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
    <button type="button" className="btn btn-primary btn-wide" onClick={save} disabled={saving||uploading}>
     <Save size={17}/>{saving?'Salvando…':'Aplicar personalização no site'}
    </button>
-   <p className="footnote">O Natal fica desligado por padrão. Ao desativar e salvar, suas cores anteriores voltam automaticamente.</p>
+   <p className="footnote">O tema de Natal está disponível nesta temporada. Desative e salve quando quiser voltar às cores anteriores.</p>
   </section>
   <section className="admin-card vivi-theme-editor">
    <div className="admin-card-title">
