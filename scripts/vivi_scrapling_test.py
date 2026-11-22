@@ -200,44 +200,68 @@ def extract_html(content, expected_title):
 def analyze_one(product):
     from scrapling.fetchers import DynamicFetcher
     t = time.monotonic()
+    urls = [
+        product["sourceUrl"],
+        "https://shopee.com.br/i." + str(product["shopId"]) + "." + str(product["itemId"]),
+    ]
     result = {
         "id": product["id"], "title": product["title"],
         "sourceUrl": product["sourceUrl"], "httpStatus": 0, "status": "error",
         "description": "", "descriptionSource": "", "images": [],
-        "duplicateImagesRemoved": 0, "titleMatched": False, "reason": ""
+        "duplicateImagesRemoved": 0, "titleMatched": False,
+        "reason": "",
     }
-    try:
-        # Navegador normal: sem sessão autenticada, sem rotação de IP e sem burlar desafios.
-        response = DynamicFetcher.fetch(
-            product["sourceUrl"], headless=True, google_search=False,
-            network_idle=False, timeout=22000, wait=950, retries=1
-        )
-        result["httpStatus"] = int(response.status or 0)
-        content = response.body.decode("utf8", "replace")
-        low = norm(content[:15000])
-        if result["httpStatus"] in (403, 429) or (
-            "captcha" in low and len(content) < 50000) or (
-            "verificacao de seguranca" in low and len(content) < 50000):
-            result.update(status="blocked", reason="Shopee exigiu verificação ou restringiu o acesso público.")
-        elif result["httpStatus"] >= 400:
-            result.update(status="unavailable", reason="HTTP " + str(result["httpStatus"]))
-        elif not content.strip():
-            result.update(status="unavailable", reason="Resposta vazia.")
-        else:
+    messages = []
+    for index, url in enumerate(urls):
+        try:
+            response = DynamicFetcher.fetch(
+                url, headless=True, google_search=False,
+                network_idle=False, timeout=22000, wait=950, retries=1
+            )
+            result["httpStatus"] = int(response.status or 0)
+            content = response.body.decode("utf8", "replace")
+            low = norm(content[:15000])
+            if result["httpStatus"] in (403, 429) or (
+                    "captcha" in low and len(content) < 50000) or (
+                    "verificacao de seguranca" in low and len(content) < 50000):
+                result.update(status="blocked",
+                              reason="Shopee exigiu verificação ou restringiu o acesso público.")
+                break
+            if result["httpStatus"] >= 400:
+                messages.append("Rota " + str(index+1) + " HTTP " + str(result["httpStatus"]))
+                result.update(status="unavailable")
+                continue
+            if not content.strip():
+                messages.append("Rota " + str(index+1) + " resposta vazia")
+                result.update(status="unavailable")
+                continue
             parsed = extract_html(content, product["title"])
             result.update(parsed)
             if not parsed["titleMatched"]:
-                result.update(status="unavailable")
-            elif parsed["description"] and len(parsed["images"]) >= 2:
-                result.update(status="success")
+                soup = BeautifulSoup(content, "html.parser")
+                seen_title = metatag(soup, "og:title") or (
+                    soup.title.get_text(" ", strip=True) if soup.title else "")
+                # Apenas diagnóstico textual curto, nunca guardar HTML ou cookies.
+                seen_title = re.sub(r"\\s+", " ", seen_title).strip()[:65]
+                messages.append("Rota " + str(index+1) + " página genérica: " +
+                                (seen_title or "sem título"))
+                result.update(status="unavailable", description="", images=[])
+                continue
+            if parsed["description"] and len(parsed["images"]) >= 2:
+                result.update(status="success", reason="")
             elif parsed["description"] or parsed["images"]:
                 result.update(status="partial",
-                    reason="Somente parte dos detalhes está acessível.")
+                              reason="Somente parte dos detalhes está acessível.")
             else:
                 result.update(status="unavailable",
-                    reason="Nenhuma descrição ou galeria foi encontrada na página pública.")
-    except Exception as exc:
-        result.update(status="error",reason=type(exc).__name__ + ": " + str(exc)[:150])
+                              reason="O anúncio abriu, mas não expôs descrição ou galeria.")
+            break
+        except Exception as exc:
+            messages.append("Rota " + str(index+1) + ": " +
+                            type(exc).__name__ + ": " + str(exc)[:85])
+            result.update(status="error")
+    if not result["titleMatched"] and result["status"] != "blocked":
+        result["reason"] = " | ".join(messages)[-250:]
     result["runtimeSeconds"] = round(time.monotonic() - t, 1)
     return result
 
