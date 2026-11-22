@@ -42,6 +42,10 @@ function ProductCard({offer,mode}){
       'Percentual informado pela API Shopee':'Comparação com preço de referência cadastrado'}>
       <Tag size={13}/> -{numericDiscount}%
      </span>}
+    {offer.isOfficialShop===true&&<span className="vivi-official-store-badge"
+      title="Loja classificada como Shopee Mall nos dados da API de Afiliados">
+      <ShieldCheck size={13}/> Loja oficial
+     </span>}
    </div>
    <div className="product-content">
     <div className="vivi-card-strap">
