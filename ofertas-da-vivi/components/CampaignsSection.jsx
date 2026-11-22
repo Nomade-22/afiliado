@@ -11,8 +11,8 @@ export default function CampaignsSection(){
   return ()=>{live=false};
  },[]);
  if(!data||data.enabled===false)return null;
- const links=data.links||[],offers=data.offers||[];
- if(!links.length&&!offers.length)return null;
+ const links=data.links||[],offers=data.offers||[],flashOffers=data.flashOffers||[];
+ if(!links.length&&!offers.length&&!flashOffers.length)return null;
  return <section className="vivi-campaigns" id="cupons">
   <div className="section-heading"><h2><TicketPercent size={25}/> Promoções e cupons</h2></div>
   <p className="vivi-campaigns-intro">Veja os destaques e confira condições, prazos e descontos diretamente na Shopee.</p>
@@ -24,6 +24,26 @@ export default function CampaignsSection(){
     <ArrowUpRight size={20}/>
    </a>)}
   </div>
+  {flashOffers.length>0&&<div className="vivi-live-flash-section">
+   <div className="vivi-live-flash-heading">
+    <Flame size={19}/>
+    <div><h3>Campanhas relâmpago da Shopee</h3>
+    <p>Identificadas pelo nome na API de Afiliados. Confira o preço e a validade na Shopee.</p></div>
+   </div>
+   <div className="vivi-live-flash-grid">
+    {flashOffers.map((offer,i)=><a key={offer.link||i}
+      href={offer.link} target="_blank"
+      rel="noopener noreferrer nofollow sponsored"
+      className="vivi-live-flash-card">
+      {safe(offer.image)&&<img src={offer.image} loading="lazy" alt=""/>}
+      <span className="vivi-live-flash-card-copy">
+       <strong>{offer.title}</strong>
+       {offer.end&&<small><CalendarDays size={13}/> Até {new Date(offer.end*1000).toLocaleDateString('pt-BR')}</small>}
+       <em>Ver campanha <ArrowUpRight size={15}/></em>
+      </span>
+    </a>)}
+   </div>
+  </div>}
   {offers.length>0&&<>
    <div className="vivi-campaign-secondary"><ShieldCheck size={17}/> Campanhas de marcas e categorias</div>
    <div className="vivi-campaign-offers">
