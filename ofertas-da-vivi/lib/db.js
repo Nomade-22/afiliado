@@ -1,5 +1,4 @@
 import { neon } from '@neondatabase/serverless';
-import {inferCategory} from './categories';
 let initPromise;
 export const hasDatabase = () => Boolean(process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgres'));
 export async function getDB(){

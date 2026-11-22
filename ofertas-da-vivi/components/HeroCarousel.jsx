@@ -10,7 +10,7 @@ const safeImage=value=>{
  }catch{return false}
 };
 const safeDestination=value=>{
- if(value==='#ofertas'||value==='#cupons')return true;
+ if(value==='#ofertas'||value==='#cupons'||/^\/produto\/[a-zA-Z0-9_-]+$/.test(String(value||'')))return true;
  try{
   const u=new URL(String(value||''));
   return u.protocol==='https:'&&!u.username&&!u.password;

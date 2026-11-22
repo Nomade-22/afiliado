@@ -40,19 +40,6 @@ export default function HomePage(){
  const filtered=useMemo(()=>{let arr=offers.filter(o=>(activeCat==='Todos'||o.category===activeCat)&&(!q||o.title.toLowerCase().includes(q.toLowerCase()))&&(!showFavorites||favorites.includes(o.id)));if(sort==='preco-crescente')arr.sort((a,b)=>(a.price==null?Infinity:a.price)-(b.price==null?Infinity:b.price));else if(sort==='preco-decrescente')arr.sort((a,b)=>(b.price==null?-1:b.price)-(a.price==null?-1:a.price));else if(sort==='desconto')arr.sort((a,b)=>(b.discount||0)-(a.discount||0));else arr.sort((a,b)=>Number(b.featured)-Number(a.featured));return arr},[offers,q,activeCat,sort,showFavorites,favorites]);
  function setCat(c){setActiveCat(prev=>prev===c?'Todos':c);setMenuOpen(false);document.getElementById('ofertas')?.scrollIntoView({behavior:'smooth'})}
  const whatsappOK=Boolean(settings.whatsapp&&settings.whatsapp.startsWith('https://'));const channel=whatsappOK?settings.whatsapp:null;
- const heroProduct=offers.find(offer=>offer.id===settings.heroProductId && offer.active&&offer.url);
- const chosenHeroMode=settings.heroMode==='product'&&heroProduct?'product':
-    settings.heroMode==='banner'&&settings.heroImage?'banner':'default';
- const heroImage=chosenHeroMode==='product'?heroProduct?.image:
-    chosenHeroMode==='banner'?settings.heroImage:null;
- const heroTitle=chosenHeroMode==='product'?heroProduct.title:
-    settings.heroTitle||defaultSettings.heroTitle;
- const heroButtonUrl=chosenHeroMode==='product'?
-    '/produto/'+encodeURIComponent(heroProduct.id):
-    settings.heroButtonUrl||'#ofertas';
- const heroButtonLabel=chosenHeroMode==='product'?'Ver produto':
-    settings.heroButtonLabel||'Ver ofertas';
- const isHeroExternal=heroButtonUrl.startsWith('https://');
  return <div className="site-shell" data-vivi-theme={["orange","pink","purple"].includes(settings.heroTheme)?settings.heroTheme:"orange"}>
   <header className="site-header"><div className="header-top container"><Logo/><form className="searchbox" onSubmit={e=>{e.preventDefault();document.getElementById('ofertas')?.scrollIntoView({behavior:'smooth'})}}><Search size={19} color="#777"/><input aria-label="Buscar produtos" value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar produtos, ofertas e cupons..."/><button aria-label="Pesquisar" type="submit"><Search size={20}/></button></form><div className="header-side"><span className="header-side-label"><span>🛍️</span><strong>Achadinhos</strong><small>Selecionados com carinho</small></span><button className="mobile-menu" onClick={()=>setMenuOpen(!menuOpen)} aria-label="Abrir menu">{menuOpen?<X/>:<Menu/>}</button></div></div><nav className={'main-nav '+(menuOpen?'nav-open':'')}><div className="container nav-content"><button onClick={()=>{setCat('Todos');window.scrollTo({top:0,behavior:'smooth'})}}><House size={19}/> Início</button><button onClick={()=>{setCat('Todos');setSort('desconto')}}><Flame size={19}/> Ofertas do Dia</button><button onClick={()=>document.getElementById('cupons')?.scrollIntoView({behavior:'smooth'})}><TicketPercent size={19}/> Cupons</button><button onClick={()=>document.getElementById('categorias')?.scrollIntoView({behavior:'smooth'})}><Menu size={18}/> Categorias</button>{channel?<a href={channel} target="_blank" rel="noopener noreferrer" className="nav-whatsapp"><MessageCircle size={19}/> Canal VIP da Vivi</a>:<span className="nav-whatsapp nav-placeholder"><MessageCircle size={19}/> Canal VIP em breve</span>}</div></nav></header>
   <main className="container">
