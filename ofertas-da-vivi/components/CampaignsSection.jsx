@@ -3,6 +3,14 @@ import {useEffect,useState} from 'react';
 import {TicketPercent,Flame,ArrowUpRight,CalendarDays,ShieldCheck} from 'lucide-react';
 
 const safe=(u)=>{try{return new URL(u).protocol==='https:'}catch{return false}};
+const safeShopee=(u)=>{
+ try{
+  const url=new URL(String(u||''));
+  const hosts=['shopee.com.br','shopee.com','s.shopee.com.br','shopee.ee','shope.ee','s.shopee.com'];
+  return url.protocol==='https:'&&!url.username&&!url.password&&!url.port&&
+   hosts.some(host=>url.hostname===host||url.hostname.endsWith('.'+host));
+ }catch{return false}
+};
 export default function CampaignsSection({part='details',data=null}){
  const [discounts,setDiscounts]=useState([]);
  useEffect(()=>{
@@ -16,10 +24,15 @@ export default function CampaignsSection({part='details',data=null}){
  if(data?.enabled===false)return null;
  const links=data?.links||[],offers=data?.offers||[],flashOffers=data?.flashOffers||[];
  if(part==='quick'){
-  if(!links.length)return null;
+  const quickLinks=links.filter(link=>safeShopee(link.url));
+  if(!quickLinks.length)return null;
   return <section className="vivi-campaigns-quick-section" id="cupons" aria-label="Ofertas relâmpago e cupons da Shopee">
+   <div className="vivi-campaigns-quick-heading">
+    <h2><TicketPercent size={24}/> Promoções e cupons</h2>
+    <p>Veja ofertas relâmpago e cupons disponíveis diretamente na Shopee.</p>
+   </div>
    <div className="vivi-campaign-quicklinks">
-   {links.map(link=><a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer nofollow sponsored"
+   {quickLinks.map(link=><a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer nofollow sponsored"
     className={'vivi-campaign-quick vivi-quick-'+link.id}>
     {link.id==='flash'?<Flame size={25}/>:<TicketPercent size={25}/>}
     <span><b>{link.title}</b><small>{link.description}</small></span>
