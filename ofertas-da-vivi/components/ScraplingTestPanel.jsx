@@ -7,7 +7,7 @@ const ACTIONS='https://github.com/Nomade-22/afiliado/actions/workflows/vivi-scra
 const states={
  success:['Completo','good'],
  partial:['Parcial','warning'],
- unavailable:['Não encontrado','muted'],
+ unavailable:['Anúncio não carregado','warning'],
  blocked:['Acesso restrito','danger'],
  error:['Erro de consulta','danger'],
  not_attempted:['Não consultado','muted']
@@ -41,6 +41,8 @@ export default function ScraplingTestPanel(){
   return {count:items.length,full:items.filter(x=>x.status==='success').length,
    partial:items.filter(x=>x.status==='partial').length,
    blocked:items.filter(x=>x.status==='blocked').length,
+   generic:items.filter(x=>x.status==='unavailable'&&/página genérica/i.test(x.reason||'')).length,
+   useful:items.filter(x=>x.titleMatched&&(x.description?.trim()||(x.images||[]).length)).length,
    photos:items.reduce((n,x)=>n+(x.images||[]).length,0),
    described:items.filter(x=>x.description?.trim()).length};
  },[report]);
@@ -58,10 +60,10 @@ export default function ScraplingTestPanel(){
      <RefreshCw size={17}/> {busy?'Consultando…':'Atualizar resultados'}
     </button>
     <a className="btn btn-primary" href={ACTIONS} target="_blank" rel="noopener noreferrer">
-     <FlaskConical size={17}/> Executar novo teste no GitHub <ExternalLink size={14}/>
+     <FlaskConical size={17}/> Ver execuções no GitHub <ExternalLink size={14}/>
     </a>
    </div>
-   <p className="vivi-scrapling-hint">Para repetir, abra o GitHub Actions, escolha <b>Run workflow</b> na branch principal e depois volte para atualizar os resultados. O primeiro teste também é disparado quando o workflow é publicado na branch principal.</p>
+   <p className="vivi-scrapling-hint">O relatório é atualizado automaticamente. A execução do GitHub só indica que o coletor rodou, não que a Shopee liberou as fotos e descrições. Repetir a mesma coleta sem mudar a estratégia provavelmente produzirá o mesmo resultado.</p>
   </section>
   {error&&<div className="vivi-notice vivi-notice-error" role="alert"><AlertTriangle size={19}/>{error}</div>}
   {report?<section className="admin-card">
@@ -69,7 +71,7 @@ export default function ScraplingTestPanel(){
      <div><h3>Último teste registrado</h3>
       <p><Clock3 size={15}/> {displayDate(report.finishedAt)} · Execução #{report.runId}</p>
      </div>
-     <span className="vivi-scrapling-status">{report.status==='completed'?'Teste concluído':'Teste interrompido'}</span>
+     <span className={'vivi-scrapling-status'+(report.status==='completed'&&!totals.useful?' vivi-scrapling-status-no-data':'')}>{report.status!=='completed'?'Execução interrompida':totals.useful?'Dados encontrados':'Executado · sem dados extraídos'}</span>
     </div>
     <div className="vivi-scrapling-stats">
      <div><strong>{totals.count}</strong><small>Consultados</small></div>
@@ -77,8 +79,12 @@ export default function ScraplingTestPanel(){
      <div><strong>{totals.partial}</strong><small>Parciais</small></div>
      <div><strong>{totals.described}</strong><small>Com descrição</small></div>
      <div><strong>{totals.photos}</strong><small>Imagens distintas</small></div>
-     <div><strong>{totals.blocked}</strong><small>Bloqueados</small></div>
+     <div><strong>{totals.generic}</strong><small>Páginas genéricas</small></div>
     </div>
+    {report.status==='completed'&&!totals.useful&&<div className="vivi-scrapling-diagnosis" role="status">
+     <AlertTriangle size={20}/>
+     <span><b>O teste executou, mas não conseguiu acessar os anúncios individuais.</b> {totals.generic===totals.count?'As 10 URLs devolveram a página genérica da Shopee, apesar do HTTP 200.':'As páginas consultadas não forneceram fotos ou descrições verificáveis.'} Isso não significa que os produtos não existem ou que foram excluídos. Não vamos importar conteúdo incompleto para a vitrine.</span>
+    </div>}
     <p className="vivi-scrapling-hint">{report.notes}</p>
    </section>:<section className="admin-card vivi-scrapling-empty">
     <Clock3 size={32}/><h3>Aguardando o primeiro relatório</h3>
@@ -90,7 +96,7 @@ export default function ScraplingTestPanel(){
    <div className="vivi-scrapling-grid">
     {(data?.candidates||[]).map((item,index)=>{
      const result=byId.get(item.id);
-     const status=result?states[result.status]||states.error:null;
+     const status=result?(result.status==='unavailable'&&/página genérica/i.test(result.reason||'')?['Página genérica','warning']:states[result.status]||states.error):null;
      const photos=result?.images||[];
      const description=result?.description||'';
      const showDescription=Boolean(expanded[item.id]);
