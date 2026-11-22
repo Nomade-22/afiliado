@@ -4,6 +4,7 @@ import {ArrowRight,ChevronLeft,ChevronRight,Flame,Pause,Play,
  Sparkles,Tag,ShoppingBag,Heart} from 'lucide-react';
 import {getHeroInterval,readHeroSlides} from '../lib/hero-slides';
 import {isHeroImage} from '../lib/site-theme';
+import ResponsiveBannerImage from './ResponsiveBannerImage';
 
 const safeDestination=value=>{
  if(value==='#ofertas'||value==='#cupons'||/^\/produto\/[a-zA-Z0-9_-]+$/.test(String(value||'')))return true;
@@ -14,7 +15,7 @@ const safeDestination=value=>{
 };
 
 export default function HeroCarousel({settings={},offers=[]}){
- const slides=useMemo(()=>readHeroSlides(settings).filter(s=>s.enabled!==false),[settings]);
+ const slides=useMemo(()=>readHeroSlides(settings).filter(s=>s.enabled!==false&&(!s.placement||s.placement==='carousel')),[settings]);
  const [active,setActive]=useState(0);
  const [flashCampaigns,setFlashCampaigns]=useState([]);
  const [discountOffers,setDiscountOffers]=useState([]);
@@ -63,6 +64,7 @@ export default function HeroCarousel({settings={},offers=[]}){
  const discountedProducts=flash&&!featuredFlash?discountOffers.slice(0,3):[];
  const showingDiscounts=discountedProducts.length>0;
  const images=current.type==='images';
+ const fullImage=images&&(gallery.length>0||isHeroImage(current.mobileImage));
  const mainImage=product&&isHeroImage(offer.image)?offer.image:
    (current.type==='intro'||flash)&&gallery.length?gallery[0]:null;
  const href=product?'/produto/'+encodeURIComponent(offer.id):
@@ -91,7 +93,13 @@ export default function HeroCarousel({settings={},offers=[]}){
      if(Math.abs(diff)>45)navigate(diff<0?1:-1);
      touchX.current=null;
     }}>
-   <div key={current.id} className={'vivi-hero-current'+(images&&gallery.length?' vivi-hero-with-gallery':'')}>
+   <div key={current.id} className={'vivi-hero-current'+(fullImage?' vivi-hero-with-full-image':'')}>
+    {fullImage?<a className="vivi-hero-full-image" href={destination}
+      target={external?'_blank':undefined}
+      rel={external?'noopener noreferrer nofollow sponsored':undefined}
+      aria-label={current.title||'Ver ofertas da Vivi'}>
+      <ResponsiveBannerImage slide={current} priority/>
+     </a>:<>
     <div className="vivi-hero-content">
      <span className="vivi-hero-eyebrow">{flash?<Flame size={16}/>:<Sparkles size={16}/>}
       {eyebrow}</span>
@@ -144,6 +152,7 @@ export default function HeroCarousel({settings={},offers=[]}){
        <Sparkles className="vivi-hero-art-sparkles" size={31}/>
       </div>}
     </div>
+    </>}
    </div>
    {slides.length>1&&<div className="vivi-hero-controls">
     <button className="vivi-hero-control" type="button"
