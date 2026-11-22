@@ -1,24 +1,21 @@
 /**
- * O identificador interno é preservado na forma DDMMAA_0001.
- * A Shopee pode rejeitar esse valor como Sub ID. Nesse caso, tentamos
- * seu equivalente alfanumérico, com prefixo v, sem perder a associação.
+ * Código do produto e Sub ID usam exatamente 10 dígitos: DDMMAANNNN.
+ * Exemplo: 2111260072. Sem separadores ou prefixos.
  */
 export function subIdCandidates(internalCode){
- const code=String(internalCode||'');
- if(!/^\d{6}_\d{4}$/.test(code))throw Error('Código interno inválido.');
- return [code,'v'+code.replace('_','')];
+ const code=String(internalCode||'').trim();
+ if(!/^\d{10}$/.test(code))throw Error('Código interno inválido. Esperado: 2111260072.');
+ return [code];
 }
 export function actualSubIdIsCurrent(internalCode,subIds,status){
  if(status!=='verified')return false;
  try{
   const list=Array.isArray(subIds)?subIds:String(subIds||'').split(',');
-  return subIdCandidates(internalCode).some(candidate=>list.includes(candidate));
+  return list.includes(subIdCandidates(internalCode)[0]);
  }catch{return false}
 }
 export function subIdCaption(internalCode,subIds,status){
- if(!actualSubIdIsCurrent(internalCode,subIds,status))return 'Sub ID ainda não confirmado';
- const list=Array.isArray(subIds)?subIds:String(subIds||'').split(',');
- return list.includes(internalCode)?
-  'Código interno confirmado na Shopee':
-  'Sub ID alfanumérico confirmado na Shopee';
+ return actualSubIdIsCurrent(internalCode,subIds,status)?
+  'Código interno confirmado como Sub ID na Shopee':
+  'Sub ID numérico ainda não confirmado';
 }

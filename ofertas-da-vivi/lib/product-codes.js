@@ -1,5 +1,5 @@
 /**
- * Código interno da Vivi: DDMMYY_NNNN. Dia e mês em America/Sao_Paulo.
+ * Código interno da Vivi: DDMMAANNNN (sem separador). Data em America/Sao_Paulo.
  * A sequência é incrementada atomicamente no Neon e reinicia por dia.
  */
 export function brazilDayKey(date=new Date()){
@@ -17,8 +17,8 @@ export async function allocateInternalCode(sql,date=new Date()){
   RETURNING last_number`;
  const seq=Number(rows[0]?.last_number);
  if(!Number.isInteger(seq)||seq<1||seq>9999)throw Error('Limite diário de códigos internos atingido (9999).');
- return day+'_'+String(seq).padStart(4,'0');
+ return day+String(seq).padStart(4,'0');
 }
 export function internalCodeIsValid(code){
- return /^\d{6}_\d{4}$/.test(String(code||''));
+ return /^\d{10}$/.test(String(code||''));
 }

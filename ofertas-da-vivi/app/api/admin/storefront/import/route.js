@@ -44,7 +44,7 @@ export async function POST(req){
    processing.push(item);
   }
   // Duas a três conversões por vez evitam sobrecarga; cada uma envia
-  // somente o Sub ID próprio no padrão 211126_0001.
+  // somente o Sub ID próprio no padrão 2111260001.
   for(let i=0;i<processing.length;i+=3){
    const group=processing.slice(i,i+3);
    const result=await Promise.all(group.map(async item=>{

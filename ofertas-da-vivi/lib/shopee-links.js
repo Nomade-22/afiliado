@@ -97,8 +97,8 @@ export async function resolveOfferAffiliateLink(offer){
  * Converte cada produto com seu código interno, sem alterar o link anterior
  * caso a Shopee não confirme a operação.
  *
- * Se a Shopee recusar o formato DDMMYY_NNNN, testa vDDMMYYNNNN.
- * O código da Vivi permanece intacto; retorna usedSubId realmente aceito.
+ * Envia somente o Sub ID numérico de 10 dígitos (ex.: 2111260072).
+ * Não tenta underscore, letras, prefixos ou conversão sem Sub ID.
  */
 export async function generateProductAffiliateLink(originUrl,internalCode,options={}) {
  const candidates=subIdCandidates(internalCode);
@@ -145,7 +145,7 @@ export async function generateProductAffiliateLink(originUrl,internalCode,option
     return {
      shortLink:url,originUrl:source,subIds:[id],
      usedSubId:id,internalCode,verified:true,generatedBy:'generateShortLink',
-     alternativeFormat:id!==internalCode
+     alternativeFormat:false
     };
    }catch(error){
     if(invalidSub(error)){
@@ -161,6 +161,6 @@ export async function generateProductAffiliateLink(originUrl,internalCode,option
    }
   }
  }
- throw Error('A Shopee não aceitou os formatos de Sub ID testados ou o link de origem. '+
+ throw Error('A Shopee recusou o Sub ID numérico ou o link de origem. '+
    issues.slice(0,3).join(' | ')+'. Link anterior preservado.');
 }
