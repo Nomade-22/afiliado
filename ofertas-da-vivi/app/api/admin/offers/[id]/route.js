@@ -1,6 +1,7 @@
 import {isAdmin,forbidden} from '../../../../../lib/auth';
 import {getDB} from '../../../../../lib/db';
 import {isShopeeLink} from '../../../../../lib/shopee-links';
+import {knownOfferKeys,matchExisting} from '../../../../../lib/product-identity';
 
 export const runtime='nodejs';
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
@@ -52,6 +53,20 @@ export async function PATCH(req,{params}){
   next.active=body.active;
  }
  if(typeof body.featured==='boolean')next.featured=body.featured;
+ const wantsActive=Object.hasOwn(next,'active')?next.active:old.active;
+ if(wantsActive){
+  const activeRows=await sql`SELECT id,title,image,url,product_link,item_id,shop_id,dedupe_key
+    FROM vivi_offers WHERE active=true AND id<>${id}`;
+  if(matchExisting({
+    id,title:next.title??old.title,image:Object.hasOwn(next,'image')?next.image:old.image,
+    url:old.url,productLink:old.product_link,shopId:old.shop_id,itemId:old.item_id,
+    dedupeKey:old.dedupe_key
+   },knownOfferKeys(activeRows))){
+   return Response.json({
+    error:'Este produto já está publicado no site. Desative o anúncio duplicado antes de ativar outro.'
+   },{status:409,headers});
+  }
+ }
  await sql`UPDATE vivi_offers SET
   title=${next.title??old.title},
   category=${next.category??old.category},
