@@ -1310,3 +1310,73 @@
  .vivi-discount-image{height:108px}
  .vivi-discount-card>b{font-size:16px}
 }
+
+
+/* VIVI 2026-11-22 — banners de arte inteira, sem mosaico ou texto por cima */
+.site-shell .vivi-hero-slider.vivi-slide-type-images{
+ width:100vw;max-width:none;margin-left:calc(50% - 50vw);
+ border-radius:0;background:transparent;box-shadow:none;min-height:0;
+}
+.site-shell .vivi-hero-slider.vivi-slide-type-images::before{display:none}
+.site-shell .vivi-hero-slider.vivi-slide-type-images .vivi-hero-current.vivi-hero-with-full-image{
+ display:block;min-height:0;height:auto;width:100%;padding:0;
+}
+.site-shell .vivi-hero-full-image{display:block;width:100%;line-height:0}
+.vivi-responsive-banner-picture{display:block;width:100%;line-height:0}
+.vivi-responsive-banner-picture img{
+ width:100%;max-width:none;display:block;
+ height:var(--vivi-desktop-banner-height,auto);
+ object-fit:var(--vivi-banner-fit,contain);
+ object-position:var(--vivi-banner-position,center);
+}
+.site-shell .vivi-slide-type-images .vivi-hero-controls{
+ background:var(--vivi-accent-gradient);color:var(--vivi-hero-ink,#fff);
+ border:0;box-shadow:none;
+}
+.vivi-internal-banners{display:flex;flex-direction:column;gap:20px;margin:22px 0}
+.vivi-internal-banner{
+ width:100vw;max-width:none;margin-left:calc(50% - 50vw);
+ line-height:0;overflow:hidden;
+}
+.vivi-internal-banner>a{display:block}
+.vivi-banner-layout-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.vivi-banner-mobile-uploaded{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.vivi-banner-mobile-uploaded img{
+ width:118px;max-height:110px;object-fit:contain;border:1px solid #e8e8ee;
+ border-radius:9px;background:#fff;
+}
+.vivi-banner-preview-device{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.vivi-banner-preview-device button{
+ padding:9px 15px;background:#fff;border:1px solid #dde0e8;
+ border-radius:9px;font-weight:750;color:#555b68;
+}
+.vivi-banner-preview-device button.selected{
+ background:var(--vivi-accent-soft,#fceaf2);
+ color:var(--vivi-accent,#bf2e63);border-color:var(--vivi-accent,#bf2e63);
+}
+.vivi-banner-full-preview{
+ width:100%;overflow:visible;display:flex;justify-content:center;
+ align-items:flex-start;min-height:140px;padding:0;background:#f6f7fb;
+ border:1px solid #dde0e8;border-radius:10px;
+}
+.vivi-banner-full-preview.device-mobile .vivi-responsive-banner-picture{
+ width:min(100%,375px);
+ box-shadow:0 0 0 1px #e6e6ec;
+}
+.vivi-banner-full-preview .vivi-responsive-banner-picture img{max-width:100%}
+.vivi-banner-full-preview .vivi-picture-preview-mobile img{
+ height:var(--vivi-mobile-banner-height,auto);
+}
+.vivi-banner-full-preview>p{padding:30px;text-align:center;color:#747c87;font-size:13px}
+@media(max-width:720px){
+ .vivi-responsive-banner-picture img{height:var(--vivi-mobile-banner-height,auto)}
+ .site-shell .vivi-hero-slider.vivi-slide-type-images{
+  width:100vw;margin-left:calc(50% - 50vw);border-radius:0;margin-top:12px;
+ }
+ .site-shell .vivi-hero-slider.vivi-slide-type-images .vivi-hero-current.vivi-hero-with-full-image{
+  min-height:0;display:block;
+ }
+ .vivi-internal-banner{width:100vw;margin-left:calc(50% - 50vw)}
+ .vivi-banner-layout-controls{grid-template-columns:1fr}
+ .vivi-banner-full-preview.device-mobile .vivi-responsive-banner-picture{width:100%}
+}
