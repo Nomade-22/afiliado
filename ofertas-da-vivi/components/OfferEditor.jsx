@@ -1,5 +1,5 @@
-import {categories} from '../lib/categories';
 'use client';
+import {categories} from '../lib/categories';
 
 import {useState} from 'react';
 import {X,Save,Image as ImageIcon,AlertCircle,RefreshCw,CheckCircle2} from 'lucide-react';
