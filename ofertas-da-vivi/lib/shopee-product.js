@@ -97,7 +97,18 @@ export async function getShopeeProductMetadata(offer){
  if(!hasShopeeCredentials())return {...base,warning:'API de Afiliados não configurada.'};
  const ids=await resolveProductIds(offer);
  try{
-  const schema=await getSchema();
+  let schema;
+  try{schema=await getSchema()}
+  catch{
+   // Uma conta pode bloquear introspecção completa, embora o endpoint
+   // productOfferV2 continue funcionando. Neste caso, usa campos já
+   // confirmados na consulta autenticada de produtos.
+   schema={
+    fields:['itemId','shopId','productName','imageUrl','priceMin','priceMax',
+     'priceDiscountRate','sales','ratingStar','shopName'],
+    args:[]
+   };
+  }
   if(!schema.fields.includes('itemId')||!schema.fields.includes('shopId')){
    return {...base,warning:'Não foi possível confirmar os IDs do produto na API de Afiliados.'};
   }
