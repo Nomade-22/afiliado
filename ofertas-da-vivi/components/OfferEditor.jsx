@@ -1,7 +1,7 @@
 'use client';
 
 import {useState} from 'react';
-import {X,Save,Image as ImageIcon,AlertCircle} from 'lucide-react';
+import {X,Save,Image as ImageIcon,AlertCircle,RefreshCw,CheckCircle2} from 'lucide-react';
 
 const categories=['Casa','Beleza','Moda','Eletrônicos','Utilidades','Infantil','Outros'];
 export default function OfferEditor({offer,onClose,onSaved}){
@@ -13,8 +13,40 @@ export default function OfferEditor({offer,onClose,onSaved}){
   imagesText:(offer.images||[]).join('\n'),
   active:Boolean(offer.active),featured:Boolean(offer.featured)
  });
- const [busy,setBusy]=useState(false),[error,setError]=useState('');
+ const [busy,setBusy]=useState(false),[fetching,setFetching]=useState(false),[error,setError]=useState(''),[fetchResult,setFetchResult]=useState('');
  const update=(name,value)=>setForm(old=>({...old,[name]:value}));
+ async function fetchShopeeDetails(){
+  setFetching(true);setError('');setFetchResult('');
+  try{
+   const response=await fetch('/api/admin/products/enrich-batch',{
+    method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',
+    body:JSON.stringify({ids:[offer.id]})
+   });
+   if(response.status===401){window.location.href='/adm/login';return}
+   const data=await response.json();
+   if(!response.ok)throw Error(data.error||'Não foi possível consultar a Shopee.');
+   const updated=data.updated?.[0];
+   if(updated){
+    setForm(prev=>{
+     const existing=prev.imagesText.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+     const images=[...new Set([...existing,...(updated.images||[])])].slice(0,12);
+     return {...prev,
+       description:prev.description||updated.description||'',
+       image:prev.image||updated.image||'',
+       imagesText:images.join('\n')
+     };
+    });
+    setFetchResult('Consulta concluída. '+(updated.fromApi?.description?
+     'Descrição localizada. ':'A API não forneceu descrição completa. ')+
+     (updated.fromApi?.photoCount>1?'Fotos adicionais encontradas.':
+      'Somente imagem principal disponível ou nenhuma foto adicional.'));
+    await onSaved?.();
+   }else{
+    setFetchResult('A Shopee não retornou dados adicionais que pudessem ser associados com segurança a este produto.');
+   }
+  }catch(e){setError(String(e?.message||'Falha ao buscar informações'))}
+  finally{setFetching(false)}
+ }
  async function submit(event){
   event.preventDefault();setBusy(true);setError('');
   try{
@@ -52,6 +84,12 @@ export default function OfferEditor({offer,onClose,onSaved}){
     </div>
     <label>URL HTTPS da imagem<input type="url" value={form.image} placeholder="https://..."
      onChange={e=>update('image',e.target.value)}/></label>
+    <div className="vivi-editor-fetch">
+     <button className="btn btn-outline" type="button" disabled={busy||fetching}
+       onClick={fetchShopeeDetails}><RefreshCw size={17}/> {fetching?'Buscando na Shopee…':'Buscar descrição e fotos na Shopee'}</button>
+     <small>Busca somente dados verificáveis. Preserva textos e fotos que você já adicionou.</small>
+     {fetchResult&&<p role="status" className="vivi-notice vivi-notice-success"><CheckCircle2 size={17}/> {fetchResult}</p>}
+    </div>
     <label>Descrição detalhada (quando a API não fornecer)
      <textarea value={form.description} rows={5} maxLength={6000} placeholder="Características confirmadas na página do produto..."
       onChange={e=>update('description',e.target.value)}/>
@@ -68,7 +106,7 @@ export default function OfferEditor({offer,onClose,onSaved}){
     {error&&<p role="alert" className="vivi-notice vivi-notice-error"><AlertCircle size={17}/> {error}</p>}
     <div className="vivi-editor-actions">
      <button type="button" onClick={onClose} className="btn btn-outline" disabled={busy}>Cancelar</button>
-     <button type="submit" className="btn btn-primary" disabled={busy}><Save size={17}/> {busy?'Salvando…':'Salvar alterações'}</button>
+     <button type="submit" className="btn btn-primary" disabled={busy||fetching}><Save size={17}/> {busy?'Salvando…':'Salvar alterações'}</button>
     </div>
    </form>
   </section>
