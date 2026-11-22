@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
 import {ArrowLeft,ArrowUpRight,ShoppingBag,ShieldCheck,Images,Star,Store,PackageCheck,Info,ExternalLink,Tag} from 'lucide-react';
-import {getThemeCssVars} from '../lib/site-theme';
+import {getPublicThemeCssVars} from '../lib/site-theme';
 
 const money=value=>Number(value).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const number=n=>Number(n).toLocaleString('pt-BR');
@@ -31,10 +31,11 @@ export default function ProductDetail({offer,themeSettings={}}){
    (Number(live.discountRate)<=1?Number(live.discountRate)*100:Number(live.discountRate)):
    offer.discount;
  const code=offer.internalCode||'Não atribuído';
- return <main className="vivi-product-page" data-vivi-theme={themeSettings.heroTheme||"orange"} style={getThemeCssVars(themeSettings)}>
+ return <main className={"vivi-product-page"+(themeSettings.christmasTheme==="on"?" vivi-christmas-product":"")} data-vivi-theme={themeSettings.heroTheme||"orange"} style={getPublicThemeCssVars(themeSettings)}>
   <div className="vivi-product-top">
    <a href="/" aria-label="Voltar para ofertas"><ArrowLeft size={19}/> Voltar às ofertas</a>
    <strong>♡ Ofertas da <em>Vivi</em></strong>
+   {themeSettings.christmasTheme==="on"&&<span className="vivi-product-christmas-pill">🎄 Natal da Vivi</span>}
   </div>
   <div className="vivi-product-layout">
    <section className="vivi-product-gallery">

@@ -7,7 +7,7 @@ import {isShopeeLink} from '../../../../lib/shopee-links';
 
 export const dynamic='force-dynamic';
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
-const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150,heroSlides:18000,heroIntervalSeconds:2,flashSaleUrl:1000,couponUrl:1000,flashSaleLabel:65,couponLabel:65,telegram:650,heroColorStart:7,heroColorEnd:7,heroAccent:7,heroGradientAngle:3,heroFillMode:8};
+const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150,heroSlides:18000,heroIntervalSeconds:2,flashSaleUrl:1000,couponUrl:1000,flashSaleLabel:65,couponLabel:65,telegram:650,heroColorStart:7,heroColorEnd:7,heroAccent:7,heroGradientAngle:3,heroFillMode:8,christmasTheme:3};
 const trustedImage=value=>{
  if(!value)return true;
  if(isHeroImage(value))return true;
@@ -108,6 +108,9 @@ export async function POST(req){
   if(updates[key]!==undefined && updates[key] && !isShopeeLink(updates[key])){
    return Response.json({error:'A campanha '+key+' deve apontar para uma URL Shopee HTTPS válida.'},{status:400,headers});
   }
+ }
+ if(updates.christmasTheme!==undefined&&!['on','off'].includes(updates.christmasTheme)){
+  return Response.json({error:'Escolha ativar ou desativar o tema de Natal.'},{status:400,headers});
  }
  for(const key of ['campaignsEnabled','autoCampaigns']){
   if(updates[key]!==undefined&&!['on','off'].includes(updates[key])){

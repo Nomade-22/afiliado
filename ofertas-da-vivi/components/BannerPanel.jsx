@@ -1,9 +1,9 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
 import {Image as ImageIcon,Palette,Save,CheckCircle2,AlertCircle,ExternalLink,
- Plus,Trash2,ArrowLeft,ArrowRight,Upload,Flame,Images,FileText,Package,ImagePlus,ShoppingBag} from 'lucide-react';
+ Plus,Trash2,ArrowLeft,ArrowRight,Upload,Flame,Images,FileText,Package,ImagePlus,ShoppingBag,Gift,Snowflake} from 'lucide-react';
 import {readHeroSlides,getHeroInterval,newHeroSlide,MAX_HERO_SLIDES,MIN_HERO_SLIDES} from '../lib/hero-slides';
-import {VIVI_THEMES,getThemeConfig,getThemeCssVars,isHeroImage} from '../lib/site-theme';
+import {VIVI_THEMES,getThemeConfig,getPublicThemeCssVars,isHeroImage} from '../lib/site-theme';
 import ResponsiveBannerImage,{bannerImageOf,bannerMobileImageOf} from './ResponsiveBannerImage';
 
 const input={width:'100%',minWidth:0,padding:'11px 12px',
@@ -68,6 +68,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
  const [themeId,setThemeId]=useState(settings.heroTheme||'orange');
  const [palette,setPalette]=useState(()=>getThemeConfig(settings));
  const [seconds,setSeconds]=useState(getHeroInterval(settings));
+ const [christmasTheme,setChristmasTheme]=useState(settings.christmasTheme==='on');
  const [saving,setSaving]=useState(false);
  const [uploading,setUploading]=useState(false);
  const [uploadCount,setUploadCount]=useState({done:0,total:0});
@@ -77,19 +78,21 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
   setThemeId(settings.heroTheme||'orange');
   setPalette(getThemeConfig(settings));
   setSeconds(getHeroInterval(settings));
+  setChristmasTheme(settings.christmasTheme==='on');
  },[settings]);
  const current=slides[selected]||slides[0];
  const activeOffers=offers.filter(o=>o.active&&o.url);
  const themeSettings={
   heroTheme:themeId,
+  christmasTheme:christmasTheme?'on':'off',
   heroColorStart:palette.start,
   heroColorEnd:palette.end,
   heroAccent:palette.accent,
   heroGradientAngle:String(palette.angle),
   heroFillMode:palette.fill
  };
- const themeVars=useMemo(()=>getThemeCssVars(themeSettings),[
-  themeId,palette.start,palette.end,palette.accent,palette.angle,palette.fill
+ const themeVars=useMemo(()=>getPublicThemeCssVars(themeSettings),[
+  themeId,christmasTheme,palette.start,palette.end,palette.accent,palette.angle,palette.fill
  ]);
  function updateSlide(field,value){
   setSlides(old=>old.map((s,i)=>i===selected?{...s,[field]:value}:s));
@@ -161,7 +164,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
     completed++;
     setUploadCount({done:completed,total:files.length});
    }
-   setNotice({error:false,text:'Imagem enviada. Clique em Salvar banners e cores para publicar.'});
+   setNotice({error:false,text:'Imagem enviada. Clique em Salvar personalização para publicar.'});
   }catch(e){
    setNotice({error:true,text:'Enviadas '+completed+' de '+files.length+'. '+String(e?.message||'Erro no upload.')});
   }finally{setUploading(false)}
@@ -185,7 +188,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
    if(r.status===401){window.location.href='/adm/login';return}
    const data=await r.json();
    if(!r.ok)throw Error(data.error||'Não foi possível salvar.');
-   setNotice({error:false,text:'Configurações e '+slides.length+' páginas salvas com sucesso.'});
+   setNotice({error:false,text:'Personalização salva: tema '+(christmasTheme?'de Natal ativado':'natalino desativado')+' e '+slides.length+' banners.'});
    await onSaved?.();
   }catch(e){setNotice({error:true,text:String(e?.message||'Falha ao salvar')})}
   finally{setSaving(false)}
@@ -197,6 +200,31 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
  const previewBackground=current.type==='flash'?'linear-gradient(115deg,#ab1730,#f33736)':
   themeVars['--vivi-accent-gradient'];
  return <div className="vivi-carousel-admin">
+  <section className="admin-card vivi-seasonal-editor">
+   <div className="admin-card-title"><h2><Gift size={22}/> Tema especial de Natal</h2>
+    <span className={'vivi-season-status'+(christmasTheme?' active':'')}>{christmasTheme?'Ativo':'Desativado'}</span>
+   </div>
+   <p className="muted-text">Um toque natalino com luzes, neve suave, verde pinheiro, vermelho e dourado. Seus banners, fotos e links continuam iguais.</p>
+   <label className="vivi-season-toggle">
+    <span className="vivi-season-toggle-copy">
+     <strong><Snowflake size={19}/> Ativar decoração de Natal</strong>
+     <small>{christmasTheme?'Tema pronto para aparecer no site após salvar.':'Use quando quiser e desligue para voltar às suas cores de sempre.'}</small>
+    </span>
+    <input type="checkbox" checked={christmasTheme}
+     onChange={e=>{setChristmasTheme(e.target.checked);setNotice(null)}} disabled={saving||uploading}/>
+    <span className="vivi-season-toggle-track" aria-hidden="true"/>
+   </label>
+   <div className={'vivi-christmas-admin-preview'+(christmasTheme?' enabled':'')}>
+    <div className="vivi-christmas-preview-stars" aria-hidden="true">✦ &nbsp; ❄ &nbsp; ✧</div>
+    <span>🎄 Natal da Vivi</span>
+    <strong>Achadinhos para presentear com carinho</strong>
+    <small>{christmasTheme?'Prévia do tema natalino':'Prévia do Natal · ative para usar'}</small>
+   </div>
+   <button type="button" className="btn btn-primary btn-wide" onClick={save} disabled={saving||uploading}>
+    <Save size={17}/>{saving?'Salvando…':'Aplicar personalização no site'}
+   </button>
+   <p className="footnote">O Natal fica desligado por padrão. Ao desativar e salvar, suas cores anteriores voltam automaticamente.</p>
+  </section>
   <section className="admin-card vivi-theme-editor">
    <div className="admin-card-title">
     <h2><Palette size={22}/> Cores e identidade do site</h2>
@@ -238,8 +266,8 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
    </label>}
    <div className="vivi-theme-preview" style={{background:themeVars['--vivi-accent-gradient'],
     color:themeVars['--vivi-hero-ink']}}>
-    <strong>Assim vai ficar a sua vitrine ✨</strong>
-    <span style={{background:palette.accent,color:themeVars['--vivi-on-accent']}}>Ver ofertas →</span>
+    <strong>{christmasTheme?'🎄 Assim vai ficar seu Natal na Vivi':'Assim vai ficar a sua vitrine ✨'}</strong>
+    <span style={{background:themeVars['--vivi-accent'],color:themeVars['--vivi-on-accent']}}>Ver ofertas →</span>
    </div>
   </section>
   <section className="admin-card">
@@ -414,7 +442,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
       onChange={e=>updateSlide('buttonUrl',e.target.value)} placeholder="#ofertas ou https://..."/>
     </label>}
     <button type="submit" className="btn btn-primary btn-wide" disabled={saving||uploading}>
-     <Save size={18}/>{saving?'Salvando…':'Salvar banners e cores no site'}
+     <Save size={18}/>{saving?'Salvando…':'Salvar personalização no site'}
     </button>
     {notice&&<div role={notice.error?'alert':'status'}
      className={'vivi-notice '+(notice.error?'vivi-notice-error':'vivi-notice-success')}>

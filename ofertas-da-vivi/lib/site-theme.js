@@ -74,3 +74,27 @@ export function getThemeCssVars(settings={}){
   '--vivi-hero-button-ink':heroIsLight?white:mix(accent,dark,.4)
  };
 }
+
+
+// O modo sazonal é uma camada visual, não altera as cores personalizadas salvas.
+// Ao desativar, o site volta imediatamente à paleta escolhida no painel.
+export function getPublicThemeCssVars(settings={}){
+ const palette=getThemeCssVars(settings);
+ if(settings.christmasTheme!=='on')return palette;
+ return {
+  ...palette,
+  '--vivi-accent':'#b3293e',
+  '--vivi-accent-deep':'#7d1e31',
+  '--vivi-accent-soft':'#fff0e8',
+  '--vivi-page-bg':'#fffcf7',
+  '--vivi-accent-glow':'#a42b3830',
+  '--vivi-accent-gradient':'linear-gradient(116deg,#0d463c 0%,#17614b 45%,#a7253b 100%)',
+  '--vivi-on-accent':'#ffffff',
+  '--vivi-hero-ink':'#ffffff',
+  '--vivi-hero-control':'#ffffff30',
+  '--vivi-hero-border':'#ffffff69',
+  '--vivi-hero-card':'#ffffff2b',
+  '--vivi-hero-button-bg':'#fff8eb',
+  '--vivi-hero-button-ink':'#842638'
+ };
+}

@@ -13,6 +13,7 @@ export const defaultSettings = {
  heroSlides:'',
  heroIntervalSeconds:'7',
  heroTheme:'orange',
+ christmasTheme:'off',
  heroColorStart:'#f4511e',
  heroColorEnd:'#ff982c',
  heroAccent:'#f45c23',

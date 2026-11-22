@@ -1547,3 +1547,220 @@
   height:250px;
  }
 }
+
+
+/* === Natal da Vivi: decoração sazonal opcional (sem afetar fotos ou links) === */
+.site-shell.vivi-christmas{
+ background:radial-gradient(circle at 10% 460px,#f1f8f0 0,transparent 380px),
+            radial-gradient(circle at 95% 1100px,#fff3ea 0,transparent 470px),
+            var(--vivi-page-bg,#fffcf7);
+}
+.site-shell.vivi-christmas .site-header{
+ background:#fffcf7;
+ border-bottom:2px solid #d3ad59;
+ box-shadow:0 7px 22px #1e593012;
+}
+.site-shell.vivi-christmas .site-footer{
+ background:linear-gradient(115deg,#122e2a,#1c3d35 60%,#47232d);
+}
+.site-shell.vivi-christmas .brand em,
+.site-shell.vivi-christmas .brand-heart{color:#ac273e}
+.site-shell.vivi-christmas .logo-mark{
+ background:linear-gradient(140deg,#105343,#268368);
+ box-shadow:0 4px 14px #10534330;
+}
+.site-shell.vivi-christmas .searchbox{
+ border-color:#d6dfd2;
+ background:#fff;
+}
+.site-shell.vivi-christmas .category-item{
+ background:#fffefb;
+ border-color:#e5e9df;
+}
+.site-shell.vivi-christmas .category-active{
+ background:#fff0e8;
+ border-color:#b3293e;
+}
+.site-shell.vivi-christmas .vivi-modern-product{
+ border-color:#ebeadf;
+ background:#fffefa;
+}
+.site-shell.vivi-christmas .vivi-hero-slider.vivi-hero-flash{
+ background:linear-gradient(118deg,#10473c,#17644d 52%,#ab293d);
+}
+.site-shell.vivi-christmas .vivi-hero-slider:not(.vivi-slide-type-images){
+ box-shadow:0 16px 32px #0a4c3525;
+}
+.site-shell.vivi-christmas .vivi-hero-control{border-color:#f7eed750}
+.site-shell.vivi-christmas .vivi-modern-product .sale-badge{
+ background:#ad243e;color:#fff;
+}
+.site-shell.vivi-christmas .whatsapp-banner{
+ border-color:#e0c789;
+}
+
+/* Faixa natalina no topo: discreta em telas pequenas, sem bloquear navegação. */
+.vivi-christmas-announcement{
+ min-height:37px;
+ display:flex;align-items:center;justify-content:center;flex-wrap:wrap;
+ gap:7px 13px;padding:7px 15px;
+ background:linear-gradient(90deg,#103f36,#17654e 55%,#0a453b);
+ color:#fff9e9;text-align:center;
+ border-bottom:1px solid #bd9a50;
+ font-size:12px;line-height:1.35;letter-spacing:.1px;
+}
+.vivi-christmas-announcement strong{
+ font-size:13px;font-weight:850;white-space:nowrap;
+}
+.vivi-christmas-announcement>span:first-child,
+.vivi-christmas-announcement>span:last-child{
+ color:#eed492;opacity:.9;
+}
+.vivi-christmas-lights{
+ position:absolute;pointer-events:none;
+ left:0;right:0;bottom:-12px;height:17px;
+ display:flex;justify-content:space-around;align-items:flex-start;
+ z-index:9;
+}
+.vivi-christmas-lights::before{
+ content:"";position:absolute;left:0;right:0;top:0;
+ height:1px;background:#8b6929aa;
+}
+.vivi-christmas-lights .bulb{
+ width:8px;height:12px;border-radius:45% 45% 55% 55%;
+ margin-top:3px;position:relative;display:block;
+ transform:rotate(7deg);
+ background:#ffd272;
+ box-shadow:0 0 8px 2px #ffd2726b;
+ animation:vivi-christmas-twinkle 3.2s ease-in-out infinite;
+}
+.vivi-christmas-lights .bulb::before{
+ content:"";position:absolute;top:-4px;left:2px;
+ width:4px;height:5px;background:#536759;border-radius:2px;
+}
+.vivi-christmas-lights .bulb-1{background:#dd4850;box-shadow:0 0 8px 2px #eb47565a;animation-delay:-1s}
+.vivi-christmas-lights .bulb-2{background:#6cd6a7;box-shadow:0 0 8px 2px #6cd6a75a;animation-delay:-2.2s}
+.vivi-christmas-lights .bulb-3{background:#ffebc6;box-shadow:0 0 8px 2px #ffebc681;animation-delay:-1.6s}
+@keyframes vivi-christmas-twinkle{
+ 0%,100%{filter:brightness(.88);opacity:.8}
+ 55%{filter:brightness(1.2);opacity:1}
+}
+.vivi-main{position:relative}
+.vivi-christmas-snow{
+ position:absolute;left:0;right:0;top:8px;height:260px;
+ z-index:3;overflow:hidden;pointer-events:none;
+}
+.vivi-christmas-snow .flake{
+ position:absolute;top:-26px;
+ color:#fffbe9;text-shadow:0 1px 4px #14605080,0 0 2px #7c9b8a;
+ opacity:0;animation:vivi-christmas-snowfall 9s linear infinite;
+ user-select:none;
+}
+@keyframes vivi-christmas-snowfall{
+ 0%{transform:translateY(-12px) rotate(-20deg);opacity:0}
+ 12%{opacity:.76}
+ 83%{opacity:.65}
+ 100%{transform:translateY(282px) rotate(45deg);opacity:0}
+}
+.vivi-product-page.vivi-christmas-product{
+ background:linear-gradient(145deg,#f5f9f1,#fffcf8 45%,#fff2eb);
+}
+.vivi-product-christmas-pill{
+ display:inline-flex;align-items:center;gap:4px;
+ border-radius:99px;padding:6px 10px;
+ color:#fffaf0;background:#145d47;
+ font-size:11px;font-weight:800;
+ box-shadow:0 3px 10px #10463826;
+}
+
+/* Botão de tema + prévia dentro de Personalização do site. */
+.vivi-seasonal-editor{
+ display:flex;flex-direction:column;gap:12px;
+ background:linear-gradient(135deg,#fffefa,#f8fcf6);
+ border:1px solid #d7e5d8;
+}
+.vivi-seasonal-editor .muted-text{margin:0}
+.vivi-season-status{
+ display:inline-flex;padding:5px 10px;
+ border-radius:100px;
+ font-size:11px;font-weight:850;
+ color:#68736c;background:#e8ece8;
+ white-space:nowrap;
+}
+.vivi-season-status.active{background:#d9f1e1;color:#126243}
+.vivi-season-toggle{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ padding:15px 13px;border:1px solid #dbe5da;
+ border-radius:15px;background:white;cursor:pointer;position:relative;
+}
+.vivi-season-toggle-copy{display:flex;flex-direction:column;gap:5px;min-width:0}
+.vivi-season-toggle-copy strong{
+ display:flex;align-items:center;gap:8px;
+ font-size:14px;color:#1e493c;
+}
+.vivi-season-toggle-copy small{color:#68736f;line-height:1.45;font-size:12px}
+.vivi-season-toggle input{
+ position:absolute;right:14px;width:47px;height:28px;
+ opacity:0;cursor:pointer;z-index:2;
+}
+.vivi-season-toggle-track{
+ flex:0 0 47px;height:28px;background:#b9c3bf;
+ border-radius:99px;position:relative;
+ transition:background .2s ease;
+}
+.vivi-season-toggle-track::after{
+ content:"";position:absolute;left:4px;top:4px;
+ width:20px;height:20px;border-radius:50%;
+ background:white;box-shadow:0 1px 4px #0002;
+ transition:transform .2s ease;
+}
+.vivi-season-toggle input:checked + .vivi-season-toggle-track{background:#148060}
+.vivi-season-toggle input:checked + .vivi-season-toggle-track::after{transform:translateX(19px)}
+.vivi-season-toggle input:focus-visible + .vivi-season-toggle-track{outline:3px solid #c99c41;outline-offset:3px}
+.vivi-christmas-admin-preview{
+ position:relative;min-height:144px;overflow:hidden;
+ display:flex;flex-direction:column;justify-content:center;align-items:center;
+ gap:7px;text-align:center;padding:22px 16px 18px;
+ border-radius:16px;
+ background:linear-gradient(125deg,#0b463a,#1c7658 55%,#a5293d);
+ color:#fff8e9;
+ box-shadow:inset 0 0 0 1px #f3dcaa45;
+ transition:opacity .2s ease,filter .2s ease;
+}
+.vivi-christmas-admin-preview::before,
+.vivi-christmas-admin-preview::after{
+ content:"✦";position:absolute;color:#f7d88a;font-size:33px;
+ opacity:.75;top:20px;
+}
+.vivi-christmas-admin-preview::before{left:22px}
+.vivi-christmas-admin-preview::after{right:22px}
+.vivi-christmas-admin-preview>span{font-weight:900;font-size:21px;letter-spacing:-.4px}
+.vivi-christmas-admin-preview>strong{font-size:13px;font-weight:650}
+.vivi-christmas-admin-preview>small{
+ font-size:11px;letter-spacing:.3px;color:#f1d99e;
+}
+.vivi-christmas-preview-stars{position:absolute;top:9px;left:0;right:0;color:#f5da8f;font-size:13px}
+.vivi-christmas-admin-preview:not(.enabled){opacity:.73;filter:saturate(.55)}
+.vivi-seasonal-editor>.footnote{margin:0}
+@media(max-width:720px){
+ .vivi-christmas-announcement{font-size:10px;gap:3px 7px;min-height:34px;padding:6px 8px}
+ .vivi-christmas-announcement strong{font-size:12px}
+ .vivi-christmas-lights{bottom:-9px;height:14px}
+ .vivi-christmas-lights .bulb{width:6px;height:9px}
+ .vivi-christmas-lights .bulb::before{left:1px}
+ .vivi-christmas-snow{height:230px}
+ .vivi-christmas-snow .flake:nth-child(n+9){display:none}
+ .vivi-season-toggle{padding:13px 11px}
+ .vivi-season-toggle-copy strong{font-size:13px}
+ .vivi-season-toggle-copy small{font-size:11px}
+ .vivi-christmas-admin-preview{min-height:130px}
+}
+@media(max-width:365px){
+ .vivi-christmas-announcement>span:nth-of-type(2){display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ .vivi-christmas-lights .bulb{animation:none}
+ .vivi-christmas-snow .flake{animation:none;opacity:.32;top:30px}
+ .vivi-season-toggle-track,.vivi-season-toggle-track::after,
+ .vivi-christmas-admin-preview{transition:none}
+}
