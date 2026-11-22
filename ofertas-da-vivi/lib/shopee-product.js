@@ -64,6 +64,7 @@ async function getOfferFields(){
    return fields;
   }
  }catch{}
+ schemaCache={at:Date.now(),fields:fallbackFields};
  return fallbackFields;
 }
 function cleanImages(values){
