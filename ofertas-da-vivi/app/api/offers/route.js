@@ -1,5 +1,6 @@
 import {demoOffers,defaultSettings} from '../../../lib/demo';
 import {getDB,mapOffer,getSettings} from '../../../lib/db';
+import {matchExisting,offerIdentityKeys} from '../../../lib/product-identity';
 
 export const dynamic='force-dynamic';
 
@@ -26,8 +27,20 @@ export async function GET() {
       sql`SELECT * FROM vivi_offers WHERE active=true ORDER BY featured DESC, updated_at DESC LIMIT 300`,
       getSettings(sql)
     ]);
+    const unique=[];
+    const seen=new Set();
+    for(const row of rows){
+      const item={
+       id:row.id,title:row.title,image:row.image,url:row.url,
+       productLink:row.product_link,shopId:row.shop_id,itemId:row.item_id,
+       dedupeKey:row.dedupe_key
+      };
+      if(matchExisting(item,seen))continue;
+      unique.push(row);
+      for(const key of offerIdentityKeys(item))seen.add(key);
+    }
     return Response.json({
-      offers:rows.map(mapOffer),
+      offers:unique.map(mapOffer),
       settings:{...defaultSettings,...settings},
       mode:'live'
     },{headers:{'Cache-Control':'no-store'}});
