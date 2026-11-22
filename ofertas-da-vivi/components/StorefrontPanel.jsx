@@ -1,12 +1,12 @@
 'use client';
 
-import {useEffect,useState} from 'react';
-import {RefreshCw,Package,ExternalLink,AlertCircle,CheckCircle2,ChevronRight,ChevronLeft} from 'lucide-react';
+import {useEffect,useRef,useState} from 'react';
+import {RefreshCw,Package,ExternalLink,AlertCircle,CheckCircle2,ChevronRight,ChevronLeft,CheckSquare,XCircle} from 'lucide-react';
 
-const card={background:'#fff',border:'1px solid #eaeaf0',borderRadius:14,padding:18,marginBottom:16};
-const orange={background:'#ff662f',color:'#fff',border:'none',borderRadius:9,padding:'12px 14px',fontWeight:700,cursor:'pointer'};
-const outline={...orange,background:'#fff',border:'1px solid #dfdfdf',color:'#353547'};
-const details={fontSize:13,color:'#777',lineHeight:1.55};
+const card={background:'#fff',border:'1px solid #eaeaf0',borderRadius:15,padding:'clamp(15px,3vw,23px)',marginBottom:16};
+const orange={background:'#ff662f',color:'#fff',border:'none',borderRadius:10,padding:'12px 15px',fontWeight:750,cursor:'pointer',minHeight:43};
+const outline={...orange,background:'#fff',border:'1px solid #e1e1e6',color:'#353547'};
+const details={fontSize:13,color:'#717987',lineHeight:1.55};
 
 export default function StorefrontPanel(){
  const [items,setItems]=useState([]);
@@ -15,87 +15,141 @@ export default function StorefrontPanel(){
  const [info,setInfo]=useState(null);
  const [busy,setBusy]=useState(false);
  const [importing,setImporting]=useState(false);
+ const [progress,setProgress]=useState(null);
  const [message,setMessage]=useState(null);
  const [search,setSearch]=useState('');
+ const cancelRef=useRef(false);
 
- async function fetchPage(next=1){
-  setBusy(true);setMessage(null);
+ async function fetchPage(next=1,{quiet=false}={}){
+  setBusy(true);
+  if(!quiet)setMessage(null);
   try{
    const response=await fetch('/api/admin/storefront?page='+next,{cache:'no-store'});
    if(response.status===401){window.location.href='/adm/login';return}
    const data=await response.json();
    if(!response.ok)throw Error(data.error||'A vitrine não retornou produtos.');
    setItems(data.items||[]);
-   setInfo(data);
-   setPage(data.page||next);
-   setSelected([]);
+   setInfo(data);setPage(data.page||next);setSelected([]);
   }catch(error){
-   setInfo(null);setItems([]);setSelected([]);
+   if(!quiet){setInfo(null);setItems([]);setSelected([])}
    setMessage({error:true,text:String(error?.message||'Não foi possível carregar a vitrine.')});
   }finally{setBusy(false)}
  }
  useEffect(()=>{fetchPage(1)},[]);
- async function importSelected(){
-  if(!selected.length||selected.length>8)return;
-  setImporting(true);setMessage(null);
-  try{
-   const response=await fetch('/api/admin/storefront/import',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({page,linkIds:selected}),cache:'no-store'
-   });
-   if(response.status===401){window.location.href='/adm/login';return}
-   const data=await response.json();
-   if(!response.ok)throw Error(data.error||'A importação da vitrine falhou.');
-   setMessage({error:false,text:data.message+(data.warnings?.length?' Atenção: '+data.warnings.length+' link(s) mantidos sem conversão completa.':'')});
-   setSelected([]);
-  }catch(error){setMessage({error:true,text:String(error?.message||error)})}
-  finally{setImporting(false)}
+
+ async function importItems(ids){
+  const unique=[...new Set(ids)].filter(id=>{
+   const item=items.find(x=>x.linkId===id);
+   return item&&item.affiliateLinkEligible&&!item.imported;
+  });
+  if(!unique.length){setMessage({error:false,text:'Não há itens novos para importar nesta página.'});return}
+  setImporting(true);cancelRef.current=false;setMessage(null);
+  let added=0,skipped=0,failures=0,finished=0,partialError='';
+  setProgress({done:0,total:unique.length,added:0,skipped:0});
+  for(let i=0;i<unique.length;i+=8){
+   if(cancelRef.current)break;
+   const part=unique.slice(i,i+8);
+   try{
+    const response=await fetch('/api/admin/storefront/import',{
+     method:'POST',headers:{'Content-Type':'application/json'},
+     body:JSON.stringify({page,linkIds:part}),cache:'no-store'
+    });
+    if(response.status===401){window.location.href='/adm/login';return}
+    const data=await response.json();
+    if(!response.ok)throw Error(data.error||'Erro ao importar lote');
+    added+=data.imported||0;
+    skipped+=data.skipped||0;
+    failures+=(data.errors||[]).length;
+    const handled=new Set([...(data.importedIds||[]),...(data.skippedIds||[])]);
+    setItems(current=>current.map(item=>handled.has(item.linkId)?{...item,imported:true}:item));
+    setSelected(current=>current.filter(id=>!handled.has(id)));
+    finished+=part.length;
+    setProgress({done:finished,total:unique.length,added,skipped});
+   }catch(error){
+    partialError=String(error?.message||'Erro no processamento');
+    break;
+   }
+  }
+  setImporting(false);
+  // Revalida no banco o que foi salvo, inclusive quando houve falha parcial.
+  await fetchPage(page,{quiet:true});
+  setMessage({
+   error:!!partialError,
+   text:`Importação finalizada: ${added} novo(s), ${skipped} já cadastrado(s)/ignorado(s).`+
+    (failures?` ${failures} alerta(s) de link.`:'')+
+    (cancelRef.current?' Operação interrompida após os lotes concluídos.':'')+
+    (partialError?' Erro no lote seguinte: '+partialError:'')+
+    ' Revise e ative os produtos na aba Ofertas.'
+  });
  }
- function toggle(id,checked){setSelected(old=>checked?[...old,id]:old.filter(x=>x!==id))}
+ function toggle(id,checked){setSelected(old=>checked?[...new Set([...old,id])]:old.filter(x=>x!==id))}
+ const eligible=items.filter(x=>x.affiliateLinkEligible&&!x.imported);
+ const already=items.filter(x=>x.imported).length;
  const filtered=items.filter(x=>x.title.toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')));
- const ready=filtered.filter(x=>x.affiliateLinkEligible);
- return <div>
+ const selectedAvailable=selected.filter(id=>eligible.some(x=>x.linkId===id));
+
+ return <div className="vivi-storefront">
   <section style={card}>
-   <h2 style={{fontSize:23,margin:'0 0 9px'}}>🛍️ Minha Vitrine Shopee</h2>
-   <p style={details}>Tentativa de leitura da coleção pública <a href="https://collshp.com/perf.jaqueporto?view=storefront" target="_blank" rel="noopener noreferrer">perf.jaqueporto</a>. É uma API diferente da Open API de Afiliados e pode mudar sem aviso.</p>
-   <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',marginTop:14}}>
-    <button style={orange} disabled={busy} onClick={()=>fetchPage(page)}><RefreshCw size={16} style={{verticalAlign:'middle'}}/> {busy?'Buscando…':'Atualizar minha vitrine'}</button>
-    {info&&<span style={details}>Perfil: <b>{info.profileName}</b> · Links públicos: <b>{info.totalCount}</b></span>}
+   <h2 className="vivi-storefront-title">🛍️ Minha Vitrine Shopee</h2>
+   <p style={details}>Produtos da coleção pública <a href="https://collshp.com/perf.jaqueporto?view=storefront" target="_blank" rel="noopener noreferrer">perf.jaqueporto</a>. Os links são da vitrine da Vivi e os valores podem ser diferentes dos praticados na Shopee.</p>
+   <div className="vivi-storefront-toolbar">
+    <button style={orange} disabled={busy||importing} onClick={()=>fetchPage(page)}><RefreshCw size={16}/> {busy?'Buscando…':'Atualizar vitrine'}</button>
+    {info&&<span style={details}><b>{info.profileName}</b> · {info.totalCount} links públicos</span>}
    </div>
    {info&&<p style={details}>{info.warning}</p>}
-   {message&&<div role={message.error?'alert':undefined} style={{marginTop:15,padding:14,borderRadius:10,background:message.error?'#fff0eb':'#edf8f0',color:message.error?'#ac381f':'#126f42',lineHeight:1.5}}>
-     {message.error?<AlertCircle size={18} style={{verticalAlign:'middle'}}/>:<CheckCircle2 size={18} style={{verticalAlign:'middle'}}/>} {message.text}
+   {message&&<div role={message.error?'alert':'status'} className={'vivi-notice '+(message.error?'vivi-notice-error':'vivi-notice-success')}>
+    {message.error?<AlertCircle size={19}/>:<CheckCircle2 size={19}/>} <span>{message.text}</span>
    </div>}
   </section>
+
   {info&&<section style={card}>
-   <div style={{display:'flex',justifyContent:'space-between',gap:9,alignItems:'center',flexWrap:'wrap'}}>
-    <h3 style={{fontSize:19,margin:0}}>Produtos da vitrine · página {page}</h3>
-    <span style={details}>{selected.length} selecionado(s) de no máximo 8</span>
+   <div className="vivi-storefront-heading">
+    <h3>Produtos da vitrine · página {page}</h3>
+    <span style={details}>{items.length} itens · {already} já cadastrados · {eligible.length} disponíveis</span>
    </div>
-   <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Pesquisar nesta página..." aria-label="Pesquisar produtos da vitrine" style={{border:'1px solid #ddd',borderRadius:9,padding:12,width:'100%',boxSizing:'border-box',margin:'14px 0'}}/>
-   <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBottom:12}}>
-    <button disabled={importing||selected.length===0||selected.length>8} style={{...orange,opacity:selected.length===0?0.55:1}} onClick={importSelected}><Package size={16} style={{verticalAlign:'middle'}}/> Importar {selected.length} da vitrine</button>
-    <button style={outline} onClick={()=>setSelected(ready.slice(0,8).map(x=>x.linkId))}>Selecionar até 8 válidos</button>
-    <button style={outline} onClick={()=>setSelected([])}>Limpar</button>
+   <input className="vivi-storefront-search" value={search} onChange={e=>setSearch(e.target.value)}
+    placeholder="Buscar nesta página..." aria-label="Pesquisar produtos da vitrine"/>
+   <div className="vivi-storefront-toolbar">
+    <button style={orange} disabled={busy||importing||!eligible.length} onClick={()=>importItems(eligible.map(x=>x.linkId))}>
+     <Package size={17}/> Importar todos desta página ({eligible.length})
+    </button>
+    <button style={outline} disabled={busy||importing} onClick={()=>setSelected(eligible.map(x=>x.linkId))}>
+     <CheckSquare size={17}/> Selecionar todos
+    </button>
+    <button style={outline} disabled={busy||importing||!selectedAvailable.length} onClick={()=>importItems(selectedAvailable)}>
+     Importar selecionados ({selectedAvailable.length})
+    </button>
+    <button style={outline} disabled={importing||!selected.length} onClick={()=>setSelected([])}>Limpar</button>
    </div>
-   <p style={{...details,marginBottom:14}}>Os produtos serão importados como <b>inativos</b>, sem inventar preços. Você poderá revisar e ativar no catálogo depois.</p>
-   <div style={{display:'grid',gap:10}}>
-    {filtered.map(item=><div key={item.id} style={{border:'1px solid #eaeaea',borderRadius:12,padding:12,display:'flex',alignItems:'center',gap:12}}>
-      <input type="checkbox" aria-label={'Selecionar '+item.title} disabled={!item.affiliateLinkEligible} checked={selected.includes(item.linkId)} onChange={e=>toggle(item.linkId,e.target.checked)}/>
-      <img src={item.image||'/images/produto-1.webp'} alt="" loading="lazy" style={{width:74,height:74,objectFit:'contain',background:'#f7f7f7',borderRadius:8}}/>
-      <div style={{minWidth:0,flex:1}}>
-       <strong style={{fontSize:14,overflowWrap:'anywhere'}}>{item.title}</strong>
-       <p style={{...details,margin:'5px 0'}}>{item.category} · Preço não informado pela vitrine</p>
-       {!item.affiliateLinkEligible&&<small style={{color:'#aa462b'}}>Link não reconhecido como URL da Shopee</small>}
+   {progress&&<div className="vivi-progress" role="status">
+    <div className="vivi-progress-row"><strong>Importação: {progress.done} de {progress.total}</strong><span>{progress.added} novos · {progress.skipped} ignorados</span></div>
+    <progress value={progress.done} max={progress.total||1}/>
+    {importing&&<button style={{...outline,padding:8,fontSize:12}} onClick={()=>{cancelRef.current=true}}><XCircle size={15}/> Parar após o lote atual</button>}
+   </div>}
+   <p style={details}>A importação é feita automaticamente em lotes de 8. Produtos repetidos são ignorados, e os novos entram <b>inativos</b> para revisão. Os que a vitrine não informa preço continuam sem valor cadastrado.</p>
+   {info.importedStatusAvailable===false&&<p className="vivi-notice vivi-notice-error">Não foi possível conferir duplicatas antecipadamente. O servidor ainda tentará impedir a inclusão de produtos já cadastrados.</p>}
+   <div className="vivi-storefront-list">
+    {filtered.map(item=><div key={item.id} className={'vivi-storefront-item '+(item.imported?'vivi-item-imported':'')}>
+      <input type="checkbox" aria-label={'Selecionar '+item.title}
+       disabled={importing||item.imported||!item.affiliateLinkEligible}
+       checked={selected.includes(item.linkId)}
+       onChange={e=>toggle(item.linkId,e.target.checked)}/>
+      <img src={item.image||'/images/produto-1.webp'} alt="" loading="lazy"
+       onError={e=>{e.currentTarget.src='/images/produto-1.webp'}}/>
+      <div className="vivi-storefront-item-text">
+       <strong>{item.title}</strong>
+       <small>{item.category} · Preço na Shopee</small>
+       {item.imported&&<span className="vivi-stored-badge"><CheckCircle2 size={13}/> Já cadastrado</span>}
+       {!item.affiliateLinkEligible&&<span className="vivi-stored-badge vivi-warning-badge">Link não reconhecido</span>}
       </div>
-      {item.affiliateLinkEligible&&<a href={item.url} target="_blank" rel="noopener noreferrer nofollow sponsored" aria-label={'Abrir '+item.title}><ExternalLink size={18}/></a>}
+      {item.affiliateLinkEligible&&<a href={item.url} target="_blank" rel="noopener noreferrer nofollow sponsored" aria-label={'Abrir '+item.title}><ExternalLink size={19}/></a>}
     </div>)}
-    {filtered.length===0&&<p style={{color:'#777'}}>Nenhum item nesta página ou filtro.</p>}
+    {filtered.length===0&&<p style={details}>Nenhum item encontrado nesta página.</p>}
    </div>
-   <div style={{display:'flex',gap:12,alignItems:'center',justifyContent:'center',flexWrap:'wrap',marginTop:18}}>
-     <button style={outline} disabled={busy||page<=1} onClick={()=>{setSearch('');fetchPage(page-1)}}><ChevronLeft size={16} style={{verticalAlign:'middle'}}/> Anterior</button>
-     <b>Página {page}</b>
-     <button style={outline} disabled={busy||!info.hasNextPage} onClick={()=>{setSearch('');fetchPage(page+1)}}>Próxima <ChevronRight size={16} style={{verticalAlign:'middle'}}/></button>
+   <div className="vivi-storefront-pages">
+    <button style={outline} disabled={busy||importing||page<=1} onClick={()=>{setSearch('');setProgress(null);fetchPage(page-1)}}><ChevronLeft size={16}/> Anterior</button>
+    <b>Página {page} de {Math.max(1,Math.ceil((info.totalCount||0)/(info.pageSize||24)))}</b>
+    <button style={outline} disabled={busy||importing||!info.hasNextPage} onClick={()=>{setSearch('');setProgress(null);fetchPage(page+1)}}>Próxima <ChevronRight size={16}/></button>
    </div>
   </section>}
  </div>;
