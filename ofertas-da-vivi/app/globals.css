@@ -1515,3 +1515,35 @@
   font-size:12px;
  }
 }
+
+/* Mesmo formato da capa de apresentação: margem interna e cantos arredondados.
+   Banners internos continuam podendo ocupar a tela inteira. */
+.site-shell .vivi-hero-slider.vivi-slide-type-images{
+ width:100%;
+ max-width:100%;
+ margin-left:0;
+ border-radius:22px;
+ background:#1a101b;
+ box-shadow:0 14px 30px var(--vivi-accent-glow);
+}
+.vivi-banner-full-preview.is-carousel .vivi-responsive-banner-picture,
+.vivi-banner-full-preview.is-carousel .vivi-responsive-banner-picture img{
+ height:320px;
+}
+.vivi-banner-full-preview.is-carousel .vivi-responsive-banner-picture img{
+ object-fit:var(--vivi-banner-fit,contain);
+}
+@media(max-width:720px){
+ .site-shell .vivi-hero-slider{
+  --vivi-carousel-stage-height:250px;
+ }
+ .site-shell .vivi-hero-slider.vivi-slide-type-images{
+  width:100%;
+  margin-left:0;
+  border-radius:17px;
+ }
+ .vivi-banner-full-preview.is-carousel.device-mobile .vivi-responsive-banner-picture,
+ .vivi-banner-full-preview.is-carousel.device-mobile .vivi-responsive-banner-picture img{
+  height:250px;
+ }
+}
