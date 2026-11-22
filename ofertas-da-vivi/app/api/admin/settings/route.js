@@ -63,7 +63,7 @@ export async function POST(req){
   try{slides=normalizeHeroSlides(JSON.parse(updates.heroSlides))}
   catch(e){return Response.json({error:String(e?.message||'Páginas inválidas').slice(0,170)},{status:400,headers})}
   for(const slide of slides){
-   for(const photo of slide.images){
+   for(const photo of [...slide.images,slide.mobileImage].filter(Boolean)){
     if(photo&&!trustedImage(photo))return Response.json({
      error:'Todas as imagens do carrossel precisam ser URLs HTTPS válidas.'
     },{status:400,headers});
