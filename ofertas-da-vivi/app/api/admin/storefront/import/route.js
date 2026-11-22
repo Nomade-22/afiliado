@@ -59,7 +59,7 @@ export async function POST(req){
        imported_at,product_link,dedupe_key,updated_at)
       VALUES (${item.id},${item.title},${item.category},NULL,NULL,
        ${item.image||''},${converted.shortLink},false,false,'vitrine',
-       'generateShortLink',${code},'verified',${code},NOW(),
+       'generateShortLink',${converted.usedSubId},'verified',${code},NOW(),
        ${item.url},${identity},NOW())
       ON CONFLICT DO NOTHING RETURNING id`;
      return saved.length?{kind:'imported',id:item.linkId,code}:{kind:'skipped',id:item.linkId};
