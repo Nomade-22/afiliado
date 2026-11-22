@@ -1380,3 +1380,170 @@
  .vivi-banner-layout-controls{grid-template-columns:1fr}
  .vivi-banner-full-preview.device-mobile .vivi-responsive-banner-picture{width:100%}
 }
+
+
+/* VIVI 2026-11-22 — mesma altura em todos os slides do carrossel principal.
+   A escolha de enquadramento da arte continua respeitada (contain ou cover). */
+.site-shell .vivi-hero-slider{
+ --vivi-carousel-stage-height:320px;
+}
+.site-shell .vivi-hero-slider .vivi-hero-current{
+ height:var(--vivi-carousel-stage-height);
+ min-height:var(--vivi-carousel-stage-height);
+ max-height:var(--vivi-carousel-stage-height);
+ overflow:hidden;
+}
+.site-shell .vivi-hero-slider .vivi-hero-controls{
+ height:52px;
+ min-height:52px;
+ flex:0 0 52px;
+}
+.site-shell .vivi-hero-slider.vivi-slide-type-images .vivi-hero-current.vivi-hero-with-full-image{
+ height:var(--vivi-carousel-stage-height);
+ min-height:var(--vivi-carousel-stage-height);
+ max-height:var(--vivi-carousel-stage-height);
+}
+.site-shell .vivi-hero-slider.vivi-slide-type-images .vivi-hero-full-image,
+.site-shell .vivi-hero-slider.vivi-slide-type-images .vivi-responsive-banner-picture{
+ height:100%;
+}
+.site-shell .vivi-hero-slider.vivi-slide-type-images .vivi-responsive-banner-picture img{
+ width:100%;
+ height:100%;
+ object-fit:var(--vivi-banner-fit,contain);
+ object-position:var(--vivi-banner-position,center);
+}
+
+/* Slide de achadinhos: somente título, três produtos e preços. */
+.site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-hero-current{
+ display:flex;
+ flex-direction:column;
+ align-items:stretch;
+}
+.site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-hero-content{
+ flex:0 0 auto;
+ width:100%;
+ padding:19px 26px 0;
+}
+.site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-hero-content h1{
+ font-size:clamp(23px,3vw,34px);
+ line-height:1.08;
+ margin:0;
+}
+.site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-hero-visual{
+ flex:1 1 auto;
+ min-height:0;
+ height:auto;
+ width:100%;
+ padding:10px 26px 16px;
+ align-items:stretch;
+}
+.site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-tiles{
+ width:100%;
+ max-width:860px;
+ height:100%;
+ margin:0 auto;
+ gap:12px;
+}
+.site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-tile{
+ height:100%;
+ min-height:0;
+ padding:9px 12px;
+ overflow:hidden;
+}
+.site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-tile img{
+ height:min(115px,55%);
+ flex:0 0 auto;
+}
+.site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-placeholder{
+ height:95px;
+}
+.site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-detail strong{
+ font-size:12px;
+}
+.site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-detail b{
+ font-size:16px;
+}
+@media(max-width:720px){
+ .site-shell .vivi-hero-slider{
+  --vivi-carousel-stage-height:235px;
+ }
+ .site-shell .vivi-hero-slider .vivi-hero-controls{
+  height:48px;
+  min-height:48px;
+  flex-basis:48px;
+ }
+ .site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-hero-content{
+  width:100%;
+  padding:14px 16px 0;
+ }
+ .site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-hero-content h1{
+  font-size:clamp(21px,5.5vw,25px);
+  line-height:1.12;
+  letter-spacing:-.4px;
+  margin:0;
+ }
+ .site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-hero-visual{
+  padding:9px 13px 13px;
+ }
+ .site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-tiles{
+  max-width:none;
+  gap:6px;
+ }
+ .site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-tile{
+  padding:7px 5px;
+  gap:5px;
+  border-radius:11px;
+ }
+ .site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-tile img{
+  height:75px;
+  max-height:53%;
+ }
+ .site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-placeholder{
+  height:75px;
+  max-height:53%;
+ }
+ .site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-detail{
+  padding:0 1px;
+  gap:4px;
+ }
+ .site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-detail strong{
+  font-size:10px;
+  -webkit-line-clamp:2;
+ }
+ .site-shell .vivi-hero-slider.vivi-hero-discounts .vivi-flash-discount-detail b{
+  font-size:12px;
+ }
+}
+
+/* Mesmo formato da capa de apresentação: margem interna e cantos arredondados.
+   Banners internos continuam podendo ocupar a tela inteira. */
+.site-shell .vivi-hero-slider.vivi-slide-type-images{
+ width:100%;
+ max-width:100%;
+ margin-left:0;
+ border-radius:22px;
+ background:#1a101b;
+ box-shadow:0 14px 30px var(--vivi-accent-glow);
+}
+.vivi-banner-full-preview.is-carousel .vivi-responsive-banner-picture,
+.vivi-banner-full-preview.is-carousel .vivi-responsive-banner-picture img{
+ height:320px;
+}
+.vivi-banner-full-preview.is-carousel .vivi-responsive-banner-picture img{
+ object-fit:var(--vivi-banner-fit,contain);
+}
+@media(max-width:720px){
+ .site-shell .vivi-hero-slider{
+  --vivi-carousel-stage-height:250px;
+ }
+ .site-shell .vivi-hero-slider.vivi-slide-type-images{
+  width:100%;
+  margin-left:0;
+  border-radius:17px;
+ }
+ .vivi-banner-full-preview.is-carousel.device-mobile .vivi-responsive-banner-picture,
+ .vivi-banner-full-preview.is-carousel.device-mobile .vivi-responsive-banner-picture img{
+  height:250px;
+ }
+}

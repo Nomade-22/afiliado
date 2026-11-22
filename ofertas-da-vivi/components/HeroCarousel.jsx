@@ -72,15 +72,12 @@ export default function HeroCarousel({settings={},offers=[]}){
  const destination=safeDestination(href)?href:'#ofertas';
  const external=destination.startsWith('https://');
  const title=product?offer.title:showingDiscounts?
-   'Achadinhos com desconto na Shopee':current.title;
- const subtitle=showingDiscounts?
-   'Descontos encontrados nos produtos da Vivi. Confira também as ofertas relâmpago oficiais.':
-   current.subtitle||'Confira as novidades selecionadas pela Vivi.';
- const eyebrow=showingDiscounts?'Descontos encontrados na API Shopee':current.badge||'Destaques da Vivi';
- const buttonLabel=product?'Ver produto':showingDiscounts?
-  'Abrir ofertas relâmpago da Shopee':current.buttonLabel||'Ver ofertas';
+   'Achadinhos com desconto':current.title;
+ const subtitle=current.subtitle||'Confira as novidades selecionadas pela Vivi.';
+ const eyebrow=current.badge||'Destaques da Vivi';
+ const buttonLabel=product?'Ver produto':current.buttonLabel||'Ver ofertas';
  const decorative=images&&gallery.length===0;
- return <section className={'vivi-hero-slider vivi-slide-type-'+current.type+(flash?' vivi-hero-flash':'')}
+ return <section className={'vivi-hero-slider vivi-slide-type-'+current.type+(flash?' vivi-hero-flash':'')+(showingDiscounts?' vivi-hero-discounts':'')}
     aria-label="Destaques da Vivi"
     onMouseEnter={()=>setHovered(true)}
     onMouseLeave={()=>setHovered(false)}
@@ -101,17 +98,17 @@ export default function HeroCarousel({settings={},offers=[]}){
       <ResponsiveBannerImage slide={current} priority/>
      </a>:<>
     <div className="vivi-hero-content">
-     <span className="vivi-hero-eyebrow">{flash?<Flame size={16}/>:<Sparkles size={16}/>}
-      {eyebrow}</span>
+     {!showingDiscounts&&<span className="vivi-hero-eyebrow">{flash?<Flame size={16}/>:<Sparkles size={16}/>}
+      {eyebrow}</span>}
      <h1>{title||'Ofertas escolhidas para você'}</h1>
-     <p>{subtitle}</p>
-     <div className="vivi-hero-buttons">
+     {!showingDiscounts&&<p>{subtitle}</p>}
+     {!showingDiscounts&&<div className="vivi-hero-buttons">
       <a href={destination} className="vivi-hero-cta"
        target={external||product?'_blank':undefined}
        rel={external||product?'noopener noreferrer nofollow sponsored':undefined}>
        <Tag size={17}/>{buttonLabel}<ArrowRight size={17}/>
       </a>
-     </div>
+     </div>}
     </div>
     <div className={'vivi-hero-visual'+(images&&gallery.length?' has-photos':'')}>
      {images&&gallery.length>0?
@@ -143,7 +140,6 @@ export default function HeroCarousel({settings={},offers=[]}){
          <b>{Number(item.price).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</b>
         </span>
        </a>)}
-       <small>Descontos da API · não necessariamente Ofertas Relâmpago</small>
       </div>:
       flash?<div className="vivi-hero-flash-icon"><Flame size={76} strokeWidth={1.5}/><span>OFERTAS DA SEMANA</span></div>:
       <div className={'vivi-hero-default-art'+(decorative?' decorative':'')}>
