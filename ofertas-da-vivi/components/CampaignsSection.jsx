@@ -5,14 +5,19 @@ import {TicketPercent,Flame,ArrowUpRight,CalendarDays,ShieldCheck} from 'lucide-
 const safe=(u)=>{try{return new URL(u).protocol==='https:'}catch{return false}};
 export default function CampaignsSection(){
  const [data,setData]=useState(null);
+ const [discounts,setDiscounts]=useState([]);
  useEffect(()=>{
   let live=true;
   fetch('/api/campaigns').then(r=>r.json()).then(d=>{if(live)setData(d)}).catch(()=>{});
+  fetch('/api/discount-offers',{cache:'no-store'})
+   .then(r=>r.ok?r.json():null)
+   .then(d=>{if(live&&Array.isArray(d?.offers))setDiscounts(d.offers);})
+   .catch(()=>{});
   return ()=>{live=false};
  },[]);
- if(!data||data.enabled===false)return null;
- const links=data.links||[],offers=data.offers||[],flashOffers=data.flashOffers||[];
- if(!links.length&&!offers.length&&!flashOffers.length)return null;
+ if(data?.enabled===false)return null;
+ const links=data?.links||[],offers=data?.offers||[],flashOffers=data?.flashOffers||[];
+ if(!links.length&&!offers.length&&!flashOffers.length&&!discounts.length)return null;
  return <section className="vivi-campaigns" id="cupons">
   <div className="section-heading"><h2><TicketPercent size={25}/> Promoções e cupons</h2></div>
   <p className="vivi-campaigns-intro">Veja os destaques e confira condições, prazos e descontos diretamente na Shopee.</p>
@@ -24,6 +29,29 @@ export default function CampaignsSection(){
     <ArrowUpRight size={20}/>
    </a>)}
   </div>
+  {discounts.length>0&&<div className="vivi-discounts-section" id="descontos">
+   <div className="vivi-discounts-heading">
+    <ShieldCheck size={19}/>
+    <div><h3>Produtos com desconto na Shopee</h3>
+     <p>Seleção da Vivi com preços e percentuais encontrados na API.</p></div>
+   </div>
+   <div className="vivi-discounts-scroll">
+    {discounts.slice(0,8).map(item=><a key={item.id}
+     className="vivi-discount-card" href={'/produto/'+encodeURIComponent(item.id)}
+     target="_blank" rel="noopener noreferrer">
+     <div className="vivi-discount-image">
+      {safe(item.image)?<img src={item.image} alt="" loading="lazy"/>:null}
+      <span>-{item.discount}%</span>
+     </div>
+     <strong>{item.title}</strong>
+     <b>{Number(item.price).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</b>
+     <small>Ver produto <ArrowUpRight size={13}/></small>
+    </a>)}
+   </div>
+   <p className="vivi-discounts-note">
+    Descontos consultados na API de Afiliados, não necessariamente na seção Ofertas Relâmpago. Confirme preços e condições na loja.
+   </p>
+  </div>}
   {flashOffers.length>0&&<div className="vivi-live-flash-section">
    <div className="vivi-live-flash-heading">
     <Flame size={19}/>
