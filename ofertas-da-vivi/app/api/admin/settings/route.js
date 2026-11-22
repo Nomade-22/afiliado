@@ -7,7 +7,7 @@ import {isShopeeLink} from '../../../../lib/shopee-links';
 
 export const dynamic='force-dynamic';
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
-const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150,heroSlides:18000,heroIntervalSeconds:2,flashSaleUrl:1000,couponUrl:1000,flashSaleLabel:65,couponLabel:65,telegram:650,heroColorStart:7,heroColorEnd:7,heroAccent:7,heroGradientAngle:3,heroFillMode:8,christmasTheme:3};
+const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150,heroSlides:18000,heroIntervalSeconds:2,flashSaleUrl:1000,couponUrl:1000,flashSaleLabel:65,couponLabel:65,telegram:650,heroColorStart:7,heroColorEnd:7,heroAccent:7,heroGradientAngle:3,heroFillMode:8,christmasTheme:3,blackFridayTheme:3,effectsMode:7};
 const trustedImage=value=>{
  if(!value)return true;
  if(isHeroImage(value))return true;
@@ -112,6 +112,15 @@ export async function POST(req){
  if(updates.christmasTheme!==undefined&&!['on','off'].includes(updates.christmasTheme)){
   return Response.json({error:'Escolha ativar ou desativar o tema de Natal.'},{status:400,headers});
  }
+ if(updates.blackFridayTheme!==undefined&&!['on','off'].includes(updates.blackFridayTheme)){
+  return Response.json({error:'Escolha ativar ou desativar a Black Friday.'},{status:400,headers});
+ }
+ if(updates.effectsMode!==undefined&&!['off','soft','lively'].includes(updates.effectsMode)){
+  return Response.json({error:'Intensidade das animações inválida.'},{status:400,headers});
+ }
+ // A ativação de um evento é exclusiva: não mostrar Natal e Black Friday juntos.
+ if(updates.blackFridayTheme==='on')updates.christmasTheme='off';
+ else if(updates.christmasTheme==='on')updates.blackFridayTheme='off';
  for(const key of ['campaignsEnabled','autoCampaigns']){
   if(updates[key]!==undefined&&!['on','off'].includes(updates[key])){
    return Response.json({error:'Opção de campanhas inválida.'},{status:400,headers});
