@@ -16,7 +16,7 @@ export async function GET(req){
   try{
    const sql=await getDB();
    if(!sql)throw Error('db unavailable');
-   const existing=await sql`SELECT id,url,product_link,item_id,shop_id,dedupe_key FROM vivi_offers`;
+   const existing=await sql`SELECT id,title,image,url,product_link,item_id,shop_id,dedupe_key FROM vivi_offers`;
    const known=knownOfferKeys(existing);
    return Response.json({...data,ok:true,importedStatusAvailable:true,
     items:data.items.map(item=>({...item,imported:matchExisting(item,known)}))
