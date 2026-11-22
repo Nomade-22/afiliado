@@ -3,40 +3,79 @@ import {getDB,getSettings} from '../../../../lib/db';
 import {defaultSettings} from '../../../../lib/demo';
 
 export const dynamic='force-dynamic';
+const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
+const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150};
+const trustedImage=value=>{
+ if(!value)return true;
+ try{
+  const u=new URL(value);
+  return u.protocol==='https:'&&!u.username&&!u.password;
+ }catch{return false}
+};
+const trustedLink=value=>{
+ if(!value||value==='#ofertas')return true;
+ try{
+  const u=new URL(value);
+  return u.protocol==='https:'&&!u.username&&!u.password;
+ }catch{return false}
+};
+
 export async function GET(){
  if(!await isAdmin())return forbidden();
- let settings={};
- let sql=null;
- let databaseError=null;
- try{
-  sql=await getDB();
-  if(sql)settings=await getSettings(sql);
- }catch(e){
-  databaseError=/password authentication failed|28P01/i.test(String(e?.message))?'Autenticação do Neon rejeitada. Verifique DATABASE_URL.':'Não foi possível consultar o Neon.';
- }
+ let settings={};let sql=null;let databaseError=null;
+ try{sql=await getDB();if(sql)settings=await getSettings(sql)}
+ catch(e){databaseError=/password authentication failed|28P01/i.test(String(e?.message))?
+  'Autenticação do Neon rejeitada. Verifique DATABASE_URL.':'Não foi possível consultar o Neon.'}
  return Response.json({
   settings:{...defaultSettings,...settings},
   shopeeConfigured:!!(process.env.SHOPEE_APP_ID?.trim()&&process.env.SHOPEE_APP_SECRET?.trim()),
   databaseConfigured:!!sql&&!databaseError,
-  databaseError,
-  adminConfigured:!!process.env.ADMIN_PASSWORD
- },{headers:{'Cache-Control':'private, no-store'}});
+  databaseError,adminConfigured:!!process.env.ADMIN_PASSWORD
+ },{headers});
 }
+
 export async function POST(req){
  if(!await isAdmin())return forbidden();
  let sql;
- try{sql=await getDB()}catch{return Response.json({error:'Falha ao conectar ao banco Neon.'},{status:503})}
- if(!sql)return Response.json({error:'Banco não configurado'},{status:503});
- let d=await req.json();
+ try{sql=await getDB()}catch{return Response.json({error:'Falha ao conectar ao Neon.'},{status:503,headers})}
+ if(!sql)return Response.json({error:'Banco não configurado.'},{status:503,headers});
+ const input=await req.json().catch(()=>({}));
+ const updates={};
  for(const key of Object.keys(defaultSettings)){
-  if(typeof d[key]==='string'){
-   const v=d[key].trim().slice(0,key.includes('hero')?280:300);
-   if(['whatsapp','instagram','tiktok'].includes(key)&&v){
-    try{const u=new URL(v);if(u.protocol!=='https:')return Response.json({error:`URL inválida no campo ${key}`},{status:400})}
-    catch{return Response.json({error:`URL inválida no campo ${key}`},{status:400})}
-   }
-   await sql`INSERT INTO vivi_settings(key,value) VALUES(${key},${v}) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value`;
+  if(typeof input[key]!=='string')continue;
+  updates[key]=input[key].trim().slice(0,maxLength[key]||300);
+ }
+ if(updates.heroMode&&!['default','product','banner'].includes(updates.heroMode)){
+  return Response.json({error:'Modo do banner inválido.'},{status:400,headers});
+ }
+ if(updates.heroTheme&&!['orange','pink','purple'].includes(updates.heroTheme)){
+  return Response.json({error:'Cor do banner inválida.'},{status:400,headers});
+ }
+ if(updates.heroImage!==undefined&&!trustedImage(updates.heroImage)){
+  return Response.json({error:'Imagem do banner deve ser uma URL HTTPS válida.'},{status:400,headers});
+ }
+ if(updates.heroButtonUrl!==undefined&&!trustedLink(updates.heroButtonUrl)){
+  return Response.json({error:'Botão do banner deve apontar para HTTPS ou #ofertas.'},{status:400,headers});
+ }
+ for(const key of ['whatsapp','instagram','tiktok']){
+  if(updates[key]&&!trustedLink(updates[key])){
+   return Response.json({error:'URL inválida em '+key+'.'},{status:400,headers});
   }
  }
- return Response.json({ok:true});
+ if(updates.heroMode==='product'){
+  const target=updates.heroProductId;
+  if(!target)return Response.json({error:'Escolha um produto ativo para o destaque.'},{status:400,headers});
+  const rows=await sql`SELECT id FROM vivi_offers WHERE id=${target} AND active=true LIMIT 1`;
+  if(!rows.length)return Response.json({error:'O produto destacado precisa estar ativo no site.'},{status:400,headers});
+ }
+ if(updates.heroMode==='banner'&&!updates.heroImage){
+  // Uma imagem previamente salva pode ser utilizada se o formulário enviou
+  // somente campos parciais. Caso o modo não tenha imagem, rejeitar.
+  const previous=await getSettings(sql);
+  if(!previous.heroImage)return Response.json({error:'Informe a URL HTTPS da imagem do banner.'},{status:400,headers});
+ }
+ for(const [key,value] of Object.entries(updates)){
+  await sql`INSERT INTO vivi_settings(key,value) VALUES(${key},${value}) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value`;
+ }
+ return Response.json({ok:true,updated:Object.keys(updates)},{headers});
 }
