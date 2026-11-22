@@ -10,6 +10,8 @@ export {categories} from './categories';
 export const defaultSettings = {
  whatsapp:'',instagram:'',tiktok:'',
  heroMode:'default',
+ heroSlides:'',
+ heroIntervalSeconds:'7',
  heroTheme:'orange',
  heroBadge:'Seu cantinho de achadinhos',
  heroTitle:'Achadinhos, cupons e ofertas selecionadas pela Vivi ♡',

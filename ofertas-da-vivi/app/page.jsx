@@ -3,6 +3,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {Search,Flame,TicketPercent,House,ShoppingBag,Heart,Menu,X,ArrowRight,ChevronRight,Star,Headphones,Shirt,Sparkles,Laptop,Utensils,Gamepad2,Copy,Check,PawPrint,HeartPulse,Dumbbell,Car,Package,SlidersHorizontal,Instagram,ShieldCheck,Clock,Gift,Tag,ExternalLink,MessageCircle,Truck,Shield,ArrowUpRight} from 'lucide-react';
 import {categories,demoOffers,defaultSettings} from '../lib/demo';
 import CampaignsSection from '../components/CampaignsSection';
+import HeroCarousel from '../components/HeroCarousel';
 const brl=n=>Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const catIcons={'Todos':<Sparkles size={24}/>,'Casa':<House size={25}/>,'Beleza':<Sparkles size={25}/>,'Moda':<Shirt size={25}/>,'Eletrônicos':<Laptop size={25}/>,'Utilidades':<Utensils size={25}/>,'Infantil':<Gift size={25}/>,'Saúde':<HeartPulse size={25}/>,'Pets':<PawPrint size={25}/>,'Esportes':<Dumbbell size={25}/>,'Automotivo':<Car size={25}/>,'Outros':<Package size={25}/>};
 function Logo(){return <a href="/" className="brand"><span className="logo-mark"><Heart size={18} fill="white" strokeWidth={2.5}/></span><span>Ofertas da <em>Vivi</em><b className="brand-heart">♡</b></span></a>}
@@ -55,28 +56,7 @@ export default function HomePage(){
  return <div className="site-shell" data-vivi-theme={["orange","pink","purple"].includes(settings.heroTheme)?settings.heroTheme:"orange"}>
   <header className="site-header"><div className="header-top container"><Logo/><form className="searchbox" onSubmit={e=>{e.preventDefault();document.getElementById('ofertas')?.scrollIntoView({behavior:'smooth'})}}><Search size={19} color="#777"/><input aria-label="Buscar produtos" value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar produtos, ofertas e cupons..."/><button aria-label="Pesquisar" type="submit"><Search size={20}/></button></form><div className="header-side"><span className="header-side-label"><span>🛍️</span><strong>Achadinhos</strong><small>Selecionados com carinho</small></span><button className="mobile-menu" onClick={()=>setMenuOpen(!menuOpen)} aria-label="Abrir menu">{menuOpen?<X/>:<Menu/>}</button></div></div><nav className={'main-nav '+(menuOpen?'nav-open':'')}><div className="container nav-content"><button onClick={()=>{setCat('Todos');window.scrollTo({top:0,behavior:'smooth'})}}><House size={19}/> Início</button><button onClick={()=>{setCat('Todos');setSort('desconto')}}><Flame size={19}/> Ofertas do Dia</button><button onClick={()=>document.getElementById('cupons')?.scrollIntoView({behavior:'smooth'})}><TicketPercent size={19}/> Cupons</button><button onClick={()=>document.getElementById('categorias')?.scrollIntoView({behavior:'smooth'})}><Menu size={18}/> Categorias</button>{channel?<a href={channel} target="_blank" rel="noopener noreferrer" className="nav-whatsapp"><MessageCircle size={19}/> Canal VIP da Vivi</a>:<span className="nav-whatsapp nav-placeholder"><MessageCircle size={19}/> Canal VIP em breve</span>}</div></nav></header>
   <main className="container">
-   <section className={'hero hero-theme-'+(['orange','pink','purple'].includes(settings.heroTheme)?settings.heroTheme:'orange')+' hero-mode-'+chosenHeroMode}>
-    <div className="hero-copy">
-     <div className="hero-eyebrow"><Sparkles size={15}/> {settings.heroBadge||defaultSettings.heroBadge}</div>
-     <h1>{heroTitle}</h1>
-     <p>{settings.heroSubtitle||defaultSettings.heroSubtitle}</p>
-     <div className="hero-actions">
-      <a className="btn btn-light" href={heroButtonUrl}
-       target={isHeroExternal||chosenHeroMode==='product'?'_blank':undefined}
-       rel={isHeroExternal||chosenHeroMode==='product'?'noopener noreferrer nofollow sponsored':undefined}>
-        <Tag size={18}/> {heroButtonLabel} <ArrowRight size={16}/>
-      </a>
-      {channel&&<a className="btn btn-green" href={channel} target="_blank" rel="noopener noreferrer">
-       <MessageCircle size={19}/> Canal VIP <ArrowRight size={17}/>
-      </a>}
-     </div>
-    </div>
-    <div className={'hero-art '+(heroImage?'hero-has-image':'')}
-     role={heroImage?undefined:'img'} aria-label={heroImage?undefined:'Imagem de apresentação da Vivi'}>
-     {heroImage&&<img src={heroImage} alt={chosenHeroMode==='product'?'Produto em destaque':'Banner da Vivi'} loading="eager"
-       onError={e=>{e.currentTarget.style.display='none'}}/>}
-    </div>
-   </section>
+   <HeroCarousel settings={settings} offers={offers}/>
    {mode==='demo'&&<div className="demo-alert"><Sparkles size={16}/><span><strong>Prévia do site:</strong> imagens e preços abaixo são ilustrativos. As ofertas reais aparecerão quando conectarmos a Shopee e ativarmos os produtos.</span></div>}
    <section className="categories-section" id="categorias"><div className="section-heading"><h2>Categorias</h2><button onClick={()=>setCat('Todos')} className="text-action">Todas as categorias <ChevronRight size={17}/></button></div><div className="category-grid">{shownCategories.map(c=><button key={c} className={'category-item '+(activeCat===c?'category-active':'')} onClick={()=>setCat(c)}>{catIcons[c]}<span>{c}</span></button>)}</div></section>
    <section className="offers-section" id="ofertas"><div className="section-heading offers-header"><div><h2><Star size={23} fill="#ff9515" color="#ff9515"/> Ofertas em destaque</h2><p>Os achadinhos que a Vivi separou para você</p></div><div className="filter-controls"><button className={'favorite-filter '+(showFavorites?'selected':'')} onClick={()=>setShowFavorites(!showFavorites)} aria-pressed={showFavorites}><Heart size={17} fill={showFavorites?'currentColor':'none'}/> Favoritos</button><select aria-label="Ordenar ofertas" value={sort} onChange={e=>setSort(e.target.value)}><option value="destaques">Destaques</option><option value="preco-crescente">Menor preço</option><option value="preco-decrescente">Maior preço</option><option value="desconto">Maior desconto</option></select></div></div>{filtered.length?<div className="product-grid">{filtered.map(o=><div className="product-wrap" key={o.id}><ProductCard offer={o} mode={mode}/><button className={'heart-btn '+(favorites.includes(o.id)?'favorited':'')} aria-label="Salvar nos favoritos" onClick={()=>{let next=favorites.includes(o.id)?favorites.filter(id=>id!==o.id):[...favorites,o.id];setFavorites(next);localStorage.setItem('vivi-favorites',JSON.stringify(next))}}><Heart size={16} fill={favorites.includes(o.id)?'currentColor':'none'}/></button></div>)}</div>:<div className="empty-offers"><Search size={28}/><strong>Nenhuma oferta encontrada</strong><p>Tente outra palavra ou escolha uma categoria diferente.</p><button className="btn btn-primary" onClick={()=>{setQ('');setActiveCat('Todos');setShowFavorites(false)}}>Limpar filtros</button></div>}</section>

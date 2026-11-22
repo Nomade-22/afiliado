@@ -1,3 +1,4 @@
+import {normalizeHeroSlides} from '../../../../lib/hero-slides';
 import {isAdmin,forbidden} from '../../../../lib/auth';
 import {getDB,getSettings} from '../../../../lib/db';
 import {defaultSettings} from '../../../../lib/demo';
@@ -5,7 +6,7 @@ import {isShopeeLink} from '../../../../lib/shopee-links';
 
 export const dynamic='force-dynamic';
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
-const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150,flashSaleUrl:1000,couponUrl:1000,flashSaleLabel:65,couponLabel:65};
+const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150,heroSlides:18000,heroIntervalSeconds:2,flashSaleUrl:1000,couponUrl:1000,flashSaleLabel:65,couponLabel:65};
 const trustedImage=value=>{
  if(!value)return true;
  try{
@@ -14,7 +15,7 @@ const trustedImage=value=>{
  }catch{return false}
 };
 const trustedLink=value=>{
- if(!value||value==='#ofertas')return true;
+ if(!value||value==='#ofertas'||value==='#cupons')return true;
  try{
   const u=new URL(value);
   return u.protocol==='https:'&&!u.username&&!u.password;
@@ -45,6 +46,40 @@ export async function POST(req){
  for(const key of Object.keys(defaultSettings)){
   if(typeof input[key]!=='string')continue;
   updates[key]=input[key].trim().slice(0,maxLength[key]||300);
+ }
+ if(input.heroSlides&&typeof input.heroSlides==='string'&&input.heroSlides.length>18000){
+  return Response.json({error:'O carrossel excede o limite de configuração.'},{status:413,headers});
+ }
+ if(updates.heroIntervalSeconds!==undefined){
+  const n=Number(updates.heroIntervalSeconds);
+  if(!Number.isInteger(n)||n<4||n>20)return Response.json({
+   error:'Escolha um intervalo de 4 a 20 segundos.'
+  },{status:400,headers});
+ }
+ if(updates.heroSlides!==undefined&&updates.heroSlides){
+  let slides;
+  try{slides=normalizeHeroSlides(JSON.parse(updates.heroSlides))}
+  catch(e){return Response.json({error:String(e?.message||'Páginas inválidas').slice(0,170)},{status:400,headers})}
+  for(const slide of slides){
+   for(const photo of slide.images){
+    if(photo&&!trustedImage(photo))return Response.json({
+     error:'Todas as imagens do carrossel precisam ser URLs HTTPS válidas.'
+    },{status:400,headers});
+   }
+   if(slide.buttonUrl&&!trustedLink(slide.buttonUrl)){
+    return Response.json({error:'Destino inválido no botão de uma página do banner.'},{status:400,headers});
+   }
+   if(slide.type==='product'&&slide.enabled){
+    if(!slide.productId)return Response.json({
+     error:'Selecione um produto ativo na página de destaque.'
+    },{status:400,headers});
+    const found=await sql`SELECT id FROM vivi_offers WHERE id=${slide.productId} AND active=true LIMIT 1`;
+    if(!found.length)return Response.json({
+     error:'A página de destaque utiliza um produto indisponível.'
+    },{status:400,headers});
+   }
+  }
+  updates.heroSlides=JSON.stringify(slides);
  }
  if(updates.heroMode&&!['default','product','banner'].includes(updates.heroMode)){
   return Response.json({error:'Modo do banner inválido.'},{status:400,headers});
