@@ -17,11 +17,22 @@ export default function HeroCarousel({settings={},offers=[]}){
  const slides=useMemo(()=>readHeroSlides(settings).filter(s=>s.enabled!==false),[settings]);
  const [active,setActive]=useState(0);
  const [flashCampaigns,setFlashCampaigns]=useState([]);
+ const [discountOffers,setDiscountOffers]=useState([]);
  const [hovered,setHovered]=useState(false);
  const [manualPause,setManualPause]=useState(false);
  const touchX=useRef(null);
  const current=slides[active%Math.max(1,slides.length)];
  const period=getHeroInterval(settings)*1000;
+ useEffect(()=>{
+  if(!slides.some(s=>s.type==='flash'))return;
+  const controller=new AbortController();
+  fetch('/api/discount-offers',{cache:'no-store',signal:controller.signal})
+   .then(r=>r.ok?r.json():null)
+   .then(d=>{if(!controller.signal.aborted&&Array.isArray(d?.offers))
+    setDiscountOffers(d.offers.slice(0,6));})
+   .catch(()=>{});
+  return ()=>controller.abort();
+ },[slides]);
  useEffect(()=>{
   if(!slides.some(s=>s.type==='flash'))return;
   const controller=new AbortController();
@@ -49,6 +60,8 @@ export default function HeroCarousel({settings={},offers=[]}){
  const product=current.type==='product'&&offer;
  const flash=current.type==='flash';
  const featuredFlash=flash?flashCampaigns[0]:null;
+ const discountedProducts=flash&&!featuredFlash?discountOffers.slice(0,3):[];
+ const showingDiscounts=discountedProducts.length>0;
  const images=current.type==='images';
  const mainImage=product&&isHeroImage(offer.image)?offer.image:
    (current.type==='intro'||flash)&&gallery.length?gallery[0]:null;
@@ -56,8 +69,14 @@ export default function HeroCarousel({settings={},offers=[]}){
   flash?(featuredFlash?.link||settings.flashSaleUrl):current.buttonUrl||'#ofertas';
  const destination=safeDestination(href)?href:'#ofertas';
  const external=destination.startsWith('https://');
- const title=product?offer.title:current.title;
- const buttonLabel=product?'Ver produto':current.buttonLabel||'Ver ofertas';
+ const title=product?offer.title:showingDiscounts?
+   'Achadinhos com desconto na Shopee':current.title;
+ const subtitle=showingDiscounts?
+   'Descontos encontrados nos produtos da Vivi. Confira também as ofertas relâmpago oficiais.':
+   current.subtitle||'Confira as novidades selecionadas pela Vivi.';
+ const eyebrow=showingDiscounts?'Descontos encontrados na API Shopee':current.badge||'Destaques da Vivi';
+ const buttonLabel=product?'Ver produto':showingDiscounts?
+  'Abrir ofertas relâmpago da Shopee':current.buttonLabel||'Ver ofertas';
  const decorative=images&&gallery.length===0;
  return <section className={'vivi-hero-slider vivi-slide-type-'+current.type+(flash?' vivi-hero-flash':'')}
     aria-label="Destaques da Vivi"
@@ -75,9 +94,9 @@ export default function HeroCarousel({settings={},offers=[]}){
    <div key={current.id} className={'vivi-hero-current'+(images&&gallery.length?' vivi-hero-with-gallery':'')}>
     <div className="vivi-hero-content">
      <span className="vivi-hero-eyebrow">{flash?<Flame size={16}/>:<Sparkles size={16}/>}
-      {current.badge||'Destaques da Vivi'}</span>
+      {eyebrow}</span>
      <h1>{title||'Ofertas escolhidas para você'}</h1>
-     <p>{current.subtitle||'Confira as novidades selecionadas pela Vivi.'}</p>
+     <p>{subtitle}</p>
      <div className="vivi-hero-buttons">
       <a href={destination} className="vivi-hero-cta"
        target={external||product?'_blank':undefined}
@@ -86,7 +105,7 @@ export default function HeroCarousel({settings={},offers=[]}){
       </a>
      </div>
     </div>
-    <div className={'vivi-hero-visual'+(images&&gallery.length?' has-photos':'')} aria-hidden="true">
+    <div className={'vivi-hero-visual'+(images&&gallery.length?' has-photos':'')}>
      {images&&gallery.length>0?
       <div className={'vivi-hero-photo-grid count-'+gallery.length}>
        {gallery.map((src,i)=><div key={src+i} className="vivi-hero-photo">
@@ -104,6 +123,20 @@ export default function HeroCarousel({settings={},offers=[]}){
         <strong>{featuredFlash.title}</strong>
         <small>Ver condições <ArrowRight size={14}/></small>
        </a>:
+      flash&&showingDiscounts?<div className="vivi-flash-discount-tiles">
+       {discountedProducts.map(item=><a key={item.id} className="vivi-flash-discount-tile"
+        href={'/produto/'+encodeURIComponent(item.id)} target="_blank" rel="noopener noreferrer">
+        <span className="vivi-flash-discount-badge">-{item.discount}%</span>
+        {isHeroImage(item.image)?
+         <img src={item.image} alt="" loading="lazy"/>:
+         <span className="vivi-flash-discount-placeholder"><ShoppingBag size={27}/></span>}
+        <span className="vivi-flash-discount-detail">
+         <strong>{item.title}</strong>
+         <b>{Number(item.price).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</b>
+        </span>
+       </a>)}
+       <small>Descontos da API · não necessariamente Ofertas Relâmpago</small>
+      </div>:
       flash?<div className="vivi-hero-flash-icon"><Flame size={76} strokeWidth={1.5}/><span>OFERTAS DA SEMANA</span></div>:
       <div className={'vivi-hero-default-art'+(decorative?' decorative':'')}>
        <div className="vivi-hero-art-ring"><ShoppingBag size={58} strokeWidth={1.5}/></div>
