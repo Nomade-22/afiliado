@@ -340,7 +340,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
     {current.type!=='images'&&<label style={label}>Etiqueta superior
      <input style={input} value={current.badge||''} maxLength={85}
       onChange={e=>updateSlide('badge',e.target.value)}/>
-    </label>
+    </label>}
     <label style={label}>{current.type==='images'?'Descrição da arte (acessibilidade)':'Título do banner'}
      <textarea style={{...input,minHeight:78,resize:'vertical'}} maxLength={170}
       value={current.title||''} onChange={e=>updateSlide('title',e.target.value)}/>
@@ -348,7 +348,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
     {current.type!=='images'&&<label style={label}>Texto de apoio
      <textarea style={{...input,minHeight:85,resize:'vertical'}} maxLength={300}
       value={current.subtitle||''} onChange={e=>updateSlide('subtitle',e.target.value)}/>
-    </label>
+    </label>}
     {current.type!=='product'&&<div className="vivi-banner-images-editor">
      <div className="vivi-banner-images-header">
       <strong><ImagePlus size={18}/> {current.type==='images'?'Arte principal · computador':'Fotos do banner'}</strong>
@@ -406,7 +406,7 @@ export default function BannerPanel({settings={},offers=[],onSaved,onManageOffer
     {current.type!=='images'&&<label style={label}>Texto do botão
      <input style={input} value={current.buttonLabel||''} maxLength={55}
       onChange={e=>updateSlide('buttonLabel',e.target.value)}/>
-    </label>
+    </label>}
     {current.type!=='flash'&&current.type!=='product'&&<label style={label}>{current.type==='images'?'Link ao tocar na imagem':'Link do botão'}
      <input style={input} value={current.buttonUrl||''}
       onChange={e=>updateSlide('buttonUrl',e.target.value)} placeholder="#ofertas ou https://..."/>
