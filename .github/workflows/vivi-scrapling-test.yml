@@ -1,0 +1,37 @@
+name: Teste isolado Scrapling - 10 produtos
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/vivi-scrapling-test.yml'
+      - 'scripts/vivi_scrapling_test.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: vivi-scrapling-test-ten
+  cancel-in-progress: false
+
+jobs:
+  scrape-10:
+    if: github.repository == 'Nomade-22/afiliado'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout do coletor (sem credenciais persistentes)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Preparar navegador de teste
+        shell: bash
+        run: |
+          python3 -m venv .venv
+          .venv/bin/python -m pip install --disable-pip-version-check "scrapling[fetchers]==0.4.6" "beautifulsoup4==4.13.4"
+          .venv/bin/python -m playwright install --with-deps chromium
+      - name: Coletar 10 produtos e gravar relatório isolado no Neon
+        shell: bash
+        run: .venv/bin/python scripts/vivi_scrapling_test.py

@@ -122,6 +122,18 @@ export async function getDB(){
     errors_json TEXT NOT NULL DEFAULT '[]'
   )`;
   await sql`CREATE INDEX IF NOT EXISTS vivi_product_sync_runs_recent ON vivi_product_sync_runs (started_at DESC)`;
+  // Resultados do teste isolado. Nunca atualiza vivi_offers.
+  await sql`CREATE TABLE IF NOT EXISTS vivi_scrapling_test_runs (
+    run_id TEXT PRIMARY KEY,
+    source TEXT NOT NULL DEFAULT 'github_actions',
+    status TEXT NOT NULL,
+    started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    finished_at TIMESTAMPTZ,
+    results_json TEXT NOT NULL DEFAULT '[]',
+    notes TEXT
+  )`;
+  await sql`CREATE INDEX IF NOT EXISTS vivi_scrapling_test_recent
+    ON vivi_scrapling_test_runs (started_at DESC)`;
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS vivi_product_sync_single_active
     ON vivi_product_sync_runs ((status)) WHERE status='running'`;
  })().catch(e=>{initPromise=null;throw e});
