@@ -22,6 +22,9 @@ export default function HeroCarousel({settings={},offers=[]}){
  const [hovered,setHovered]=useState(false);
  const [manualPause,setManualPause]=useState(false);
  const touchX=useRef(null);
+ const touchY=useRef(null);
+ const mouseX=useRef(null);
+ const mouseDragged=useRef(false);
  const current=slides[active%Math.max(1,slides.length)];
  const period=getHeroInterval(settings)*1000;
  useEffect(()=>{
@@ -54,6 +57,8 @@ export default function HeroCarousel({settings={},offers=[]}){
  useEffect(()=>setActive(i=>Math.min(i,Math.max(0,slides.length-1))),[slides.length]);
  if(!current)return null;
  const navigate=delta=>setActive(i=>(i+delta+slides.length)%slides.length);
+ const previewShift=(element,dx)=>element.style.setProperty('--vivi-swipe-shift',Math.max(-19,Math.min(19,dx*.15)).toFixed(1)+'px');
+ const clearShift=element=>element.style.removeProperty('--vivi-swipe-shift');
  // Apenas fotos escolhidas pelo administrador. Nada de quatro produtos
  // aleatórios cobrindo a chamada principal da campanha.
  const gallery=(current.images||[]).filter(isHeroImage).slice(0,4);
@@ -80,16 +85,38 @@ export default function HeroCarousel({settings={},offers=[]}){
  return <section className={'vivi-hero-slider vivi-slide-type-'+current.type+(flash?' vivi-hero-flash':'')+(showingDiscounts?' vivi-hero-discounts':'')}
     aria-label="Destaques da Vivi"
     onMouseEnter={()=>setHovered(true)}
-    onMouseLeave={()=>setHovered(false)}
+    onMouseLeave={e=>{setHovered(false);mouseX.current=null;clearShift(e.currentTarget)}}
     onFocusCapture={()=>setHovered(true)}
     onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setHovered(false)}}
-    onTouchStart={e=>{touchX.current=e.touches[0]?.clientX??null}}
+    onTouchStart={e=>{touchX.current=e.touches[0]?.clientX??null;touchY.current=e.touches[0]?.clientY??null}}
+    onTouchMove={e=>{
+     if(touchX.current===null||touchY.current===null)return;
+     const t=e.touches[0];if(!t)return;
+     const dx=t.clientX-touchX.current,dy=t.clientY-touchY.current;
+     if(Math.abs(dx)>Math.abs(dy)*1.25)previewShift(e.currentTarget,dx);
+    }}
     onTouchEnd={e=>{
+     clearShift(e.currentTarget);
      if(touchX.current===null)return;
-     const diff=e.changedTouches[0]?.clientX-touchX.current;
+     const diff=(e.changedTouches[0]?.clientX??touchX.current)-touchX.current;
      if(Math.abs(diff)>45)navigate(diff<0?1:-1);
-     touchX.current=null;
-    }}>
+     touchX.current=null;touchY.current=null;
+    }}
+    onTouchCancel={e=>{clearShift(e.currentTarget);touchX.current=null;touchY.current=null}}
+    onMouseDown={e=>{if(e.button!==0)return;mouseX.current=e.clientX;mouseDragged.current=false}}
+    onMouseMove={e=>{
+     if(mouseX.current===null)return;
+     const diff=e.clientX-mouseX.current;
+     if(Math.abs(diff)>8){mouseDragged.current=true;previewShift(e.currentTarget,diff)}
+    }}
+    onMouseUp={e=>{
+     if(mouseX.current===null)return;
+     const diff=e.clientX-mouseX.current;
+     clearShift(e.currentTarget);mouseX.current=null;
+     if(Math.abs(diff)>45)navigate(diff<0?1:-1);
+    }}
+    onClickCapture={e=>{if(mouseDragged.current){e.preventDefault();mouseDragged.current=false}}}
+    onDragStart={e=>e.preventDefault()}>
    <div key={current.id} className={'vivi-hero-current'+(fullImage?' vivi-hero-with-full-image':'')}>
     {fullImage?<a className="vivi-hero-full-image" href={destination}
       target={external?'_blank':undefined}
