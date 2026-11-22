@@ -2,6 +2,7 @@ import {isAdmin,forbidden} from '../../../../lib/auth';
 import {hasShopeeCredentials} from '../../../../lib/shopee';
 import {loadSalesReport} from '../../../../lib/shopee-reports';
 import {getDB} from '../../../../lib/db';
+import {resolveSalesPeriod} from '../../../../lib/report-period';
 
 export const dynamic='force-dynamic';
 export const runtime='nodejs';
@@ -27,14 +28,20 @@ async function getSiteClicks(){
 
 export async function GET(req){
  if(!await isAdmin())return forbidden();
- const days=Number(new URL(req.url).searchParams.get('days')||30);
+ let range;
+ try {
+  const query=new URL(req.url).searchParams;
+  range=resolveSalesPeriod(query.get('period')||query.get('days')||'30');
+ } catch {
+  return Response.json({status:'invalid_period',error:'Período inválido.'},{status:400,headers:privateHeaders});
+ }
  if(!hasShopeeCredentials())return Response.json({
   status:'not_configured',error:'Cadastre SHOPEE_APP_ID e SHOPEE_APP_SECRET em Production na Vercel.',
   siteClicks:await getSiteClicks()
  },{headers:privateHeaders,status:503});
 
  const [sales,clicks]=await Promise.allSettled([
-  loadSalesReport({days,maximumPages:4}),
+  loadSalesReport({days:range.days,fromEpoch:range.fromEpoch,toEpoch:range.toEpoch,maximumPages:4}),
   getSiteClicks()
  ]);
  const siteClicks=clicks.status==='fulfilled'?clicks.value:{status:'db_error',count:null,topOffers:[]};
@@ -49,5 +56,5 @@ export async function GET(req){
    siteClicks
   },{status:502,headers:privateHeaders});
  }
- return Response.json({...sales.value,siteClicks}, {headers:privateHeaders});
+ return Response.json({...sales.value,periodLabel:range.label,siteClicks}, {headers:privateHeaders});
 }

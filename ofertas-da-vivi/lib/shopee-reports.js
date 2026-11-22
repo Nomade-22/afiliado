@@ -12,7 +12,7 @@ function makeQuery(start,end,scrollId,full=true){
  return '{ conversionReport(purchaseTimeStart: '+start+', purchaseTimeEnd: '+end+', limit: 100'+cursor+') { nodes { '+fields+' } pageInfo { hasNextPage scrollId } } }';
 }
 
-function summarize(rows,days,cutOff){
+function summarize(rows,days,cutOff,endTime){
  const orderIds=new Set();
  const statuses={UNPAID:0,PENDING:0,COMPLETED:0,CANCELLED:0,OTHER:0};
  const byProduct=new Map();
@@ -68,7 +68,7 @@ function summarize(rows,days,cutOff){
   };
  });
  return {
-  periodDays:days,from:new Date(cutOff*1000).toISOString(),to:new Date().toISOString(),
+  periodDays:days,from:new Date(cutOff*1000).toISOString(),to:new Date(endTime*1000).toISOString(),
   conversions:rows.length,orders,itemsSold,estimatedOrderValue,
   commissionEstimated:commission,sellerCommissionEstimated:sellerCommission,
   shopeeCommissionEstimated:shopeeCommission,newBuyers,
@@ -78,10 +78,12 @@ function summarize(rows,days,cutOff){
  };
 }
 
-export async function loadSalesReport({days=30,maximumPages=4}={}){
+export async function loadSalesReport({days=30,maximumPages=4,fromEpoch=null,toEpoch=null}={}){
  const d=clamp(days,1,89,30);
- const to=Math.floor(Date.now()/1000);
- const from=to-d*86400;
+ const now=Math.floor(Date.now()/1000);
+ const to=Number.isSafeInteger(toEpoch)?Math.min(toEpoch,now):now;
+ const from=Number.isSafeInteger(fromEpoch)?fromEpoch:to-d*86400;
+ if(from<1||from>=to||to-from>89*86400+1)throw Error('Intervalo de consulta inválido.');
  const max=clamp(maximumPages,1,6,4);
  let next=null,more=false,mode='full';
  const all=[];
@@ -113,7 +115,7 @@ export async function loadSalesReport({days=30,maximumPages=4}={}){
    if(!more||!cursor||cursor===next||Date.now()-started>19000)break;
    next=cursor;
  }
- const info=summarize(all,d,from);
+ const info=summarize(all,d,from,to);
  return {
   status:'ok',source:'shopee_conversionReport',schemaMode:mode,
   ...info,pagesFetched:pages,partial:more,hasMore:more,

@@ -24,14 +24,15 @@ function CsvDownload({report}){
 }
 
 export default function SalesPanel(){
- const [days,setDays]=useState(30),[busy,setBusy]=useState(false);
+ const [days,setDays]=useState('30'),[busy,setBusy]=useState(false);
+ const [shareBusy,setShareBusy]=useState(false),[shareUrl,setShareUrl]=useState(''),[shareError,setShareError]=useState(''),[shareCopied,setShareCopied]=useState(false);
  const [report,setReport]=useState(null),[error,setError]=useState('');
  const [validationId,setValidationId]=useState(''),[validated,setValidated]=useState(null),[valBusy,setValBusy]=useState(false),[valError,setValError]=useState('');
  const [clickImport,setClickImport]=useState(null),[clickBusy,setClickBusy]=useState(false),[clickError,setClickError]=useState('');
  async function load(period=days){
   setBusy(true);setError('');
   try{
-   const r=await fetch('/api/admin/analytics?days='+encodeURIComponent(period),{cache:'no-store'});
+   const r=await fetch('/api/admin/analytics?period='+encodeURIComponent(period),{cache:'no-store'});
    if(r.status===401){window.location.href='/adm/login';return}
    const d=await r.json();
    if(!r.ok)throw Error(d.error||'Falha ao consultar o relatório.');
@@ -39,7 +40,22 @@ export default function SalesPanel(){
   }catch(err){setReport(null);setError(err.message)}
   finally{setBusy(false)}
  }
- useEffect(()=>{load(30)},[]);
+ useEffect(()=>{load('30')},[]);
+ async function shareWithChatGPT(){
+  setShareBusy(true);setShareError('');setShareUrl('');setShareCopied(false);
+  try{
+   const response=await fetch('/api/admin/analytics/share',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({period:days}),cache:'no-store'
+   });
+   if(response.status===401){window.location.href='/adm/login';return}
+   const data=await response.json();
+   if(!response.ok)throw Error(data.error||'Falha ao preparar acesso temporário.');
+   setShareUrl(data.url);
+   try{await navigator.clipboard.writeText(data.url);setShareCopied(true)}catch{}
+  }catch(err){setShareError(err.message)}
+  finally{setShareBusy(false)}
+ }
  async function getValidated(){
   setValBusy(true);setValError('');setValidated(null);
   try{
@@ -69,7 +85,10 @@ export default function SalesPanel(){
    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:14,flexWrap:'wrap'}}>
     <div><div style={{fontSize:13,color:'#888'}}>Dados da conta de afiliado · Shopee Open API</div><h2 style={{fontSize:23,margin:'7px 0 3px'}}>Vendas e comissões</h2></div>
     <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-     <select aria-label="Período de vendas" style={{...action,color:'#222'}} value={days} onChange={e=>{const n=Number(e.target.value);setDays(n);load(n)}}>
+     <select aria-label="Período de vendas" style={{...action,color:'#222'}} value={days} onChange={e=>{const n=e.target.value;setDays(n);setShareUrl('');load(n)}}>
+      <option value="today">Hoje (São Paulo)</option>
+      <option value="yesterday">Ontem (São Paulo)</option>
+      <option value={1}>Últimas 24 horas</option>
       <option value={7}>Últimos 7 dias</option>
       <option value={30}>Últimos 30 dias</option>
       <option value={60}>Últimos 60 dias</option>
@@ -77,9 +96,17 @@ export default function SalesPanel(){
      </select>
      <button style={btn} disabled={busy} onClick={()=>load()}><RefreshCw size={16} style={{verticalAlign:'middle'}}/> {busy?'Consultando…':'Atualizar'}</button>
      {report&&<CsvDownload report={report}/>}
+     <button type="button" style={action} disabled={shareBusy} onClick={shareWithChatGPT}>{shareBusy?'Gerando link seguro…':'Compartilhar com ChatGPT'}</button>
     </div>
    </div>
-   <p style={{fontSize:13,color:'#84858d',lineHeight:1.5}}>Conversões consultadas diretamente na Shopee. Os dados podem sofrer atraso, cancelamento e validação posterior. Não há necessidade do banco Neon para consultar vendas.</p>
+   <p style={{fontSize:13,color:'#84858d',lineHeight:1.5}}>Período: <b>{report?.periodLabel||'Carregando…'}</b>. Conversões consultadas diretamente na Shopee. Os dados podem sofrer atraso, cancelamento e validação posterior. Não há necessidade do banco Neon para consultar vendas.</p>
+   {shareError&&<p role="alert" style={{color:'#b43d27',fontSize:13}}>{shareError}</p>}
+   {shareUrl&&<div style={{background:'#f2f7ff',padding:14,borderRadius:12,margin:'12px 0',fontSize:13,lineHeight:1.6}}>
+     <b>{shareCopied?'Link seguro copiado!':'Link seguro gerado.'}</b>
+     <p style={{margin:'7px 0'}}>Cole o link na conversa do ChatGPT. Ele permite consultar só totais e produtos agregados, sem IDs de pedidos. Expira em 10 minutos.</p>
+     <input readOnly aria-label="Link temporário para ChatGPT" value={shareUrl} onFocus={e=>e.target.select()} style={{width:'100%',padding:10,border:'1px solid #cfdaf2',borderRadius:8,boxSizing:'border-box'}}/>
+     <button type="button" style={{...action,marginTop:8}} onClick={async()=>{try{await navigator.clipboard.writeText(shareUrl);setShareCopied(true)}catch{setShareError('Copie o link selecionando o texto acima.')}}}>Copiar link</button>
+   </div>}
    {error&&<div role="alert" style={{borderRadius:10,background:'#fff1ea',color:'#a63213',padding:14,marginTop:15}}>
     <AlertCircle size={18} style={{verticalAlign:'middle'}}/> {error}
     <p style={{fontSize:13,marginBottom:0}}>Se a Shopee rejeitar algum campo GraphQL, copie essa mensagem para ajustarmos o formato da consulta.</p>
