@@ -2378,3 +2378,111 @@
  .vivi-product-sync-summary{gap:9px 7px;padding:10px}
  .vivi-product-sync-summary b{font-size:12px}
 }
+
+
+/* Teste isolado Scrapling: comparação sem alterar o catálogo público. */
+.vivi-scrapling-test{display:flex;flex-direction:column;gap:17px;min-width:0}
+.vivi-scrapling-intro{
+ background:linear-gradient(135deg,#fffcfe,#fff4fa);
+ border:1px solid #efdfec;
+}
+.vivi-scrapling-intro p{
+ color:#6c707c;line-height:1.6;font-size:13px;margin:8px 0 12px;
+}
+.vivi-scrapling-intro b{color:#373543}
+.vivi-scrapling-safety{
+ display:flex;gap:10px;align-items:flex-start;
+ padding:12px 13px;background:#ebf9f0;color:#1a6946;
+ border-radius:11px;font-size:12px;line-height:1.6;
+}
+.vivi-scrapling-safety svg{flex-shrink:0;margin-top:2px}
+.vivi-scrapling-actions{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:15px 0 5px}
+.vivi-scrapling-actions .btn{display:inline-flex;align-items:center;gap:6px}
+.vivi-scrapling-test .vivi-scrapling-hint{
+ color:#83808a;font-size:11px;line-height:1.65;margin:10px 0 0;
+}
+.vivi-scrapling-report-header{
+ display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;
+}
+.vivi-scrapling-report-header h3{font-size:19px;color:#292935;margin:0 0 6px}
+.vivi-scrapling-report-header p{
+ display:flex;align-items:center;gap:5px;font-size:12px;color:#7a7985;margin:0;
+}
+.vivi-scrapling-status{
+ display:inline-block;border-radius:99px;padding:7px 11px;
+ background:#f6e8f0;color:#9e2963;font-size:12px;font-weight:850;
+}
+.vivi-scrapling-stats{
+ display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:17px;
+}
+.vivi-scrapling-stats>div{
+ padding:11px 8px;background:#fff7fb;border:1px solid #f2e4ed;
+ border-radius:12px;display:flex;align-items:center;flex-direction:column;gap:4px;text-align:center;
+}
+.vivi-scrapling-stats strong{font-size:25px;color:#a92b68}
+.vivi-scrapling-stats small{font-size:10px;color:#797583}
+.vivi-scrapling-empty{text-align:center;padding:27px!important;color:#955177}
+.vivi-scrapling-empty h3{color:#32323d;font-size:18px;margin:8px 0}
+.vivi-scrapling-empty p{color:#7d7b86;font-size:13px;line-height:1.6;margin:0 auto;max-width:580px}
+.vivi-scrapling-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.vivi-scrapling-product{background:#fff;border:1px solid #ece8ef;border-radius:15px;padding:13px;min-width:0}
+.vivi-scrapling-product-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.vivi-scrapling-number{color:#8c8191;font-size:12px;font-weight:850}
+.vivi-scrapling-pill{display:inline-flex;align-items:center;border-radius:99px;padding:6px 9px;font-size:11px;font-weight:850}
+.vivi-scrapling-pill.good{color:#147447;background:#e3f7ed}
+.vivi-scrapling-pill.warning{color:#9a5b12;background:#fff4d9}
+.vivi-scrapling-pill.danger{color:#aa3343;background:#ffedf0}
+.vivi-scrapling-pill.muted{color:#73717b;background:#f1eff2}
+.vivi-scrapling-product-summary{display:flex;gap:11px;align-items:flex-start;min-width:0}
+.vivi-scrapling-product-summary img{
+ width:81px;height:81px;object-fit:contain;border-radius:9px;background:#faf9fb;flex-shrink:0
+}
+.vivi-scrapling-product-summary h3{font-size:13px;line-height:1.5;color:#30313c;margin:0 0 7px}
+.vivi-scrapling-product-summary p{font-size:11px;line-height:1.55;color:#8a8590;margin:0}
+.vivi-scrapling-reason{
+ display:flex;gap:6px;align-items:flex-start;padding:9px;border-radius:9px;
+ background:#fff8ec;color:#8c642f;font-size:11px;line-height:1.45;margin:10px 0;
+}
+.vivi-scrapling-reason svg{flex-shrink:0}
+.vivi-scrapling-findings{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:7px 10px;margin-top:13px;
+}
+.vivi-scrapling-findings span{
+ display:flex;align-items:center;flex-wrap:wrap;gap:4px;
+ color:#777381;font-size:11px;line-height:1.35;
+}
+.vivi-scrapling-findings svg{color:#ab386f}
+.vivi-scrapling-findings b{font-weight:850;color:#453e49}
+.vivi-scrapling-photo-grid{display:flex;gap:7px;overflow-x:auto;padding:10px 1px}
+.vivi-scrapling-photo-grid a{
+ display:block;width:75px;height:75px;flex:0 0 75px;
+ background:#faf8fc;border:1px solid #ece4eb;border-radius:9px;overflow:hidden;
+}
+.vivi-scrapling-photo-grid img{width:100%;height:100%;object-fit:contain}
+.vivi-scrapling-description{
+ background:#faf8fb;border-radius:10px;padding:10px 11px;margin-top:8px;
+}
+.vivi-scrapling-description strong{font-size:11px;color:#693552}
+.vivi-scrapling-description small{font-weight:400;color:#8c8490}
+.vivi-scrapling-description p{font-size:11px;line-height:1.65;color:#524d59;white-space:pre-wrap;overflow-wrap:anywhere}
+.vivi-scrapling-expand{
+ background:none;border:0;color:#a02d67;font-weight:750;font-size:11px;
+ cursor:pointer;display:inline-flex;gap:5px;align-items:center;padding:2px 0;
+}
+.vivi-scrapling-technical{display:block;color:#99919a;font-size:10px;margin-top:12px}
+.vivi-scrapling-pending{font-size:11px;color:#9b96a0;margin:10px 0 0}
+@media(max-width:1000px){
+ .vivi-scrapling-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ .vivi-scrapling-grid{grid-template-columns:minmax(0,1fr)}
+ .vivi-scrapling-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ .vivi-scrapling-stats strong{font-size:23px}
+}
+@media(max-width:440px){
+ .vivi-scrapling-actions .btn{width:100%;justify-content:center}
+ .vivi-scrapling-product-summary img{width:70px;height:70px}
+ .vivi-scrapling-stats strong{font-size:20px}
+ .vivi-scrapling-stats small{font-size:9px}
+}
