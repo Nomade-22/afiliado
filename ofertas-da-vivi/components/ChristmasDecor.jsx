@@ -19,6 +19,7 @@ export function ChristmasLights(){
 
 export function ChristmasSnow(){
  return <div className="vivi-christmas-snow" aria-hidden="true">
-  {flakes.map(i=><span key={i} className={'flake flake-'+i}>❄</span>)}
+  {flakes.map(i=><span key={i} className={'flake flake-'+i}
+   style={{left:((i*17+7)%96)+'%',animationDelay:'-'+((i%7)*1.3)+'s',fontSize:(12+(i%3)*6)+'px'}}>❄</span>)}
  </div>;
 }
