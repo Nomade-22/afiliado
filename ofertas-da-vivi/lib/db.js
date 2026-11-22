@@ -28,7 +28,8 @@ export async function getDB(){
     sales NUMERIC(15,0),
     rating_star NUMERIC(6,3),
     affiliate_link_source TEXT,
-    affiliate_sub_ids TEXT
+    affiliate_sub_ids TEXT,
+    dedupe_key TEXT
   )`;
   await sql`CREATE TABLE IF NOT EXISTS vivi_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`;
   await sql`ALTER TABLE vivi_offers
@@ -42,7 +43,9 @@ export async function getDB(){
     ADD COLUMN IF NOT EXISTS sales NUMERIC(15,0),
     ADD COLUMN IF NOT EXISTS rating_star NUMERIC(6,3),
     ADD COLUMN IF NOT EXISTS affiliate_link_source TEXT,
-    ADD COLUMN IF NOT EXISTS affiliate_sub_ids TEXT`;
+    ADD COLUMN IF NOT EXISTS affiliate_sub_ids TEXT,
+    ADD COLUMN IF NOT EXISTS dedupe_key TEXT`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS vivi_offers_unique_identity ON vivi_offers (dedupe_key) WHERE dedupe_key IS NOT NULL`;
  })().catch(e=>{initPromise=null;throw e});
  await initPromise;
  return sql;
@@ -59,6 +62,7 @@ export const mapOffer=o=>({
  priceDiscountRate:numberOrNull(o.price_discount_rate),productLink:o.product_link??null,
  sales:numberOrNull(o.sales),ratingStar:numberOrNull(o.rating_star),
  affiliateLinkSource:o.affiliate_link_source??null,
+ dedupeKey:o.dedupe_key??null,
  affiliateSubIds:typeof o.affiliate_sub_ids==='string'?o.affiliate_sub_ids.split(',').filter(Boolean):[]
 });
 export async function getSettings(sql){
