@@ -7,16 +7,16 @@ export default async function ProductPage({params}){
  const {id}=await params;
  if(!id||id.length>150)notFound();
  let offer;
- let theme='orange';
+ let themeSettings={};
  try{
   const sql=await getDB();
   if(!sql)notFound();
   const found=await sql`SELECT * FROM vivi_offers WHERE id=${id} AND active=true LIMIT 1`;
   if(!found.length)notFound();
   offer=mapOffer(found[0]);
-  try{const s=await getSettings(sql);if(['orange','pink','purple'].includes(s.heroTheme))theme=s.heroTheme}catch{}
+  try{themeSettings=await getSettings(sql)}catch{}
  }catch{notFound()}
- return <ProductDetail theme={theme} offer={{
+ return <ProductDetail themeSettings={themeSettings} offer={{
   id:offer.id,internalCode:offer.internalCode,title:offer.title,
   category:offer.category,price:offer.price,oldPrice:offer.oldPrice,
   image:offer.image,images:offer.images,shopName:offer.shopName,

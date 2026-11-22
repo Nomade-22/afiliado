@@ -1,4 +1,5 @@
 import {normalizeHeroSlides} from '../../../../lib/hero-slides';
+import {validHex,isHeroImage,VIVI_THEMES} from '../../../../lib/site-theme';
 import {isAdmin,forbidden} from '../../../../lib/auth';
 import {getDB,getSettings} from '../../../../lib/db';
 import {defaultSettings} from '../../../../lib/demo';
@@ -6,9 +7,10 @@ import {isShopeeLink} from '../../../../lib/shopee-links';
 
 export const dynamic='force-dynamic';
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
-const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150,heroSlides:18000,heroIntervalSeconds:2,flashSaleUrl:1000,couponUrl:1000,flashSaleLabel:65,couponLabel:65,telegram:650};
+const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150,heroSlides:18000,heroIntervalSeconds:2,flashSaleUrl:1000,couponUrl:1000,flashSaleLabel:65,couponLabel:65,telegram:650,heroColorStart:7,heroColorEnd:7,heroAccent:7,heroGradientAngle:3,heroFillMode:8};
 const trustedImage=value=>{
  if(!value)return true;
+ if(isHeroImage(value))return true;
  try{
   const u=new URL(value);
   return u.protocol==='https:'&&!u.username&&!u.password;
@@ -84,9 +86,18 @@ export async function POST(req){
  if(updates.heroMode&&!['default','product','banner'].includes(updates.heroMode)){
   return Response.json({error:'Modo do banner inválido.'},{status:400,headers});
  }
- if(updates.heroTheme&&!['orange','pink','purple'].includes(updates.heroTheme)){
+ if(updates.heroTheme&&!VIVI_THEMES.some(t=>t.id===updates.heroTheme)&&updates.heroTheme!=='custom'){
   return Response.json({error:'Cor do banner inválida.'},{status:400,headers});
  }
+ for(const field of ['heroColorStart','heroColorEnd','heroAccent']){
+  if(updates[field]!==undefined&&!validHex(updates[field]))
+    return Response.json({error:'Cor inválida. Use o formato #RRGGBB.'},{status:400,headers});
+ }
+ if(updates.heroGradientAngle!==undefined&&
+    (!/^\d{1,3}$/.test(updates.heroGradientAngle)||Number(updates.heroGradientAngle)>360))
+  return Response.json({error:'Ângulo do degradê deve ficar entre 0 e 360 graus.'},{status:400,headers});
+ if(updates.heroFillMode!==undefined&&!['solid','gradient'].includes(updates.heroFillMode))
+  return Response.json({error:'Selecione cor sólida ou degradê.'},{status:400,headers});
  if(updates.heroImage!==undefined&&!trustedImage(updates.heroImage)){
   return Response.json({error:'Imagem do banner deve ser uma URL HTTPS válida.'},{status:400,headers});
  }
