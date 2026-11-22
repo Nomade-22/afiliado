@@ -712,3 +712,325 @@
 .site-footer .vivi-footer-social-grid .vivi-social-label{
  color:#f1f0f5;
 }
+
+
+/* VIVI V3 — banner editorial com controles fora da área das imagens */
+.site-shell .vivi-hero-slider{
+ position:relative;
+ display:flex;
+ flex-direction:column;
+ overflow:hidden;
+ border-radius:22px;
+ min-height:0;
+ background:var(--vivi-accent-gradient);
+ color:var(--vivi-hero-ink,#fff);
+ box-shadow:0 14px 30px var(--vivi-accent-glow);
+ isolation:isolate;
+}
+.site-shell .vivi-hero-slider:before{
+ content:"";
+ position:absolute;pointer-events:none;
+ width:350px;height:350px;border-radius:50%;
+ background:#ffffff12;right:-140px;top:-160px;
+ z-index:0;
+}
+.site-shell .vivi-hero-slider.vivi-hero-flash{
+ background:linear-gradient(115deg,#a91a38,#e02c48 64%,#fc5a43);
+ color:#fff;
+}
+.site-shell .vivi-hero-current{
+ position:relative;z-index:1;
+ display:grid;grid-template-columns:minmax(0,1.13fr) minmax(0,.87fr);
+ min-height:320px;height:auto;align-items:center;
+}
+.site-shell .vivi-hero-content{
+ min-width:0;position:relative;z-index:2;
+ padding:33px 10px 28px 38px;
+ justify-content:center;gap:0;color:inherit;
+}
+.site-shell .vivi-hero-eyebrow{
+ display:inline-flex;gap:7px;align-items:center;
+ padding:7px 12px;line-height:1.35;border-radius:99px;
+ color:inherit;border:1px solid var(--vivi-hero-border,#ffffff64);
+ background:var(--vivi-hero-control,#ffffff22);
+ font-size:12px;font-weight:750;max-width:100%;
+}
+.site-shell .vivi-hero-content h1{
+ color:inherit;
+ font-size:clamp(26px,3.3vw,44px);
+ font-weight:850;line-height:1.08;letter-spacing:-.8px;
+ overflow-wrap:break-word;-webkit-line-clamp:3;
+ margin:14px 0 11px;
+ max-width:650px;
+}
+.site-shell .vivi-hero-content p{
+ color:inherit;font-size:15px;line-height:1.5;
+ margin:0 0 18px;opacity:.9;
+ -webkit-line-clamp:3;
+}
+.site-shell .vivi-hero-cta{
+ display:inline-flex;align-items:center;justify-content:center;
+ flex:0 1 auto;min-height:42px;max-width:100%;
+ font-size:13px;gap:9px;line-height:1.25;
+ background:var(--vivi-hero-button-bg,#fff);
+ color:var(--vivi-hero-button-ink,#ad2752);
+ border-radius:12px;padding:11px 17px;
+ font-weight:800;
+}
+.site-shell .vivi-hero-flash .vivi-hero-cta{background:#fff;color:#a71837}
+.site-shell .vivi-hero-visual{
+ display:flex;align-items:center;justify-content:center;
+ min-width:0;min-height:285px;height:auto;
+ padding:22px 34px 22px 12px;
+ position:relative;
+}
+.site-shell .vivi-hero-photo-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ grid-template-rows:repeat(2,110px);
+ width:min(100%,335px);height:auto;
+ gap:10px;transform:none;
+}
+.site-shell .vivi-hero-photo-grid.count-1{grid-template-columns:1fr;grid-template-rows:240px;width:min(100%,270px)}
+.site-shell .vivi-hero-photo-grid.count-2{grid-template-rows:190px}
+.site-shell .vivi-hero-photo-grid.count-3 .vivi-hero-photo:first-child{grid-row:span 2}
+.site-shell .vivi-hero-photo-grid.count-3{grid-template-rows:repeat(2,110px)}
+.site-shell .vivi-hero-photo{
+ display:flex;align-items:center;justify-content:center;
+ border:1px solid #ffffffcc;border-radius:16px;
+ background:#fff;overflow:hidden;padding:5px;
+ box-shadow:0 7px 15px #170f3222;
+ min-width:0;min-height:0;
+}
+.site-shell .vivi-hero-photo img{
+ width:100%;height:100%;object-fit:contain;display:block;
+}
+.site-shell .vivi-hero-main-photo{
+ width:min(90%,280px);height:240px;transform:none;
+ border-radius:19px;box-shadow:0 10px 25px #190b3025;
+ border:1px solid #ffffffce;background:#fff;padding:8px;
+}
+.site-shell .vivi-hero-default-art{
+ display:grid;place-items:center;
+ width:220px;height:210px;
+ position:relative;
+ color:inherit;
+}
+.site-shell .vivi-hero-art-ring{
+ display:grid;place-items:center;
+ width:160px;height:160px;border-radius:50%;
+ background:var(--vivi-hero-control,#ffffff25);
+ border:1px solid var(--vivi-hero-border,#ffffff70);
+ box-shadow:0 12px 25px #00000016;
+}
+.site-shell .vivi-hero-art-heart{
+ position:absolute;left:4px;bottom:36px;opacity:.75;
+ transform:rotate(-12deg)
+}
+.site-shell .vivi-hero-art-sparkles{
+ position:absolute;right:2px;top:28px;opacity:.87;
+}
+.site-shell .vivi-hero-flash-icon{min-height:210px;gap:12px;color:#fff}
+.site-shell .vivi-hero-flash-icon span{font-size:16px;letter-spacing:2px;max-width:210px;text-align:center}
+.site-shell .vivi-hero-controls{
+ position:relative;z-index:3;
+ display:flex;align-items:center;justify-content:center;
+ flex:0 0 auto;
+ left:auto;bottom:auto;right:auto;top:auto;
+ margin:0;padding:9px 20px;min-height:52px;
+ background:#ffffff15;
+ border-top:1px solid var(--vivi-hero-border,#ffffff42);
+ gap:14px;
+}
+.site-shell .vivi-hero-control{
+ flex:0 0 auto;display:grid;place-items:center;
+ width:30px;height:30px;border-radius:100%;
+ background:var(--vivi-hero-control,#ffffff35);
+ border:1px solid var(--vivi-hero-border,#ffffff44);
+ color:inherit;
+ cursor:pointer;
+}
+.site-shell .vivi-hero-control:hover{
+ background:#ffffff35;
+}
+.site-shell .vivi-hero-dots{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+.site-shell .vivi-hero-dots button{
+ width:9px;height:9px;border-radius:30px;padding:0;
+ background:currentColor;border:1px solid currentColor;
+ opacity:.48;transition:opacity .2s,width .2s;
+}
+.site-shell .vivi-hero-dots button.active{opacity:1;width:27px}
+.site-shell .vivi-hero-count{color:inherit;opacity:.9;min-width:33px;text-align:center;font-size:11px}
+.site-shell .vivi-hero-pause{margin-left:0}
+.site-shell .vivi-hero-slider.vivi-hero-flash .vivi-hero-controls{--vivi-hero-border:#ffffff5c;--vivi-hero-control:#ffffff25}
+.site-shell .vivi-hero-slider.vivi-hero-flash .vivi-hero-eyebrow{--vivi-hero-border:#ffffff7a;--vivi-hero-control:#ffffff26}
+.site-shell .vivi-hero-slider.vivi-hero-flash .vivi-hero-control{color:white}
+/* Editor de cores e arquivo enviado do aparelho */
+.vivi-theme-editor{display:flex;flex-direction:column;gap:12px}
+.vivi-theme-editor .muted-text{margin:0}
+.vivi-theme-presets{
+ display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px;
+}
+.vivi-theme-preset{
+ min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;
+ border-radius:11px;background:#fff;border:1px solid #e8e9ee;
+ padding:8px 5px;cursor:pointer;color:#5c6270;font-size:10px;
+}
+.vivi-theme-preset.selected{border:2px solid #ef6728;background:#fff8f3;color:#9f421d;font-weight:800}
+.vivi-theme-preset .vivi-theme-swatch{
+ display:block;width:100%;height:32px;border-radius:7px;
+}
+.vivi-theme-preset span:last-child{line-height:1.2;min-height:24px;display:grid;place-items:center;text-align:center}
+.vivi-theme-customizer{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:12px;align-items:start;
+}
+.vivi-color-field{
+ border:1px solid #e1e3e9;border-radius:10px;
+ display:flex;gap:8px;padding:6px 9px;
+ align-items:center;background:#fff;min-height:47px;
+}
+.vivi-color-field input[type=color]{
+ border:0;border-radius:8px;padding:0;width:44px;min-width:44px;
+ height:34px;cursor:pointer;background:none;
+}
+.vivi-color-field code{font-size:12px;color:#575f6c;min-width:0;overflow:hidden}
+.vivi-angle-control{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#4b5360;font-size:12px}
+.vivi-angle-control input{width:100%;accent-color:#ed652e;cursor:pointer}
+.vivi-theme-preview{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:12px;min-height:82px;padding:16px 20px;
+ border-radius:14px;color:#fff;
+}
+.vivi-theme-preview strong{font-size:16px;line-height:1.3}
+.vivi-theme-preview>span{border-radius:10px;padding:11px 16px;white-space:nowrap;font-size:12px;font-weight:800}
+.vivi-slide-count{display:flex;align-items:center;gap:6px;color:#6f7581;font-size:12px}
+.vivi-slide-count b{color:#3a3b42;font-size:19px}
+.vivi-banner-images-editor{
+ background:#f9fafc;border:1px solid #e9eaf0;border-radius:13px;
+ padding:14px;display:flex;flex-direction:column;gap:10px;
+}
+.vivi-banner-images-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.vivi-banner-images-header strong{display:flex;align-items:center;gap:8px;font-size:13px}
+.vivi-banner-images-header small{font-size:11px;color:#77818d}
+.vivi-upload-button{
+ display:flex;align-items:center;justify-content:center;gap:9px;
+ background:#ffffff;border:1.5px dashed #f07c47;
+ color:#c54e23;border-radius:11px;min-height:65px;
+ padding:13px 12px;text-align:center;font-size:12px;font-weight:800;
+ cursor:pointer;transition:background .2s;
+}
+.vivi-upload-button:hover{background:#fff5ee}
+.vivi-upload-button.uploading{opacity:.65;cursor:wait}
+.vivi-upload-button>input{display:none}
+.vivi-photo-info{margin:0;font-size:11px;line-height:1.5;color:#7a8290}
+.vivi-admin-photo-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.vivi-admin-photo-card{
+ border-radius:10px;position:relative;overflow:hidden;
+ aspect-ratio:1;background:#fff;border:1px solid #ebeaf0;min-width:0;
+ display:grid;place-items:center;
+}
+.vivi-admin-photo-card img{width:100%;height:100%;object-fit:contain}
+.vivi-admin-photo-card>button{
+ position:absolute;top:3px;right:3px;
+ width:28px;height:28px;border-radius:7px;border:1px solid #e7d7d7;
+ background:#fffafa;color:#b72d35;display:grid;place-items:center;
+}
+.vivi-image-url-details{font-size:12px;color:#747b89;padding-top:5px}
+.vivi-image-url-details>summary{cursor:pointer;font-weight:750}
+.vivi-image-url-details>textarea{margin-top:9px}
+.vivi-carousel-admin-preview{
+ overflow:hidden;min-width:0;
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.75fr);
+ align-items:center;gap:12px;padding:18px;border-radius:13px;
+ min-height:245px;
+}
+.vivi-carousel-admin-preview .vivi-preview-copy{min-width:0;padding:0}
+.vivi-carousel-admin-preview .vivi-preview-copy h3{font-size:clamp(16px,2vw,25px);line-height:1.13;overflow-wrap:anywhere}
+.vivi-carousel-admin-gallery{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,78px);
+ gap:6px;width:100%;height:auto;min-width:0;
+}
+.vivi-carousel-admin-gallery img{width:100%;height:100%;object-fit:contain;background:#fff;border-radius:9px}
+.vivi-carousel-preview-illustration{display:grid;place-items:center;min-height:110px;opacity:.85}
+@media(max-width:900px){
+ .vivi-theme-presets{grid-template-columns:repeat(5,minmax(0,1fr))}
+ .vivi-theme-customizer{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:720px){
+ .site-shell .vivi-hero-slider{border-radius:17px;min-height:0;margin-top:12px}
+ .site-shell .vivi-hero-current{
+  display:flex;flex-direction:column;align-items:stretch;
+  min-height:0;height:auto;
+ }
+ .site-shell .vivi-hero-content{
+  flex:0 0 auto;display:flex;flex-direction:column;
+  min-height:0;padding:23px 21px 12px;align-items:flex-start;justify-content:flex-start;
+ }
+ .site-shell .vivi-hero-eyebrow{font-size:11px;padding:7px 10px;max-width:100%}
+ .site-shell .vivi-hero-content h1{
+  font-size:clamp(25px,6.3vw,33px);
+  line-height:1.11;letter-spacing:-.55px;
+  margin:13px 0 8px;-webkit-line-clamp:3;
+ }
+ .site-shell .vivi-hero-content p{
+  font-size:13px;line-height:1.45;
+  margin:0 0 14px;-webkit-line-clamp:2;
+ }
+ .site-shell .vivi-hero-cta{
+  min-height:42px;max-width:100%;width:auto;
+  font-size:12px;padding:10px 15px;border-radius:11px;gap:8px;
+ }
+ .site-shell .vivi-hero-visual{
+  display:flex;min-height:0;height:auto;width:100%;
+  padding:3px 20px 15px;align-items:center;
+ }
+ .site-shell .vivi-slide-type-intro .vivi-hero-visual:not(.has-photos){display:none}
+ .site-shell .vivi-slide-type-intro .vivi-hero-content{padding-bottom:23px}
+ .site-shell .vivi-hero-photo-grid{width:min(100%,315px);height:auto;max-width:100%;
+  grid-template-rows:repeat(2,84px);gap:9px;transform:none}
+ .site-shell .vivi-hero-photo-grid.count-1{width:min(100%,235px);grid-template-rows:155px}
+ .site-shell .vivi-hero-photo-grid.count-2{grid-template-rows:130px}
+ .site-shell .vivi-hero-photo-grid.count-3{grid-template-rows:repeat(2,84px)}
+ .site-shell .vivi-hero-photo{padding:4px;border-radius:13px;box-shadow:0 4px 12px #130d2520}
+ .site-shell .vivi-hero-main-photo{height:160px;width:min(74%,220px);padding:6px}
+ .site-shell .vivi-hero-default-art{height:100px;width:190px;max-width:100%}
+ .site-shell .vivi-hero-art-ring{width:90px;height:90px}
+ .site-shell .vivi-hero-art-ring svg{width:36px}
+ .site-shell .vivi-hero-art-heart{width:25px;left:29px;bottom:12px}
+ .site-shell .vivi-hero-art-sparkles{width:25px;right:24px;top:0}
+ .site-shell .vivi-hero-flash-icon{min-height:95px;gap:5px}
+ .site-shell .vivi-hero-flash-icon svg{height:56px;width:56px}
+ .site-shell .vivi-hero-flash-icon span{font-size:12px;letter-spacing:1.4px}
+ .site-shell .vivi-hero-controls{
+  min-height:48px;position:relative;inset:auto;
+  padding:7px 11px;gap:10px;
+  justify-content:center;
+ }
+ .site-shell .vivi-hero-control{width:28px;height:28px}
+ .site-shell .vivi-hero-dots{gap:6px}
+ .site-shell .vivi-hero-dots button{width:8px;height:8px}
+ .site-shell .vivi-hero-dots button.active{width:24px}
+ .site-shell .vivi-hero-count{font-size:10px;min-width:26px}
+ .vivi-theme-presets{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+ .vivi-theme-preset{padding:6px 4px;font-size:9px}
+ .vivi-theme-preset .vivi-theme-swatch{height:25px}
+ .vivi-theme-customizer{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .vivi-color-field code{font-size:10px}
+ .vivi-color-field input[type=color]{width:36px;min-width:36px}
+ .vivi-theme-preview{align-items:flex-start;flex-direction:column;gap:10px;padding:15px}
+ .vivi-admin-photo-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .vivi-carousel-admin-preview{display:flex;flex-direction:column;align-items:stretch;gap:8px;min-height:0}
+ .vivi-carousel-admin-gallery{grid-template-rows:repeat(2,70px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .site-shell .vivi-hero-current{animation:none}
+ .site-shell .vivi-hero-dots button{transition:none}
+}
+/* Escolha livre de cores também atualiza os botões e indicadores dos produtos */
+.site-shell .btn-primary,
+.site-shell .offer-button{
+ background:var(--vivi-accent-gradient);
+ color:var(--vivi-on-accent,#fff);
+}
+.site-shell .sale-badge{background:var(--vivi-accent);color:var(--vivi-on-accent,#fff)}
+.site-shell .category-active{border-color:var(--vivi-accent);background:var(--vivi-accent-soft)}
