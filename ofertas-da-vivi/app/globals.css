@@ -616,3 +616,29 @@
  .vivi-hero-current{animation:none}
  .vivi-hero-slider *{transition:none!important}
 }
+
+
+/* Evita exibir catálogo demonstrativo durante a hidratação inicial. */
+.vivi-home-loading,.vivi-home-load-error{
+ margin:19px 0 30px;min-height:210px;border-radius:17px;padding:31px;
+ background:#fff;border:1px solid #e9ebf1;display:flex;
+ flex-direction:column;align-items:flex-start;justify-content:center;gap:11px;
+ color:#404652;
+}
+.vivi-home-loading>span,.vivi-home-load-error>strong{
+ font-size:18px;font-weight:800;color:#353843;line-height:1.35;
+}
+.vivi-home-loading>small,.vivi-home-load-error>p{color:#838c99;font-size:13px;line-height:1.5;margin:0}
+.vivi-home-loading-line{
+ height:8px;width:120px;border-radius:10px;overflow:hidden;
+ background:linear-gradient(90deg,#ffd6ba,#f6652c,#ffd6ba);
+ background-size:200% 100%;animation:vivi-loading-slide 1.5s ease infinite;
+}
+@keyframes vivi-loading-slide{from{background-position:100% 0}to{background-position:-100% 0}}
+.vivi-home-load-error{background:#fff9f7;border-color:#ffd9cc}
+.vivi-home-load-error>strong{color:#9c4430}
+@media(max-width:760px){
+ .vivi-home-loading,.vivi-home-load-error{min-height:185px;padding:20px}
+ .vivi-home-loading>span,.vivi-home-load-error>strong{font-size:16px}
+}
+@media(prefers-reduced-motion:reduce){.vivi-home-loading-line{animation:none}}
