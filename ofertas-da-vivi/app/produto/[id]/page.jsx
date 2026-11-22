@@ -20,6 +20,7 @@ export default async function ProductPage({params}){
  return <ProductDetail themeSettings={{...defaultSettings,...themeSettings}} offer={{
   id:offer.id,internalCode:offer.internalCode,title:offer.title,
   category:offer.category,price:offer.price,oldPrice:offer.oldPrice,
+  shopType:offer.shopType,isOfficialShop:offer.isOfficialShop,
   image:offer.image,images:offer.images,shopName:offer.shopName,
   sales:offer.sales,ratingStar:offer.ratingStar,
   description:offer.description,stockQuantity:offer.stockQuantity,

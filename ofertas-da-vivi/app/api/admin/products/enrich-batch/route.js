@@ -140,6 +140,7 @@ export async function POST(request){
     image=${image},product_description=${description},
     product_images=${JSON.stringify(gallery)},
     shop_name=COALESCE(shop_name,${data.shopName||null}),
+    shop_type=COALESCE(${data.sourceAffiliate?data.shopType:null},shop_type),
     price=COALESCE(${apiPrice},price),
     price_max=COALESCE(${apiMax},price_max),
     price_discount_rate=CASE WHEN ${affiliateMatched} THEN ${apiDiscount} ELSE price_discount_rate END,

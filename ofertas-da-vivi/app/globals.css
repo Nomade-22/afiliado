@@ -2038,3 +2038,207 @@
  .site-shell[data-vivi-effects] .vivi-hero-current{transform:none!important}
  .vivi-bf-particle,.vivi-fx-particle{display:none!important}
 }
+
+
+/* ===== DESCOBRIR PRODUTOS — painel Shopee (nov/2026) ===== */
+.vivi-discover{display:flex;flex-direction:column;gap:17px;min-width:0}
+.vivi-discover .admin-card{min-width:0}
+.vivi-discover .admin-card-title h2{display:flex;align-items:center;gap:9px}
+.vivi-discover-intro{
+ background:linear-gradient(140deg,#fff,#fff8fc);
+ border:1px solid #eddfec;
+}
+.vivi-discover-top-controls{
+ display:grid;grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr));
+ gap:13px;margin:17px 0 13px;
+}
+.vivi-discover-field{
+ display:flex;flex-direction:column;gap:7px;min-width:0;
+ font-size:12px;font-weight:750;color:#383846;
+}
+.vivi-discover-field input,.vivi-discover-field select{
+ display:block;width:100%;min-width:0;min-height:43px;
+ border:1px solid #dfe0e8;background:#fff;color:#262735;
+ border-radius:11px;padding:9px 12px;font-size:13px;
+ outline:none;transition:border-color .16s ease,box-shadow .16s ease;
+}
+.vivi-discover-field input:focus,.vivi-discover-field select:focus{
+ border-color:#b72e6d;box-shadow:0 0 0 3px #d7448620;
+}
+.vivi-discover-checks{
+ display:flex;gap:8px 20px;flex-wrap:wrap;margin:0 0 14px;
+ color:#4b4b58;font-size:12px;
+}
+.vivi-discover-checks label{display:flex;align-items:center;gap:7px;cursor:pointer}
+.vivi-discover-checks input{accent-color:#b52d6c;width:15px;height:15px}
+.vivi-discover-filter-grid{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:13px;margin:13px 0 11px;
+}
+.vivi-discover-note{
+ margin:10px 0 0;color:#797989;font-size:11px;line-height:1.65;
+ display:flex;gap:7px;align-items:flex-start;
+}
+.vivi-discover-note svg{flex-shrink:0;margin-top:1px}
+.vivi-discover-note b{color:#535361}
+.vivi-discover-feedback{
+ display:flex;align-items:flex-start;gap:9px;padding:13px 15px;
+ border-radius:12px;background:#e8f8ef;color:#15613a;
+ font-size:13px;line-height:1.55;
+}
+.vivi-discover-feedback.error{background:#fff0f1;color:#a82440}
+.vivi-discover-results .vivi-discover-summary{
+ display:flex;gap:10px;justify-content:space-between;align-items:center;
+ flex-wrap:wrap;padding-bottom:15px;
+}
+.vivi-discover-results .vivi-discover-summary h2{
+ display:flex;align-items:center;gap:8px;font-size:19px;margin:0 0 5px;
+}
+.vivi-discover-results .vivi-discover-summary p{
+ margin:0;color:#81818b;font-size:12px;
+}
+.vivi-discover-summary-actions{display:flex;gap:8px;flex-wrap:wrap}
+.vivi-discover-warning{
+ padding:11px 13px;border-radius:9px;background:#fff4e0;
+ color:#75521c;font-size:12px;line-height:1.6;
+}
+.vivi-discover-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:13px;margin-top:10px;
+}
+.vivi-discover-card{
+ min-width:0;overflow:hidden;display:flex;flex-direction:column;
+ background:#fff;border:1px solid #e9e6ec;border-radius:15px;
+ box-shadow:0 7px 22px #2f1b390a;transition:border-color .18s,box-shadow .18s,transform .18s;
+}
+.vivi-discover-card.selected{border-color:#ba3570;box-shadow:0 0 0 2px #ba357020}
+@media(hover:hover){.vivi-discover-card:hover{transform:translateY(-3px);box-shadow:0 11px 24px #67294817}}
+.vivi-discover-image-wrap{
+ position:relative;aspect-ratio:1.5;background:#faf8fa;
+ display:flex;align-items:center;justify-content:center;
+}
+.vivi-discover-image-wrap img{height:100%;width:100%;object-fit:contain;padding:8px}
+.vivi-discover-sale-tag{
+ position:absolute;top:9px;right:8px;max-width:80%;
+ display:inline-flex;align-items:center;gap:4px;
+ padding:5px 7px;border-radius:8px;color:#fff;background:#cb2d61;
+ box-shadow:0 3px 10px #b32c6040;font-size:10px;font-weight:800;
+}
+.vivi-discover-card-body{display:flex;flex-direction:column;gap:9px;padding:13px;flex:1;min-width:0}
+.vivi-discover-shop-badge{
+ display:inline-flex;align-items:center;align-self:flex-start;gap:5px;
+ max-width:100%;font-size:11px;font-weight:800;
+ padding:5px 7px;border-radius:7px;color:#6f6872;background:#f1eff3;
+}
+.vivi-discover-shop-badge.official{
+ color:#fff;background:linear-gradient(110deg,#9e1553,#d74278);
+}
+.vivi-discover-shop-badge.preferred{background:#fff0df;color:#ac6514}
+.vivi-discover-shop-badge.unknown{font-size:10px}
+.vivi-discover-card h3{
+ font-size:14px;line-height:1.4;color:#242430;margin:0;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+ line-clamp:2;overflow:hidden;min-height:39px;
+}
+.vivi-discover-store{
+ margin:0;font-size:11px;color:#7c7b87;line-height:1.45;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+ line-clamp:2;overflow:hidden;
+}
+.vivi-discover-prices{display:flex;flex-wrap:wrap;align-items:baseline;gap:5px 10px}
+.vivi-discover-prices strong{color:#b82c67;font-size:21px}
+.vivi-discover-prices span{color:#85808b;font-size:11px}
+.vivi-discover-commission{
+ background:#fff7fb;border:1px solid #f7e2ec;border-radius:10px;
+ padding:9px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:7px;
+}
+.vivi-discover-commission span{display:flex;flex-direction:column;gap:3px;font-size:10px;color:#827784}
+.vivi-discover-commission span b{font-size:13px;color:#763350}
+.vivi-discover-commission span:first-child b{font-size:17px;color:#ad205e}
+.vivi-discover-stats{display:flex;flex-wrap:wrap;gap:9px 14px;color:#6e6c7a;font-size:11px}
+.vivi-discover-stats span{display:flex;align-items:center;gap:4px}
+.vivi-discover-stats svg{color:#a64168}
+.vivi-discover-card-actions{
+ margin-top:auto;display:flex;justify-content:space-between;
+ gap:9px;align-items:center;flex-wrap:wrap;padding-top:4px;
+}
+.vivi-discover-checkbox{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;cursor:pointer;color:#a62d67}
+.vivi-discover-checkbox input{width:17px;height:17px;accent-color:#b62b67;cursor:pointer}
+.vivi-discover-checkbox.imported{color:#347b57;cursor:default}
+.vivi-discover-preview-link{
+ display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;
+ color:#6f6472;text-decoration:none;
+}
+.vivi-discover-preview-link:hover{text-decoration:underline}
+.vivi-discover-pagination{
+ display:flex;align-items:center;justify-content:center;gap:16px;
+ flex-wrap:wrap;margin-top:18px;
+}
+.vivi-discover-pagination span{font-weight:800;color:#4f4655;font-size:13px}
+.vivi-discover-empty{text-align:center;padding:30px 20px!important;color:#a62d67}
+.vivi-discover-empty h3{font-size:18px;color:#3d3442;margin:10px 0 5px}
+.vivi-discover-empty p{font-size:13px;line-height:1.6;color:#88808b;max-width:520px;margin:0 auto}
+.vivi-discover-spin{animation:vivi-discover-rotate 1s linear infinite}
+@keyframes vivi-discover-rotate{to{transform:rotate(360deg)}}
+
+/* Loja oficial nos cards públicos: somente com shop_type='MALL' da API. */
+.site-shell .vivi-modern-product .vivi-official-store-badge{
+ position:absolute;z-index:2;top:8px;left:8px;max-width:75%;
+ display:inline-flex;align-items:center;gap:4px;padding:5px 7px;
+ border-radius:7px;font-size:10px;line-height:1.15;font-weight:850;
+ color:#fff;background:linear-gradient(115deg,#9c1853,#ce3876);
+ box-shadow:0 3px 10px #7620443d;pointer-events:none;
+}
+.site-shell .vivi-modern-product .vivi-official-store-badge svg{flex-shrink:0}
+.vivi-product-official-badge{
+ display:inline-flex;align-self:flex-start;align-items:center;gap:6px;
+ padding:7px 11px;border-radius:8px;color:white;
+ background:linear-gradient(120deg,#a62260,#d23d80);
+ font-size:12px;font-weight:850;
+}
+@media(max-width:1040px){
+ .vivi-discover-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .vivi-discover-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:650px){
+ .vivi-discover-top-controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .vivi-discover-keyword{grid-column:1/-1}
+ .vivi-discover-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .vivi-discover-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .vivi-discover-image-wrap{aspect-ratio:1.2}
+ .vivi-discover-card-body{padding:9px;gap:6px}
+ .vivi-discover-card h3{font-size:12px;min-height:34px}
+ .vivi-discover-store{font-size:10px}
+ .vivi-discover-prices strong{font-size:17px}
+ .vivi-discover-shop-badge{font-size:9px;padding:4px 5px}
+ .vivi-discover-shop-badge svg{width:12px;height:12px}
+ .vivi-discover-commission{padding:7px;gap:7px 4px}
+ .vivi-discover-commission span{font-size:9px}
+ .vivi-discover-commission span b{font-size:11px}
+ .vivi-discover-commission span:first-child b{font-size:14px}
+ .vivi-discover-sale-tag{top:5px;right:5px;font-size:9px}
+ .vivi-discover-results .vivi-discover-summary h2{font-size:17px}
+ .site-shell .vivi-modern-product .vivi-official-store-badge{font-size:8px;padding:4px 5px}
+ .site-shell .vivi-modern-product .vivi-official-store-badge svg{width:11px;height:11px}
+}
+@media(max-width:380px){
+ .vivi-discover-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){
+ .vivi-discover-card,.vivi-discover-field input,.vivi-discover-field select{transition:none!important}
+ .vivi-discover-spin{animation:none}
+}
+
+/* Dados suplementares da API, recolhidos para manter cards compactos. */
+.vivi-discover-details{
+ background:#faf9fc;border:1px solid #ede9f0;border-radius:9px;
+ padding:8px 10px;color:#676271;font-size:11px;
+}
+.vivi-discover-details summary{
+ cursor:pointer;font-weight:800;color:#6c4d66;outline-offset:3px;
+}
+.vivi-discover-details dl{margin:9px 0 1px;display:flex;flex-direction:column;gap:6px}
+.vivi-discover-details dl>div{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.vivi-discover-details dt{font-weight:600;color:#807c87}
+.vivi-discover-details dd{margin:0;font-weight:750;overflow-wrap:anywhere;text-align:right}

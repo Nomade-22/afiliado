@@ -1,11 +1,11 @@
-import {shopeeQuery,hasShopeeCredentials} from './shopee';
+import {shopeeQuery,hasShopeeCredentials,normalizeShopType} from './shopee';
 import {parseShopeeItemIds,identifyShopeeLink,getPublicShopeeItemMetadata} from './shopee-public-metadata';
 
 // productOfferV2 é uma API de afiliados. Descrição completa, galeria e estoque
 // não devem ser presumidos: consultamos o schema e os dados disponíveis.
 const wantedFields=[
  'itemId','shopId','productName','productLink','imageUrl','priceMin','priceMax',
- 'priceDiscountRate','sales','ratingStar','shopName','commissionRate',
+ 'priceDiscountRate','sales','ratingStar','shopName','shopType','commissionRate',
  'sellerCommissionRate','shopeeCommissionRate','commission',
  'periodStartTime','periodEndTime','description','productDescription',
  'images','imageUrls','productImages','galleryImages','stock','stockQuantity',
@@ -155,6 +155,7 @@ export async function getShopeeProductMetadata(offer){
   sourceAffiliate:Boolean(a),
   title:a?.productName||offer.title,
   shopName:a?.shopName||null,
+  shopType:normalizeShopType(a?.shopType),
   priceMin:numberOrNull(a?.priceMin),
   priceMax:numberOrNull(a?.priceMax),
   discountRate:numberOrNull(a?.priceDiscountRate),
