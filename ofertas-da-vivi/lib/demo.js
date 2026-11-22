@@ -8,7 +8,7 @@ export const demoOffers = [
 ];
 export {categories} from './categories';
 export const defaultSettings = {
- whatsapp:'',instagram:'',tiktok:'',
+ whatsapp:'',instagram:'',tiktok:'',telegram:'',
  heroMode:'default',
  heroSlides:'',
  heroIntervalSeconds:'7',

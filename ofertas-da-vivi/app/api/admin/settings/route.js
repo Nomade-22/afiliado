@@ -6,7 +6,7 @@ import {isShopeeLink} from '../../../../lib/shopee-links';
 
 export const dynamic='force-dynamic';
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
-const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150,heroSlides:18000,heroIntervalSeconds:2,flashSaleUrl:1000,couponUrl:1000,flashSaleLabel:65,couponLabel:65};
+const maxLength={heroTitle:180,heroSubtitle:300,heroImage:1200,heroBadge:80,heroButtonLabel:55,heroButtonUrl:1200,heroProductId:150,heroSlides:18000,heroIntervalSeconds:2,flashSaleUrl:1000,couponUrl:1000,flashSaleLabel:65,couponLabel:65,telegram:650};
 const trustedImage=value=>{
  if(!value)return true;
  try{
@@ -103,9 +103,20 @@ export async function POST(req){
    return Response.json({error:'Opção de campanhas inválida.'},{status:400,headers});
   }
  }
- for(const key of ['whatsapp','instagram','tiktok']){
+ for(const key of ['whatsapp','instagram','tiktok','telegram']){
   if(updates[key]&&!trustedLink(updates[key])){
    return Response.json({error:'URL inválida em '+key+'.'},{status:400,headers});
+  }
+ }
+ if(updates.telegram){
+  try{
+   const link=new URL(updates.telegram);
+   const host=link.hostname.toLowerCase();
+   if(link.protocol!=='https:'||link.username||link.password||
+      !['t.me','telegram.me'].some(d=>host===d||host.endsWith('.'+d)))
+    throw Error('invalid');
+  }catch{
+   return Response.json({error:'Informe um link HTTPS válido do Telegram, como https://t.me/seu_canal.'},{status:400,headers});
   }
  }
  if(updates.heroMode==='product'){

@@ -4,6 +4,7 @@ import {Search,Flame,TicketPercent,House,ShoppingBag,Heart,Menu,X,ArrowRight,Che
 import {categories,defaultSettings} from '../lib/demo';
 import CampaignsSection from '../components/CampaignsSection';
 import HeroCarousel from '../components/HeroCarousel';
+import FooterSocials from '../components/FooterSocials';
 const brl=n=>Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const catIcons={'Todos':<Sparkles size={24}/>,'Casa':<House size={25}/>,'Beleza':<Sparkles size={25}/>,'Moda':<Shirt size={25}/>,'Eletrônicos':<Laptop size={25}/>,'Utilidades':<Utensils size={25}/>,'Infantil':<Gift size={25}/>,'Saúde':<HeartPulse size={25}/>,'Pets':<PawPrint size={25}/>,'Esportes':<Dumbbell size={25}/>,'Automotivo':<Car size={25}/>,'Outros':<Package size={25}/>};
 function Logo(){return <a href="/" className="brand"><span className="logo-mark"><Heart size={18} fill="white" strokeWidth={2.5}/></span><span>Ofertas da <em>Vivi</em><b className="brand-heart">♡</b></span></a>}
@@ -86,6 +87,28 @@ export default function HomePage(){
    <CampaignsSection/>
    <section className="whatsapp-banner" id="whatsapp"><div className="whatsapp-graphic"><MessageCircle size={43} strokeWidth={2.8}/></div><div className="whatsapp-message"><span className="whatsapp-kicker">NOVIDADES EM PRIMEIRA MÃO</span><h2>Entre no Canal VIP da Vivi</h2><p>Receba achadinhos, cupons e promoções diretamente no seu WhatsApp.</p></div>{channel?<a className="btn btn-green whatsapp-cta" href={channel} rel="noopener noreferrer" target="_blank"><MessageCircle size={20}/> Entrar no Canal VIP <ArrowRight size={18}/></a>:<span className="btn btn-green whatsapp-cta disabled-cta"><MessageCircle size={20}/> Canal em preparação</span>}</section>
   </main>
-  <footer className="site-footer"><div className="container footer-grid"><div className="footer-intro"><Logo/><p>Uma seleção de achadinhos e oportunidades feita com carinho pela Vivi.</p><small>Este site pode receber comissões pelas compras efetuadas por links de afiliados, sem custo adicional para você. Preços e disponibilidade podem mudar.</small></div><div><h3>Institucional</h3><a href="#ofertas">Como funciona</a><a href="#categorias">Categorias</a><a href="/privacidade">Política de privacidade</a><a href="/termos">Termos de uso</a><span>Divulgação independente de afiliados</span></div><div><h3>Ajuda</h3><span>Confira valores e entrega na loja</span><span>Produtos e pagamentos são gerenciados pela loja de destino</span></div><div><h3>Siga a Vivi</h3><div className="social-buttons">{settings.instagram&&<a title="Instagram" href={settings.instagram} target="_blank" rel="noopener noreferrer"><Instagram size={21}/></a>}{settings.tiktok&&<a title="TikTok" href={settings.tiktok} target="_blank" rel="noopener noreferrer">♪</a>}</div><small>Feito com ♥ para quem ama economizar.</small></div></div><div className="footer-bottom container"><span>© {new Date().getFullYear()} Ofertas da Vivi</span><span>Não é loja oficial da Shopee.</span></div></footer>
+  <footer className="site-footer">
+  <div className="container footer-grid">
+   <div className="footer-intro">
+    <Logo/>
+    <p>Uma seleção de achadinhos e oportunidades feita com carinho pela Vivi.</p>
+    <small>Este site pode receber comissões pelas compras efetuadas por links de afiliados, sem custo adicional para você. Preços e disponibilidade podem mudar.</small>
+   </div>
+   <FooterSocials settings={settings}/>
+   <div className="vivi-footer-help">
+    <h3>Ajuda</h3>
+    <span>Confira valores e entrega na loja</span>
+    <span>Produtos e pagamentos são gerenciados pela loja de destino</span>
+   </div>
+  </div>
+  <div className="footer-bottom container">
+   <span>© {new Date().getFullYear()} Ofertas da Vivi</span>
+   <div className="vivi-footer-legal">
+    <a href="/privacidade">Privacidade</a>
+    <a href="/termos">Termos de uso</a>
+   </div>
+   <span>Não é loja oficial da Shopee.</span>
+  </div>
+ </footer>
  </div>
 }
