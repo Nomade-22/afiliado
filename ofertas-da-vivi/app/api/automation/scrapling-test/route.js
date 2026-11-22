@@ -73,7 +73,7 @@ export async function POST(request){
   // Um resultado precisa corresponder a um produto cadastrado na loja.
   const sql=await getDB();
   if(!sql)return reply({error:'Neon indisponível.'},503);
-  const existing=await sql`SELECT id FROM vivi_offers WHERE id = ANY(${clean.map(x=>x.id)})`;
+  const existing=await sql`SELECT id FROM vivi_offers WHERE active=TRUE LIMIT 500`;
   const ids=new Set(existing.map(x=>x.id));
   if(clean.some(x=>!ids.has(x.id)))return reply({error:'Produto do teste não localizado.'},400);
   await sql`INSERT INTO vivi_scrapling_test_runs (run_id,status,finished_at,results_json,notes)
