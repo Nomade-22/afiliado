@@ -7,7 +7,8 @@ function captureShopeePage(){
  const u=new URL(location.href);
  if(!/^(?:www\.)?shopee\.com\.br$/i.test(u.hostname))return {error:'Abra um anúncio em shopee.com.br.'};
  const m=u.pathname.match(/\/product\/(\d+)\/(\d+)/i)||
-  u.pathname.match(/(?:^|[-/])i\.(\d+)\.(\d+)(?:$|\/)/i);
+  u.pathname.match(/(?:^|[-/])i\.(\d+)\.(\d+)(?:$|\/)/i)||
+  u.pathname.match(/\/opaanlp\/(\d+)\/(\d+)(?:$|\/)/i);
  if(!m)return {error:'Não foi possível identificar o ID do anúncio. Abra a página completa do produto.'};
  const shopId=m[1],itemId=m[2];
  const text=node=>String(node?.innerText||node?.textContent||'').trim();

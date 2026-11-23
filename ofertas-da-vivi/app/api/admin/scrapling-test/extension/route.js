@@ -31,7 +31,8 @@ function sourceMatches(url,shopId,itemId){
   const path=decodeURIComponent(u.pathname);
   const pattern1=/\/product\/(\d+)\/(\d+)/i.exec(path);
   const pattern2=/(?:^|[-/])i\.(\d+)\.(\d+)(?:$|\/)/i.exec(path);
-  const match=pattern1||pattern2;
+  const pattern3=/\/opaanlp\/(\d+)\/(\d+)(?:$|\/)/i.exec(path);
+  const match=pattern1||pattern2||pattern3;
   return Boolean(match&&match[1]===shopId&&match[2]===itemId);
  }catch{return false}
 }
