@@ -7,7 +7,7 @@
 header{padding:18px;background:linear-gradient(115deg,#541633,#d72b78);color:#fff}
 header strong{font-size:17px}header p{font-size:11px;margin:5px 0 0;opacity:.9}
 main{padding:16px}p{margin:0 0 12px}button{width:100%;border:0;border-radius:10px;padding:13px 12px;font-weight:800;font-size:13px;cursor:pointer;background:linear-gradient(110deg,#8f2055,#e62d79);color:white}
-button.secondary{background:white;border:1px solid #cf8aa8;color:#9a2360;margin-top:9px}
+button.secondary{background:white;border:1px solid #cf8aa8;color:#9a2360;margin-top:9px}.auto-mode{background:#fff;border:1px solid #efc6da;border-radius:12px;padding:12px;margin:0 0 16px}.auto-mode strong{font-size:13px;color:#8c2155}.auto-mode p{font-size:11px;margin:6px 0 10px}.auto-info{font-size:11px;color:#7c365c;margin-top:8px}.auto-mode button{font-size:12px;padding:10px}.auto-mode button#resetAuto{margin-top:8px;background:#fff;color:#8c2155;border:1px solid #efc6da}
 button:disabled{opacity:.55;cursor:default}button[hidden]{display:none}.hint{color:#7c6f7a;font-size:11px;line-height:1.55;margin-top:10px}
 #result{display:none;margin-top:14px;background:white;border:1px solid #f2dae5;padding:12px;border-radius:12px}
 .title{font-weight:800;font-size:12px;line-height:1.4;max-height:50px;overflow:hidden}
@@ -17,7 +17,15 @@ button:disabled{opacity:.55;cursor:default}button[hidden]{display:none}.hint{col
 </style></head>
 <body><header><strong>♥ Ofertas da Vivi</strong><p>Captura rápida para computador · Shopee</p></header>
 <main>
-<p>Ao abrir esta extensão sobre um anúncio Shopee, a captura começa sozinha. Com dados completos, a Vivi abre em outra aba para salvar no ambiente de teste.</p>
+<section class="auto-mode">
+<strong>Captura contínua (opcional)</strong>
+<p>Ative uma vez para capturar automaticamente os anúncios Shopee que você abrir no Chrome, sem clicar na extensão. Cada captura completa é encaminhada ao teste da Vivi em uma aba de fundo. Limite de 10 anúncios por sessão; fora do piloto o servidor rejeita a gravação.</p>
+<button id="autoSwitch">Ativar captura contínua</button>
+<div id="autoState" class="auto-info" aria-live="polite">Verificando status...</div>
+<div id="autoLast" class="auto-info" aria-live="polite"></div>
+<button id="resetAuto" type="button">Reiniciar contador da sessão</button>
+</section>
+<p>Alternativa manual: ao abrir a extensão em um anúncio Shopee com o modo contínuo desligado, a captura começa com um clique.</p>
 <button id="scan">Capturar novamente</button>
 <div id="result">
  <div id="title" class="title"></div>
@@ -27,5 +35,5 @@ button:disabled{opacity:.55;cursor:default}button[hidden]{display:none}.hint{col
 </div>
 <div id="status" aria-live="polite">Iniciando leitura do anúncio...</div>
 <div class="safe">Uso restrito aos 10 produtos do piloto. Não lê cookies ou senhas. A gravação exige login ADM, não altera produtos públicos nem links de afiliado.</div>
-<p class="hint">Fixe a extensão na barra do Chrome para capturar com um clique. Se a foto ou descrição não carregar, abra os detalhes do anúncio e use <b>Capturar novamente</b>. Se for solicitado login na Vivi, entre normalmente para concluir o envio.</p>
+<p class="hint">A primeira ativação pede permissão apenas para as páginas Shopee, que você pode revogar. Para não acumular abas desnecessárias, o modo contínuo abre resultados em segundo plano. Verifique o salvamento no ADM. Se faltar foto ou descrição, use <b>Capturar novamente</b>. A loja pública não muda.</p>
 </main><script src="popup.js"></script></body></html>
