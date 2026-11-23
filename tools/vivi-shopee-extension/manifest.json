@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Vivi · Captura Rápida Shopee (Piloto)",
-  "version": "0.4.0",
-  "description": "Captura manual, contínua ou em lote dos produtos pendentes do piloto Shopee, com gravação autenticada no teste Vivi.",
+  "version": "0.5.0",
+  "description": "Capturar produtos Shopee diretamente pelo botão do painel Vivi, com salvamento autenticado apenas no teste.",
   "permissions": [
     "activeTab",
     "scripting",
@@ -19,5 +19,16 @@
   ],
   "background": {
     "service_worker": "background.js"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://ofertas-da-vivi.vercel.app/adm*"
+      ],
+      "js": [
+        "adm-bridge.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
 }
