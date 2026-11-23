@@ -33,8 +33,13 @@ export default function CaptureBridge(){
    // SessionStorage é do domínio Vivi, da aba atual, não persiste em cookies.
    // Ainda exige login ADM e revisão antes de qualquer escrita no banco.
    window.sessionStorage.setItem(KEY,JSON.stringify(data));
-   // 'Capturar Vivi' é uma ação explícita do usuário. Salvar somente na tabela isolada do teste.
-   window.sessionStorage.setItem(AUTO_SAVE_KEY,'1');
+   // Enviar sem confirmação apenas quando a captura contém título, fotos e descrição útil.
+   // Capturas parciais continuam disponíveis para revisão manual, sem sobrescrever uma boa captura.
+   const eligible=typeof data.title==='string'&&!/Shopee Brasil|Ofertas incríveis/i.test(data.title)&&
+    typeof data.description==='string'&&data.description.trim().length>=50&&
+    Array.isArray(data.images)&&data.images.length>0;
+   if(eligible)window.sessionStorage.setItem(AUTO_SAVE_KEY,'1');
+   else window.sessionStorage.removeItem(AUTO_SAVE_KEY);
    window.location.replace('/adm#teste-importacao');
   }catch{
    setError('Não foi possível guardar a captura neste navegador. Use Copiar dados no anúncio.');
