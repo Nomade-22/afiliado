@@ -1,7 +1,8 @@
 'use client';
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {FlaskConical,RefreshCw,ExternalLink,Images,FileText,
- CheckCircle2,AlertTriangle,Clock3,ShieldCheck,Eye,Info} from 'lucide-react';
+ CheckCircle2,AlertTriangle,Clock3,ShieldCheck,Eye,Info,Smartphone,Copy} from 'lucide-react';
+import {VIVI_MOBILE_BOOKMARKLET} from '../lib/vivi-mobile-bookmarklet';
 
 const ACTIONS='https://github.com/Nomade-22/afiliado/actions/workflows/vivi-scrapling-test.yml';
 const states={
@@ -24,6 +25,7 @@ export default function ScraplingTestPanel(){
  const [captureJson,setCaptureJson]=useState('');
  const [sending,setSending]=useState(false);
  const [captureMessage,setCaptureMessage]=useState(null);
+ const [mobileCopyMessage,setMobileCopyMessage]=useState('');
  const load=useCallback(async()=>{
   setBusy(true);setError('');
   try{
@@ -45,6 +47,24 @@ export default function ScraplingTestPanel(){
   descriptions:(data?.captures||[]).filter(x=>x.description?.trim()).length,
   photos:(data?.captures||[]).reduce((n,x)=>n+(x.images?.length||0),0)
  }),[data]);
+ async function copyMobileBookmarklet(){
+  setMobileCopyMessage('');
+  try{
+   if(navigator.clipboard?.writeText){
+    await navigator.clipboard.writeText(VIVI_MOBILE_BOOKMARKLET);
+   }else{
+    const element=document.createElement('textarea');
+    element.value=VIVI_MOBILE_BOOKMARKLET;
+    element.style.position='fixed';element.style.left='-9999px';
+    document.body.appendChild(element);element.focus();element.select();
+    const copied=document.execCommand('copy');element.remove();
+    if(!copied)throw Error('clipboard');
+   }
+   setMobileCopyMessage('Código copiado! Edite um favorito do Chrome e cole no campo URL.');
+  }catch{
+   setMobileCopyMessage('O navegador não permitiu copiar automaticamente. Abra o painel no Chrome e tente novamente.');
+  }
+ }
  async function saveCapturedData(){
   if(sending)return;
   setSending(true);setCaptureMessage(null);
@@ -94,24 +114,40 @@ export default function ScraplingTestPanel(){
    <p className="vivi-scrapling-hint">O relatório é atualizado automaticamente. A execução do GitHub só indica que o coletor rodou, não que a Shopee liberou as fotos e descrições. Repetir a mesma coleta sem mudar a estratégia provavelmente produzirá o mesmo resultado.</p>
   </section>
   {error&&<div className="vivi-notice vivi-notice-error" role="alert"><AlertTriangle size={19}/>{error}</div>}
+  <section className="admin-card vivi-mobile-capture-card">
+   <div className="admin-card-title"><h2><Smartphone size={22}/> Capturar pelo celular Android</h2></div>
+   <p className="muted-text">Teste sem instalar extensão: o favorito especial lê a <b>descrição e as fotos do anúncio aberto</b> no Chrome. Não busca dados de outras páginas e não publica na vitrine.</p>
+   <button className="btn btn-outline" type="button" onClick={copyMobileBookmarklet}>
+    <Copy size={17}/> Copiar código do favorito Vivi
+   </button>
+   {mobileCopyMessage&&<p className="vivi-mobile-capture-feedback" role="status">{mobileCopyMessage}</p>}
+   <ol className="vivi-mobile-capture-steps">
+    <li>No <b>Chrome do celular</b>, salve esta página como favorito pelo menu <b>⋮ → Adicionar aos favoritos</b>.</li>
+    <li>Abra <b>⋮ → Favoritos</b>, encontre o favorito salvo e escolha <b>Editar</b>. Dê o nome <b>Capturar Vivi</b> e substitua a URL pelo código copiado acima.</li>
+    <li>Abra um dos <b>10 anúncios completos</b> da Shopee que aparecem abaixo e espere as fotos e a descrição carregarem.</li>
+    <li>Toque na barra de endereço, digite <b>Capturar Vivi</b> e toque na <b>sugestão do favorito</b> (não faça uma pesquisa comum).</li>
+    <li>Na janela que aparecer, toque em <b>Copiar fotos e descrição</b>. Volte aqui, cole o resultado e selecione <b>Salvar captura apenas no teste</b>.</li>
+   </ol>
+   <p className="vivi-scrapling-hint">Se o Chrome não executar o favorito ou a Shopee apresentar uma verificação de acesso, a captura pode não funcionar. Não acessamos cookies, senhas ou imagens das avaliações. Você revisa os resultados antes de salvá-los.</p>
+  </section>
   <section className="admin-card vivi-extension-test-card">
-   <div className="admin-card-title"><h2><Images size={22}/> Teste pelo Chrome — fotos e descrição</h2></div>
-   <p className="muted-text">Abra um dos dez anúncios abaixo no Chrome do computador, use a extensão <b>Vivi · Capturar Shopee</b> e copie o resultado. Cole o JSON aqui para comparar com a galeria atual, sem publicar nada.</p>
+   <div className="admin-card-title"><h2><Images size={22}/> Comparar dados capturados</h2></div>
+   <p className="muted-text">Cole aqui o resultado do <b>favorito no celular</b> ou da <b>extensão no computador</b>. Confira fotos e descrição dos dez produtos selecionados, sem publicar nada.</p>
    <div className="vivi-extension-test-stats">
     <span><b>{extensionStats.count}/10</b> capturados</span>
     <span><b>{extensionStats.descriptions}</b> com descrição</span>
     <span><b>{extensionStats.photos}</b> fotos encontradas</span>
    </div>
-   <label className="vivi-extension-test-label" htmlFor="vivi-extension-json">Dados copiados da extensão</label>
+   <label className="vivi-extension-test-label" htmlFor="vivi-extension-json">Dados copiados do celular ou da extensão</label>
    <textarea id="vivi-extension-json" value={captureJson} onChange={e=>setCaptureJson(e.target.value)}
-    rows={4} placeholder="Cole aqui o JSON produzido pela extensão no Chrome..." spellCheck={false}/>
+    rows={4} placeholder="Cole aqui os dados copiados no anúncio da Shopee..." spellCheck={false}/>
    <div className="vivi-scrapling-actions">
     <button className="btn btn-primary" type="button" disabled={sending||!captureJson.trim()} onClick={saveCapturedData}>
      <Images size={17}/>{sending?'Verificando captura…':'Salvar captura apenas no teste'}
     </button>
    </div>
    {captureMessage&&<p className={'vivi-extension-test-message '+(captureMessage.success?'success':'error')} role="status">{captureMessage.text}</p>}
-   <p className="vivi-scrapling-hint">Extensão para Chrome em computador. Use <b>chrome://extensions</b> → Modo do desenvolvedor → Carregar sem compactação. A captura inclui somente informações do anúncio aberto, não cookies ou senhas.</p>
+   <p className="vivi-scrapling-hint">No computador, continua disponível a extensão Chrome instalada por <b>chrome://extensions</b>. No celular, use o favorito acima. A captura só registra informações do anúncio, sem dados de login.</p>
   </section>
   {report?<section className="admin-card">
     <div className="vivi-scrapling-report-header">
