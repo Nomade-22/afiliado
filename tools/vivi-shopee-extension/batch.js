@@ -66,6 +66,13 @@
  }
  async function sendToAdmin(tabId,payload){
   await verifyAdminTab(tabId);
+  // Preferir a ponte instalada dentro da aba ADM. Sem expor credenciais a Shopee.
+  if(typeof chrome.tabs.sendMessage==='function'){
+   try{
+    const response=await chrome.tabs.sendMessage(tabId,{type:'viviAdminSavePayload',payload});
+    if(response&&typeof response.ok==='boolean')return response;
+   }catch{}
+  }
   // Same-origin fetch dentro da aba ADM onde o usuário já iniciou sessão.
   // Não lê cookies ou senhas; a API existente faz autenticação e limita ao piloto.
   const result=await chrome.scripting.executeScript({
@@ -144,6 +151,13 @@
      batch.message='Login administrativo necessário. Abra a Vivi, entre e reinicie o lote.';
     }
     await store(batch);
+    if(batch.origin==='card'&&result&&typeof chrome.tabs.sendMessage==='function'){
+     try{
+      await chrome.tabs.sendMessage(batch.adminTabId,{
+       type:'viviCardCaptureFinished',requestId:batch.requestId,result
+      });
+     }catch{}
+    }
     if(batch.status!=='running')break;
    }
    batch=await state();
@@ -160,6 +174,43 @@
   }finally{processing=false;}
  }
  chrome.runtime.onMessage.addListener((message,sender,sendResponse)=>{
+  if(message?.type==='viviCardCaptureStart'){
+   (async()=>{
+    const tabId=sender?.tab?.id;
+    if(!Number.isInteger(tabId))return {ok:false,error:'A captura deve ser solicitada no painel Vivi aberto no Chrome.'};
+    if(!numeric(message.shopId)||!numeric(message.itemId)||
+       typeof message.requestId!=='string'||!/^[a-zA-Z0-9_-]{8,100}$/.test(message.requestId)){
+     return {ok:false,error:'Identificação do produto inválida.'};
+    }
+    await verifyAdminTab(tabId);
+    const allowed=await chrome.permissions.contains({
+     origins:['https://shopee.com.br/*','https://www.shopee.com.br/*']
+    });
+    if(!allowed){
+     return {ok:false,error:'Autorize a Shopee uma vez: abra a extensão Vivi, clique em Ativar captura contínua e depois em Pausar. Volte ao painel e tente novamente.'};
+    }
+    if(typeof chrome.tabs.sendMessage!=='function'){
+     return {ok:false,error:'Ponte da extensão indisponível. Atualize a extensão e recarregue o ADM.'};
+    }
+    const check=await chrome.tabs.sendMessage(tabId,{
+     type:'viviAdminValidateProduct',shopId:String(message.shopId),itemId:String(message.itemId)
+    });
+    if(!check?.item||!validItem(check.item)){
+     return {ok:false,error:check?.error||'Produto não identificado no piloto da Vivi.'};
+    }
+    const previous=await state();
+    if(previous?.status==='running'){
+     return {ok:false,error:'Outra captura está em andamento. Confira o status antes de iniciar outra.'};
+    }
+    await chrome.storage.local.set({viviAutoEnabled:false});
+    await store({status:'running',adminTabId:tabId,items:[check.item],
+     index:0,results:[],origin:'card',requestId:message.requestId,
+     startedAt:Date.now(),message:'Abrindo anúncio Shopee e coletando informações…'});
+    void execute();
+    return {ok:true,requestId:message.requestId};
+   })().then(sendResponse).catch(e=>sendResponse({ok:false,error:String(e?.message||e)}));
+   return true;
+  }
   if(message?.type==='viviBatchStart'){
    (async()=>{
     const {items,adminTabId}=message;
