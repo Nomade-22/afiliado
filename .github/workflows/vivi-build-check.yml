@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'ofertas-da-vivi/**'
+      - 'tools/vivi-shopee-extension/**'
       - '.github/workflows/vivi-build-check.yml'
   workflow_dispatch:
 
@@ -28,5 +29,9 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Validate Chrome extension and desktop one-click flow
+        run: |
+          node --check ../tools/vivi-shopee-extension/popup.js
+          node --test ../tools/vivi-shopee-extension/tests/desktop-flow.test.cjs
       - name: Next build
         run: npm run build

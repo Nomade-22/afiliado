@@ -35,7 +35,8 @@ export default function CaptureBridge(){
    window.sessionStorage.setItem(KEY,JSON.stringify(data));
    // Enviar sem confirmação apenas quando a captura contém título, fotos e descrição útil.
    // Capturas parciais continuam disponíveis para revisão manual, sem sobrescrever uma boa captura.
-   const eligible=typeof data.title==='string'&&!/Shopee Brasil|Ofertas incríveis/i.test(data.title)&&
+   const eligible=typeof data.title==='string'&&data.title.trim().length>=5&&
+    !/Shopee Brasil|Ofertas incríveis|^Anúncio Shopee \d+$/i.test(data.title)&&
     typeof data.description==='string'&&data.description.trim().length>=50&&
     Array.isArray(data.images)&&data.images.length>0;
    if(eligible)window.sessionStorage.setItem(AUTO_SAVE_KEY,'1');

@@ -1,24 +1,29 @@
-# Vivi · Capturar Shopee (piloto)
+# Vivi · Captura rápida Shopee — Chrome desktop (piloto)
 
-**Objetivo**: testar a coleta de fotos adicionais e da descrição do anúncio da Shopee aberto no Chrome de um computador. Não é sincronização automática, não executa compras, não altera o catálogo nem acessa cookies/senhas.
+Versão **0.2.0**. A extensão captura informações do anúncio da Shopee que está aberto na aba ativa. O clique no ícone da Vivi inicia a leitura imediatamente: não é necessário clicar em **Capturar**, **Copiar JSON**, **Enviar** nem **Salvar** se os dados estiverem completos.
 
-## Como instalar (Chrome no computador)
+## Instalação/atualização no computador
 
-1. Baixe a pasta da extensão (ou o ZIP da conversa), extraia os arquivos e mantenha `manifest.json`, `popup.html` e `popup.js` na **mesma pasta**.
-2. Acesse `chrome://extensions`.
-3. Ative **Modo do desenvolvedor**.
-4. Clique **Carregar sem compactação** e selecione a pasta.
-5. Abra a página completa de um dos dez anúncios listados em `https://ofertas-da-vivi.vercel.app/adm#teste-importacao`.
-6. No Chrome, clique na extensão **Vivi · Capturar Shopee** e depois **Capturar fotos e descrição**.
-7. Confira a quantidade de fotos e caracteres. Clique em **Copiar captura para o painel**.
-8. Volte à aba **Teste de importação** do painel ADM, cole o JSON e clique em **Salvar captura apenas no teste**.
-9. Confira a comparação de fotos e descrição. A vitrine pública não é modificada.
+1. Baixe o código do projeto no GitHub e extraia o arquivo ZIP.
+2. Localize a pasta `tools/vivi-shopee-extension`. Os arquivos `manifest.json`, `popup.html` e `popup.js` precisam continuar juntos.
+3. No Chrome, visite `chrome://extensions`, ative **Modo do desenvolvedor** e escolha **Carregar sem compactação**. Se a extensão já está instalada, substitua os arquivos da pasta local e clique em **Atualizar** na página das extensões.
+4. Fixe **Vivi · Captura Rápida Shopee** na barra do Chrome pelo ícone de quebra-cabeça.
+5. Abra um dos anúncios do piloto de **10 produtos** da Shopee no Chrome e espere fotos/descrição carregarem.
+6. Clique **uma vez** no ícone da Vivi. A leitura começa automaticamente. Se houver título, pelo menos uma foto e descrição com 50 ou mais caracteres, uma nova aba abre a ponte `/captura-vivi`, que leva ao ADM → Teste de importação. A sessão administrativa é obrigatória; se necessário, entre com a senha normalmente.
+7. Confira no painel se o salvamento foi confirmado e se a quantidade de imagens e caracteres está correta.
 
-## Restrições e segurança
+## Se o anúncio estiver incompleto
 
-- A extensão usa apenas `activeTab`, `scripting` e `clipboardWrite`; não tem permissão para acessar cookies, senhas ou páginas em segundo plano.
-- Ela faz a leitura do DOM do anúncio aberto pelo próprio usuário. Pode falhar caso a Shopee modifique o layout, exija login/verificação ou não carregue toda a galeria.
-- No teste, os dados só são aceitos para um dos **dez produtos pré-selecionados**. A identificação é conferida pelo par `shopId + itemId` e pela URL de origem.
-- O backend salva descrições e URLs de fotos em tabela exclusiva `vivi_extension_test_captures`, sem tocar na tabela de produtos publicados.
-- **Fotos de avaliações dos compradores não são o alvo**; a extensão tenta capturar a galeria principal e pode precisar de revisão humana para detectar alguma imagem indevida.
-- Não substitui os links de afiliado nem modifica o processo de comissão.
+- O popup mostrará o que foi encontrado e o botão **Capturar novamente**. Abra os detalhes/galeria na Shopee e tente outra vez.
+- Use **Enviar captura parcial para revisão** para levar a informação ao ADM sem publicação automática (com proteção para títulos genéricos).
+- **Copiar JSON** mantém o fluxo manual quando a navegação ou o tamanho da captura impedir a transferência.
+- Produtos fora do piloto de 10 são rejeitados pelo servidor. Não tente substituir ofertas publicadas diretamente por essa extensão.
+
+## Segurança e limites
+
+- Permissões restritas a `activeTab`, `scripting` e `clipboardWrite`: sem autorização permanente para todos os sites, sem leitura de cookies ou senhas e sem coleta em segundo plano.
+- O Chrome autoriza a leitura da aba somente quando a pessoa aciona a extensão. Uma aba nova é aberta na Vivi; a página original da Shopee permanece aberta.
+- A transferência usa fragmento de URL (não enviado no pedido ao servidor); o frontend remove o fragmento e mantém o payload na `sessionStorage` até o fluxo do ADM. O endpoint valida sessão, origem, IDs de produto, imagens e lista de 10 candidatos.
+- A captura é gravada apenas em `vivi_extension_test_captures`; nenhuma oferta da vitrine pública, preço, link de afiliado, cookie ou comissão é modificada.
+- A galeria pode exigir inspeção humana para garantir que não incluiu imagens irrelevantes. Mudanças no layout ou verificações de acesso da Shopee podem limitar a coleta.
+- O envio automático **não é captura desassistida em lote**: cada anúncio exige que a pessoa o abra no Chrome e clique no ícone da extensão.
