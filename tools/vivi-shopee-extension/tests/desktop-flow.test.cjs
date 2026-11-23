@@ -16,7 +16,7 @@ const complete={
 };
 async function run(payload,{page='https://shopee.com.br/product/361729924/14361398676'}={}){
  const dom=new Map();
- for(const id of ['scan','send','copy','result','status','title','imgs','chars','removed','autoSwitch','autoState','autoLast','resetAuto']){
+ for(const id of ['scan','send','copy','result','status','title','imgs','chars','removed','autoSwitch','autoState','autoLast','resetAuto','batchRun','batchPause','batchState','batchDetails']){
   dom.set(id,{
    style:{display:''},hidden:id==='send',disabled:false,className:'',textContent:'',
    handlers:{},addEventListener(event,handler){this.handlers[event]=handler;}
@@ -32,6 +32,7 @@ async function run(payload,{page='https://shopee.com.br/product/361729924/143613
     session:{get:async()=>({viviAutoProcessed:{}}),set:async()=>{},remove:async()=>{}}
    },
    permissions:{request:async()=>true},
+   runtime:{sendMessage:async()=>({ok:true,info:null})},
    tabs:{
     query:async()=>[{id:5,url:page}],
     create:async args=>{tabsCreated.push(args);return {id:7};}
@@ -39,7 +40,7 @@ async function run(payload,{page='https://shopee.com.br/product/361729924/143613
    scripting:{executeScript:async()=>{injections++;return [{result:payload}];}}
   },
   navigator:{clipboard:{writeText:async()=>{}}},
-  URL,console
+  URL,console,setInterval:()=>0
  };
  vm.runInNewContext(script,context,{filename:'popup.js'});
  await new Promise(resolve=>setImmediate(resolve));
@@ -72,7 +73,7 @@ test('não executa scripts fora de Shopee',async()=>{
  const r=await run(complete,{page:'https://example.org'});
  assert.equal(r.injections,0);
  assert.equal(r.tabsCreated.length,0);
- assert.match(r.dom.get('status').textContent,/shopee.com.br/i);
+ assert.match(r.dom.get('status').textContent,/produto Shopee/i);
 });
 test('respeita limite de URL sem truncar informações silenciosamente',async()=>{
  const r=await run({...complete,description:'ç'.repeat(12000)});

@@ -14,9 +14,19 @@ button:disabled{opacity:.55;cursor:default}button[hidden]{display:none}.hint{col
 .stats{display:flex;gap:8px;margin-top:10px}.stats span{flex:1;background:#f9eaf1;padding:8px 6px;border-radius:7px;text-align:center;font-size:11px}.stats b{display:block;color:#a82966;font-size:17px}
 #status{font-size:12px;margin:12px 0 0;color:#8d466c;white-space:pre-wrap;overflow-wrap:anywhere}
 #status.error{color:#b42e42}.safe{background:#e9f7ef;padding:10px;color:#1c6649;border-radius:9px;margin-top:14px;font-size:11px}
+.batch-details{white-space:pre-wrap;font:11px/1.5 system-ui;overflow-wrap:anywhere;color:#664055;max-height:140px;overflow-y:auto;margin:8px 0 0}
 </style></head>
 <body><header><strong>♥ Ofertas da Vivi</strong><p>Captura rápida para computador · Shopee</p></header>
 <main>
+<section class="auto-mode">
+<strong>Capturar os links pendentes do piloto</strong>
+<p>Na aba ADM da Vivi, clique em <b>Capturar pendentes</b>. A extensão consulta a lista atual de 10 anúncios, identifica os produtos sem fotos ou descrição completas e abre cada anúncio no Chrome, um por vez. Os dados válidos são enviados diretamente ao teste autenticado.</p>
+<button id="batchRun" type="button">Capturar pendentes do piloto</button>
+<button id="batchPause" type="button" hidden>Pausar lote</button>
+<div id="batchState" class="auto-info" aria-live="polite">Conferindo lote…</div>
+<pre id="batchDetails" class="batch-details" aria-live="polite"></pre>
+<small>Inicie com a aba Vivi ADM aberta e logada. O Chrome abrirá temporariamente cada anúncio; se a Shopee bloquear ou ocultar informações, o produto ficará para revisão. A vitrine pública não muda.</small>
+</section>
 <section class="auto-mode">
 <strong>Captura contínua (opcional)</strong>
 <p>Ative uma vez para capturar automaticamente os anúncios Shopee que você abrir no Chrome, sem clicar na extensão. Cada captura completa é encaminhada ao teste da Vivi em uma aba de fundo. Limite de 10 anúncios por sessão; fora do piloto o servidor rejeita a gravação.</p>
