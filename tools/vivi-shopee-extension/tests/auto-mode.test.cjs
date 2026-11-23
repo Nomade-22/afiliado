@@ -18,7 +18,7 @@ function makeContext(payload,{url='https://shopee.com.br/product/361729924/14361
  const store={viviAutoEnabled:enabled,viviAutoLast:null};
  let processed={...history};
  let currentUrl=url;
- const ctx={URL,console,setTimeout:fn=>fn(),Date,
+ const ctx={URL,console,setTimeout:fn=>fn(),Date,importScripts:()=>{},
   chrome:{
    tabs:{
     onUpdated:{addListener(fn){events.updated=fn}},
