@@ -36,7 +36,11 @@ export default function AdminPanel(){
   });
  }
  useEffect(()=>{load().catch(()=>setMessage({type:'error',text:'Erro ao carregar dados do painel.'}))},[]);
- useEffect(()=>{if(window.location.hash.startsWith('#teste-importacao'))setTab('scrapling-teste')},[]);
+ useEffect(()=>{
+  let pending=false;
+  try{pending=Boolean(sessionStorage.getItem('vivi-pending-capture-v1'))}catch{}
+  if(window.location.hash.startsWith('#teste-importacao')||pending)setTab('scrapling-teste');
+ },[]);
  async function run(action){setBusy(true);setMessage(null);try{const result=await action();setMessage({type:'ok',text:result||'Alterações salvas com sucesso.'});await load()}catch(e){setMessage({type:'error',text:e.message})}finally{setBusy(false)}}
  async function api(path,options={}){let resp=await fetch(path,{...options,headers:{'Content-Type':'application/json',...options.headers}}),d=await resp.json();if(!resp.ok)throw Error(d.error||'Não foi possível concluir');return d}
  async function findShopee(nextPage=1){
