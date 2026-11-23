@@ -73,7 +73,7 @@ test('não executa scripts fora de Shopee',async()=>{
  const r=await run(complete,{page:'https://example.org'});
  assert.equal(r.injections,0);
  assert.equal(r.tabsCreated.length,0);
- assert.match(r.dom.get('status').textContent,/shopee.com.br/i);
+ assert.match(r.dom.get('status').textContent,/produto Shopee/i);
 });
 test('respeita limite de URL sem truncar informações silenciosamente',async()=>{
  const r=await run({...complete,description:'ç'.repeat(12000)});
