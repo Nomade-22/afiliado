@@ -2565,3 +2565,21 @@
  .vivi-mobile-capture-card>.btn{width:100%}
  .vivi-mobile-capture-steps{font-size:12px;gap:9px}
 }
+
+/* Visualização antes de confirmar a captura recebida pelo favorito Android */
+.vivi-incoming-capture-preview{
+ background:linear-gradient(140deg,#f1fbf5,#ffffff);
+ border:1px solid #cfe8d9;
+ padding:13px;border-radius:12px;margin:12px 0;
+}
+.vivi-incoming-capture-preview p{
+ margin:9px 0 5px;color:#41404a;font-size:12px;line-height:1.55;
+}
+.vivi-incoming-capture-preview .vivi-incoming-preview-meta{
+ font-size:11px;color:#687c73;
+}
+.vivi-incoming-capture-preview .vivi-incoming-preview-description{
+ background:#faf9fb;border-radius:9px;padding:10px;
+ white-space:pre-wrap;overflow-wrap:anywhere;
+ color:#54505a;font-size:12px;line-height:1.6;
+}
