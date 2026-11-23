@@ -117,3 +117,6 @@ chrome.runtime.onMessage.addListener((message,sender,sendResponse)=>{
   sendResponse({ok:true});
  }
 });
+
+// Operação de lote iniciada explicitamente pelo administrador na aba Vivi.
+importScripts('batch.js');
