@@ -85,7 +85,7 @@ test('a validação do produto exige correspondência com a lista do servidor',a
  const denied=await h.runtimeMessage({
   type:'viviAdminValidateProduct',shopId:'379854024',itemId:'4444444'
  });
- assert.match(denied.error,/fora dos dez/i);
+ assert.match(denied.error,/fora dos vinte/i);
  assert.equal(h.requests[0].url,'/api/admin/scrapling-test');
 });
 test('retorna sucesso somente após resposta confirmada da API',async()=>{
