@@ -2613,3 +2613,29 @@
 @media(max-width:440px){
  .vivi-scrapling-open-actions>*{flex:1}
 }
+
+
+/* Captura direta do card — piloto Shopee / Chrome desktop */
+.vivi-scrapling-chrome-btn.vivi-capture-card-btn{
+ background:#1c7f64;border-color:#1c7f64;color:#fff;
+}
+.vivi-scrapling-chrome-btn.vivi-capture-card-btn:hover{
+ background:#16654f;border-color:#16654f;color:#fff;
+}
+.vivi-scrapling-chrome-btn.vivi-capture-card-btn:disabled{
+ opacity:.65;cursor:progress;
+}
+.vivi-card-capture-feedback{
+ margin:8px 0 0;padding:8px 10px;border-radius:8px;
+ font-size:12px;line-height:1.45;overflow-wrap:anywhere;
+ background:#f4f3f6;color:#65566a;
+}
+.vivi-card-capture-feedback.starting,.vivi-card-capture-feedback.running{
+ background:#eef4fb;color:#305c86;
+}
+.vivi-card-capture-feedback.saved{
+ background:#e8f7ef;color:#226447;
+}
+.vivi-card-capture-feedback.partial,.vivi-card-capture-feedback.error{
+ background:#fff2e6;color:#8b4c20;
+}
