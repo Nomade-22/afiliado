@@ -394,7 +394,14 @@ export default function ScraplingTestPanel(){
     {(data?.candidates||[]).map((item,index)=>{
      const result=byId.get(item.id);
      const captured=extensionById.get(item.id);
-     const status=result?(result.status==='unavailable'&&/página genérica/i.test(result.reason||'')?['Página genérica','warning']:states[result.status]||states.error):null;
+     const hasPublishedDescription=Number(item.descriptionChars||0)>=25;
+     const hasPublishedGallery=Number(item.galleryCount||0)>=3;
+     const status=hasPublishedDescription&&hasPublishedGallery?['Dados na loja','good']:
+      hasPublishedGallery?['Fotos na loja','good']:
+      hasPublishedDescription?['Descrição na loja','good']:
+      captured?.description?.trim()&&captured?.images?.length?['Capturado no teste','good']:
+      captured?.images?.length?['Fotos capturadas','warning']:
+      result?(result.status==='unavailable'&&/página genérica/i.test(result.reason||'')?['Página genérica','warning']:states[result.status]||states.error):null;
      const photos=result?.images||[];
      const description=result?.description||'';
      const showDescription=Boolean(expanded[item.id]);
