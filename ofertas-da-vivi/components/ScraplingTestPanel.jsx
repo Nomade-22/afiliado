@@ -109,7 +109,8 @@ export default function ScraplingTestPanel(){
    if(autoSaveRequested&&!automaticSaveStarted.current){
     automaticSaveStarted.current=true;
     // O usuário já pediu o envio no favorito. Mantemos validação de IDs e sessão no servidor.
-    void saveCapturedData(serialized,true);
+    // Agendar fora da execução direta do efeito, evitando atualizações de estado síncronas.
+    window.setTimeout(()=>{void saveCapturedData(serialized,true)},0);
    }
    window.requestAnimationFrame(()=>{
     document.getElementById('vivi-capture-import-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
