@@ -279,9 +279,10 @@ export default function ScraplingTestPanel(){
  return <div className="vivi-scrapling-test">
   <section className="admin-card vivi-scrapling-intro">
    <div className="admin-card-title">
-    <h2><FlaskConical size={22}/> Teste de importação Shopee — 10 produtos</h2>
+    <h2><FlaskConical size={22}/> Teste de importação Shopee — 20 produtos</h2>
    </div>
-   <p>Testamos o <b>Scrapling com navegador Chromium</b> para tentar recuperar a descrição e fotos distintas diretamente dos anúncios públicos da Shopee.</p>
+   <p>O piloto agora reúne <b>20 produtos ativos da loja</b> para capturar fotos e descrições diretamente dos anúncios públicos da Shopee.</p>
+   <p className="muted-text">As informações já capturadas anteriormente foram incorporadas aos produtos correspondentes do catálogo. Novas capturas permanecem no ambiente de teste até serem revisadas ou importadas.</p>
    <div className="vivi-scrapling-safety">
     <ShieldCheck size={19}/> <span><b>Ambiente de teste.</b> Os resultados ficam em uma tabela separada. Nenhum produto, foto, descrição, preço ou link de afiliado da loja é alterado.</span>
    </div>
@@ -306,7 +307,7 @@ export default function ScraplingTestPanel(){
    <ol className="vivi-mobile-capture-steps">
     <li>No <b>Chrome do celular</b>, salve esta página como favorito pelo menu <b>⋮ → Adicionar aos favoritos</b>.</li>
     <li>Abra <b>⋮ → Favoritos</b>, encontre o favorito salvo e escolha <b>Editar</b>. Dê o nome <b>Capturar Vivi</b> e substitua a URL pelo código copiado acima.</li>
-    <li>Abra um dos <b>10 anúncios completos</b> da Shopee que aparecem abaixo e espere as fotos e a descrição carregarem. O capturador também reconhece endereços <b>/opaanlp/</b>, comuns no celular.</li>
+    <li>Abra um dos <b>20 anúncios completos</b> da Shopee que aparecem abaixo e espere as fotos e a descrição carregarem. O capturador também reconhece endereços <b>/opaanlp/</b>, comuns no celular.</li>
     <li>Toque na barra de endereço, digite <b>Capturar Vivi</b> e toque na <b>sugestão com estrela</b> (não faça uma pesquisa comum).</li>
     <li>Ao executar o favorito atualizado, uma captura com fotos e descrição será <b>enviada e salva automaticamente no teste</b>. Se a sessão tiver expirado, faça login uma vez; o envio será retomado. Para capturas incompletas, você poderá revisar e usar <b>Enviar ao teste da Vivi</b>.</li>
    </ol>
@@ -323,7 +324,7 @@ export default function ScraplingTestPanel(){
    <div className="admin-card-title"><h2><Images size={22}/> Comparar dados capturados</h2></div>
    <p className="muted-text">Os dados enviados pelo celular aparecem automaticamente abaixo. Confira antes de salvar. Também é possível colar o resultado da extensão no computador.</p>
    <div className="vivi-extension-test-stats">
-    <span><b>{extensionStats.count}/10</b> capturados</span>
+    <span><b>{extensionStats.count}/{data?.candidates?.length||20}</b> capturados</span>
     <span><b>{extensionStats.descriptions}</b> com descrição</span>
     <span><b>{extensionStats.photos}</b> fotos encontradas</span>
    </div>
@@ -338,7 +339,7 @@ export default function ScraplingTestPanel(){
       {incomingPreview.number} imagem(ns) · {incomingPreview.description.length} caracteres
      </p>
      {data&&!incomingPreview.matched&&<p className="vivi-extension-test-message error">
-      Este anúncio não faz parte dos 10 produtos do piloto. Nenhum dado será salvo.
+      Este anúncio não faz parte dos 20 produtos do piloto. Nenhum dado será salvo.
      </p>}
      {incomingPreview.images.length>0&&<div className="vivi-scrapling-photo-grid">
       {incomingPreview.images.map((u,i)=><a key={u+i} href={u} target="_blank" rel="noopener noreferrer">
@@ -384,10 +385,10 @@ export default function ScraplingTestPanel(){
     <p className="vivi-scrapling-hint">{report.notes}</p>
    </section>:<section className="admin-card vivi-scrapling-empty">
     <Clock3 size={32}/><h3>Aguardando o primeiro relatório</h3>
-    <p>Os 10 anúncios aparecem abaixo. Quando a execução do GitHub Actions terminar, veja a comparação aqui. Nenhum dado será importado automaticamente.</p>
+    <p>Os 20 anúncios disponíveis para captura aparecem abaixo. Nenhum dado novo será publicado automaticamente na loja.</p>
    </section>}
   <section className="admin-card">
-   <div className="admin-card-title"><h2><Images size={21}/> Comparação dos 10 produtos</h2></div>
+   <div className="admin-card-title"><h2><Images size={21}/> Comparação dos 20 produtos</h2></div>
    {!data?.candidates?.length&&<p className="muted-text">Não foi possível identificar os anúncios elegíveis no banco.</p>}
    <div className="vivi-scrapling-grid">
     {(data?.candidates||[]).map((item,index)=>{
@@ -399,7 +400,7 @@ export default function ScraplingTestPanel(){
      const showDescription=Boolean(expanded[item.id]);
      return <article key={item.id} className="vivi-scrapling-product">
       <header className="vivi-scrapling-product-head">
-       <span className="vivi-scrapling-number">{index+1}/10</span>
+       <span className="vivi-scrapling-number">{index+1}/{data?.candidates?.length||20}</span>
        <span className={'vivi-scrapling-pill '+(status?.[1]||'muted')}>
         {status?status[0]:'Pendente'}
        </span>
@@ -408,7 +409,7 @@ export default function ScraplingTestPanel(){
        <img src={item.cover||'/images/produto-1.webp'} alt="" loading="lazy"
         onError={e=>{e.currentTarget.src='/images/produto-1.webp'}}/>
        <div><h3>{item.title}</h3>
-        <p>Antes: {item.descriptionChars} caracteres de descrição · {item.galleryCount} imagem(ns) cadastrada(s)</p>
+        <p>Na loja: {item.descriptionChars} caracteres de descrição · {item.galleryCount} imagem(ns) cadastrada(s)</p>
         {viviShopeeProductUrl(item.shopId,item.itemId)&&<div className="vivi-scrapling-open-actions">
          {isAndroid&&<button className="vivi-scrapling-chrome-btn" type="button"
           onClick={()=>copyShopeeUrl(viviShopeeProductUrl(item.shopId,item.itemId),item.itemId)}
