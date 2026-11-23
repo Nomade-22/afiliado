@@ -50,6 +50,15 @@
  });
 
  chrome.runtime.onMessage.addListener((message,_sender,sendResponse)=>{
+  if(message?.type==='viviAdminCheckTab'){
+   // O navegador pode ocultar chrome.tabs.get(tabId).url ao service worker.
+   // Esta resposta vem do content script que roda somente no ADM da Vivi.
+   sendResponse({
+    ok:location.origin==='https://ofertas-da-vivi.vercel.app'&&location.pathname==='/adm',
+    origin:location.origin,pathname:location.pathname
+   });
+   return;
+  }
   if(message?.type==='viviAdminValidateProduct'){
    (async()=>{
     if(!num(message.shopId)||!num(message.itemId))return {error:'IDs de produto inválidos.'};
