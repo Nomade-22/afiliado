@@ -1,15 +1,23 @@
 {
   "manifest_version": 3,
   "name": "Vivi · Captura Rápida Shopee (Piloto)",
-  "version": "0.2.0",
-  "description": "Um clique no Chrome: captura dados visíveis do anúncio Shopee e envia para salvamento no teste administrativo Vivi.",
+  "version": "0.3.0",
+  "description": "Capture anúncios Shopee em um clique ou ative o modo contínuo opcional para páginas de produto visitadas no Chrome.",
   "permissions": [
     "activeTab",
     "scripting",
-    "clipboardWrite"
+    "clipboardWrite",
+    "storage"
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Vivi: capturar e enviar anúncio Shopee para teste"
+    "default_title": "Vivi: capturar Shopee (modo rápido/contínuo)"
+  },
+  "optional_host_permissions": [
+    "https://shopee.com.br/*",
+    "https://www.shopee.com.br/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
   }
 }
