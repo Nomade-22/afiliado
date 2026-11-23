@@ -156,8 +156,9 @@ async function pendingPilotItems(){
     const captures=new Map((data.captures||[]).map(c=>[c.offerId,c]));
     const pending=(data.candidates||[]).filter(p=>{
      const c=captures.get(p.id);
-     return !c||String(c.description||'').trim().length<50||
-      !Array.isArray(c.images)||c.images.length===0;
+     const hasDescription=Number(p.descriptionChars||0)>=25||String(c?.description||'').trim().length>=25;
+     const hasPhotos=Number(p.galleryCount||0)>=1||(Array.isArray(c?.images)&&c.images.length>0);
+     return !hasDescription||!hasPhotos;
     }).map(p=>({
      title:String(p.title||'Produto Shopee').slice(0,200),
      shopId:String(p.shopId),itemId:String(p.itemId),
