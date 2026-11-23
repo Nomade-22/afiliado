@@ -16,7 +16,7 @@ const complete={
 };
 async function run(payload,{page='https://shopee.com.br/product/361729924/14361398676'}={}){
  const dom=new Map();
- for(const id of ['scan','send','copy','result','status','title','imgs','chars','removed']){
+ for(const id of ['scan','send','copy','result','status','title','imgs','chars','removed','autoSwitch','autoState','autoLast','resetAuto']){
   dom.set(id,{
    style:{display:''},hidden:id==='send',disabled:false,className:'',textContent:'',
    handlers:{},addEventListener(event,handler){this.handlers[event]=handler;}
@@ -27,6 +27,11 @@ async function run(payload,{page='https://shopee.com.br/product/361729924/143613
  const context={
   document:{getElementById:id=>dom.get(id)},
   chrome:{
+   storage:{
+    local:{get:async()=>({viviAutoEnabled:false}),set:async()=>{}},
+    session:{get:async()=>({viviAutoProcessed:{}}),set:async()=>{},remove:async()=>{}}
+   },
+   permissions:{request:async()=>true},
    tabs:{
     query:async()=>[{id:5,url:page}],
     create:async args=>{tabsCreated.push(args);return {id:7};}
@@ -75,6 +80,8 @@ test('respeita limite de URL sem truncar informações silenciosamente',async()=
  assert.match(r.dom.get('status').textContent,/muito grande/i);
 });
 test('usa somente permissões temporárias e não acessa cookies',()=>{
- assert.deepEqual(manifest.permissions,['activeTab','scripting','clipboardWrite']);
+ assert.deepEqual(manifest.permissions,['activeTab','scripting','clipboardWrite','storage']);
  assert.equal(manifest.host_permissions,undefined);
+ assert.deepEqual(manifest.optional_host_permissions,['https://shopee.com.br/*','https://www.shopee.com.br/*']);
+ assert.equal(manifest.background.service_worker,'background.js');
 });
