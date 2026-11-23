@@ -1,7 +1,7 @@
 /* Vivi · modo contínuo opcional. Nenhum acesso a outras páginas, cookies ou senhas. */
 const VIVI_SHOPEE_ORIGINS=['https://shopee.com.br/*','https://www.shopee.com.br/*'];
 const VIVI_CAPTURE_BRIDGE='https://ofertas-da-vivi.vercel.app/captura-vivi#vivi-capture=';
-const MAX_PER_SESSION=10;
+const MAX_PER_SESSION=20;
 const inflightTabs=new Map();
 
 function productKeyFromUrl(raw){
@@ -52,7 +52,7 @@ async function scanAutoTab(tabId){
   if(processed[key])return;
   if(Object.keys(processed).length>=MAX_PER_SESSION){
    await chrome.storage.local.set({viviAutoEnabled:false});
-   await recordAutoStatus({type:'limit',text:'Limite de 10 capturas desta sessão. Modo contínuo pausado.'});
+   await recordAutoStatus({type:'limit',text:'Limite de 20 capturas desta sessão. Modo contínuo pausado.'});
    return;
   }
   // Espera que a galeria/descrição sejam renderizadas, sem recarregar páginas ou fazer fetch na Shopee.
