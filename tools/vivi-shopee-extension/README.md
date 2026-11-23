@@ -1,6 +1,6 @@
 # Vivi · Captura Shopee desktop (piloto)
 
-Versão **0.3.0**. Agora há dois modos: **um clique**, já validado no Chrome, e **captura contínua opcional** para anúncios visitados. Ambos só encaminham resultados para o ambiente de teste autenticado da Vivi, limitado a dez produtos. A loja pública não é alterada.
+Versão **0.4.0**. Agora há dois modos: **um clique**, já validado no Chrome, e **captura contínua opcional** para anúncios visitados. Ambos só encaminham resultados para o ambiente de teste autenticado da Vivi, limitado a dez produtos. A loja pública não é alterada.
 
 ## Atualizar a extensão instalada
 
@@ -8,6 +8,17 @@ Versão **0.3.0**. Agora há dois modos: **um clique**, já validado no Chrome, 
 2. Substitua os arquivos da extensão instalada pelos novos. A pasta agora deve incluir `manifest.json`, `popup.html`, `popup.js`, `capture-page.js` e `background.js`.
 3. Abra `chrome://extensions`, ative Modo do desenvolvedor se necessário e clique em **Atualizar** na extensão Vivi; caso o Chrome não encontre os novos arquivos, use **Carregar sem compactação** apontando para a pasta correta.
 4. Abra `https://ofertas-da-vivi.vercel.app/adm#teste-importacao` e faça login administrativo.
+
+## Capturar todos os anúncios pendentes com um clique (novo)
+
+1. Abra **https://ofertas-da-vivi.vercel.app/adm#teste-importacao** e faça login.
+2. Clique no ícone da extensão Vivi **enquanto estiver na aba ADM**. Escolha **Capturar pendentes do piloto**.
+3. Autorize o acesso apenas às páginas Shopee (o Chrome perguntará se ainda não estiver autorizado).
+4. A extensão consulta a lista **atual** de até dez produtos do teste e seleciona apenas aqueles que não têm captura ou cuja descrição tem menos de 50 caracteres, ou sem nenhuma foto.
+5. Cada anúncio é aberto temporariamente em uma aba ativa do Chrome, lido com o coletor da extensão e enviado **diretamente à API autenticada da Vivi** quando há dados completos. A aba do anúncio é fechada antes do próximo.
+6. Confira a contagem de salvos e falhas no popup da extensão; clique em **Pausar lote** para interromper. Confira os resultados no painel ADM após a execução.
+
+**Importante:** a extensão não consegue operar remotamente no computador a partir do ChatGPT; esta ação roda dentro do seu próprio Chrome depois que você clicar no botão. Se a Shopee mostrar apenas uma página genérica, exigir login ou não renderizar imagens, esse produto será marcado para revisão e não será salvo. O sistema informa **salvo** somente quando o endpoint confirma a gravação. O modo contínuo é desligado ao iniciar o lote para impedir duplicatas. A vitrine pública não é modificada.
 
 ## Captura contínua: sem clicar na extensão a cada produto
 
