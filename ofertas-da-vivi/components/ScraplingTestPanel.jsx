@@ -78,6 +78,29 @@ export default function ScraplingTestPanel(){
  const report=data?.reports?.[0]||null;
  const extensionById=useMemo(()=>new Map((data?.captures||[]).map(x=>[x.offerId,x])),[data]);
  const byId=useMemo(()=>new Map((report?.results||[]).map(x=>[x.id,x])),[report]);
+ const incomingPreview=useMemo(()=>{
+  if(!captureJson.trim())return null;
+  try{
+   const payload=JSON.parse(captureJson);
+   if(payload?.type!=='vivi-shopee-capture-v1')return {error:'Formato inválido para a captura da Vivi.'};
+   const matched=data?.candidates?.find(p=>
+    String(p.shopId)===String(payload.shopId)&&String(p.itemId)===String(payload.itemId));
+   const photos=Array.isArray(payload.images)?payload.images.filter(raw=>{
+    if(typeof raw!=='string')return false;
+    try{
+     const u=new URL(raw);
+     const host=u.hostname.toLowerCase();
+     return u.protocol==='https:'&&
+      ['susercontent.com','shopee.com.br','shopee.sg'].some(x=>host===x||host.endsWith('.'+x));
+    }catch{return false}
+   }).slice(0,6):[];
+   return {name:matched?.title||String(payload.title||'Produto não identificado').slice(0,200),
+    matched:!!matched,description:String(payload.description||''),
+    images:photos,number:payload.images?.length||0,
+    loading:!data,shopId:String(payload.shopId||''),itemId:String(payload.itemId||'')};
+  }catch{return {error:'Os dados não são um JSON válido.'}}
+ },[captureJson,data]);
+
  const extensionStats=useMemo(()=>({
   count:(data?.captures||[]).length,
   descriptions:(data?.captures||[]).filter(x=>x.description?.trim()).length,
@@ -174,11 +197,35 @@ export default function ScraplingTestPanel(){
     <span><b>{extensionStats.descriptions}</b> com descrição</span>
     <span><b>{extensionStats.photos}</b> fotos encontradas</span>
    </div>
-   <label className="vivi-extension-test-label" htmlFor="vivi-extension-json">Dados copiados do celular ou da extensão</label>
+   {incomingPreview&&<div className="vivi-incoming-capture-preview">
+    {incomingPreview.error?<p className="vivi-extension-test-message error">{incomingPreview.error}</p>:<>
+     <div className="vivi-extension-capture-heading"><CheckCircle2 size={17}/>
+      <strong>Prévia do anúncio recebido</strong>
+     </div>
+     <p><b>{incomingPreview.name}</b></p>
+     <p className="vivi-incoming-preview-meta">
+      Loja {incomingPreview.shopId} · Produto {incomingPreview.itemId} ·
+      {incomingPreview.number} imagem(ns) · {incomingPreview.description.length} caracteres
+     </p>
+     {data&&!incomingPreview.matched&&<p className="vivi-extension-test-message error">
+      Este anúncio não faz parte dos 10 produtos do piloto. Nenhum dado será salvo.
+     </p>}
+     {incomingPreview.images.length>0&&<div className="vivi-scrapling-photo-grid">
+      {incomingPreview.images.map((u,i)=><a key={u+i} href={u} target="_blank" rel="noopener noreferrer">
+       <img src={u} alt={'Prévia da imagem '+(i+1)} loading="lazy"/>
+      </a>)}
+     </div>}
+     {incomingPreview.description&&<p className="vivi-incoming-preview-description">
+      {incomingPreview.description.slice(0,420)}
+      {incomingPreview.description.length>420?'…':''}
+     </p>}
+    </>}
+   </div>}
+   <label className="vivi-extension-test-label" htmlFor="vivi-extension-json">Dados recebidos (opcional editar)</label>
    <textarea id="vivi-extension-json" value={captureJson} onChange={e=>setCaptureJson(e.target.value)}
     rows={4} placeholder="Os dados do anúncio chegam automaticamente aqui, ou podem ser colados manualmente..." spellCheck={false}/>
    <div className="vivi-scrapling-actions">
-    <button className="btn btn-primary" type="button" disabled={sending||!captureJson.trim()} onClick={saveCapturedData}>
+    <button className="btn btn-primary" type="button" disabled={sending||!captureJson.trim()||!!incomingPreview?.error||(!!data&&!incomingPreview?.matched)} onClick={saveCapturedData}>
      <Images size={17}/>{sending?'Verificando captura…':'Salvar captura apenas no teste'}
     </button>
    </div>
