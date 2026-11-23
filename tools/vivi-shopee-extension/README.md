@@ -1,6 +1,6 @@
 # Vivi · Captura Shopee desktop (piloto)
 
-Versão **0.4.0**. Agora há dois modos: **um clique**, já validado no Chrome, e **captura contínua opcional** para anúncios visitados. Ambos só encaminham resultados para o ambiente de teste autenticado da Vivi, limitado a dez produtos. A loja pública não é alterada.
+Versão **0.5.0**. Agora há dois modos: **um clique**, já validado no Chrome, e **captura contínua opcional** para anúncios visitados. Ambos só encaminham resultados para o ambiente de teste autenticado da Vivi, limitado a dez produtos. A loja pública não é alterada.
 
 ## Atualizar a extensão instalada
 
@@ -8,6 +8,21 @@ Versão **0.4.0**. Agora há dois modos: **um clique**, já validado no Chrome, 
 2. Substitua os arquivos da extensão instalada pelos novos. A pasta agora deve incluir `manifest.json`, `popup.html`, `popup.js`, `capture-page.js` e `background.js`.
 3. Abra `chrome://extensions`, ative Modo do desenvolvedor se necessário e clique em **Atualizar** na extensão Vivi; caso o Chrome não encontre os novos arquivos, use **Carregar sem compactação** apontando para a pasta correta.
 4. Abra `https://ofertas-da-vivi.vercel.app/adm#teste-importacao` e faça login administrativo.
+
+## Botão Capturar com a Vivi em cada produto (novo)
+
+Depois de atualizar a extensão e recarregar `https://ofertas-da-vivi.vercel.app/adm#teste-importacao`, cada card da lista de dez produtos mostra **Abrir anúncio** e **Capturar com a Vivi** lado a lado no Chrome desktop.
+
+1. Faça login no painel ADM da Vivi.
+2. Clique em **Capturar com a Vivi** no produto desejado. O site envia a solicitação à extensão instalada pela ponte local `adm-bridge.js`; não há ID de extensão fixo nem tentativa de executar scripts de extensão diretamente pelo site.
+3. A extensão consulta a lista de dez produtos do servidor, confere IDs e verifica a permissão do Chrome para ler `shopee.com.br`.
+4. Ela abre temporariamente o anúncio em uma aba do Chrome, aguarda o carregamento e coleta título, galeria e descrição.
+5. Só grava dados completos usando a própria sessão administrativa no endpoint de teste `/api/admin/scrapling-test/extension`. Em seguida, fecha a aba temporária, volta ao ADM, atualiza o card e indica **Salvo** ou **Revisar**.
+6. O botão não altera `vivi_offers` nem publica a captura na loja. **Abrir anúncio** segue funcionando separadamente.
+
+**Permissão inicial**: se o Chrome disser que a extensão ainda não tem acesso à Shopee, clique no ícone Vivi, escolha **Ativar captura contínua** para autorizar os domínios Shopee e depois **Pausar captura contínua**. Assim o botão do painel pode usar a permissão já concedida sem capturas passivas. Você pode revogá-la em `chrome://extensions`.
+
+**Se a extensão não for detectada**: confira se a pasta instalada inclui `adm-bridge.js`, se a extensão está ativada e se a aba ADM foi recarregada depois da atualização. O site não consegue acionar a extensão antiga que não tem a ponte.
 
 ## Capturar todos os anúncios pendentes com um clique (novo)
 
