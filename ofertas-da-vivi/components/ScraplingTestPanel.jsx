@@ -3,7 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import {FlaskConical,RefreshCw,ExternalLink,Images,FileText,
  CheckCircle2,AlertTriangle,Clock3,ShieldCheck,Eye,Info,Smartphone,Copy} from 'lucide-react';
 import {VIVI_MOBILE_BOOKMARKLET} from '../lib/vivi-mobile-bookmarklet';
-import {viviChromeIntentUrl,viviShopeeProductUrl} from '../lib/vivi-chrome-product-link';
+import {viviShopeeProductUrl} from '../lib/vivi-chrome-product-link';
 
 const ACTIONS='https://github.com/Nomade-22/afiliado/actions/workflows/vivi-scrapling-test.yml';
 const states={
@@ -29,11 +29,26 @@ export default function ScraplingTestPanel(){
  const [mobileCopyMessage,setMobileCopyMessage]=useState('');
  const [isAndroid,setIsAndroid]=useState(false);
  const [openLinkMessage,setOpenLinkMessage]=useState('');
+ const [copyingId,setCopyingId]=useState('');
  useEffect(()=>{setIsAndroid(/Android/i.test(navigator.userAgent||''))},[]);
- async function copyShopeeUrl(url){
-  try{await navigator.clipboard.writeText(url);
-   setOpenLinkMessage('Endereço copiado! Cole na barra do Chrome para abrir o anúncio sem usar o app da Shopee.');
-  }catch{setOpenLinkMessage('Não foi possível copiar. Use o botão de abrir no Chrome ou pressione o endereço do produto.');}
+ async function copyShopeeUrl(url,itemId){
+  setCopyingId('');
+  if(!url)return;
+  try{
+   if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(url);
+   else{
+    const input=document.createElement('textarea');
+    input.value=url;input.style.position='fixed';input.style.left='-9999px';
+    document.body.appendChild(input);input.focus();input.select();
+    const ok=document.execCommand('copy');
+    input.remove();
+    if(!ok)throw Error('clipboard');
+   }
+   setCopyingId(String(itemId||''));
+   setOpenLinkMessage('Link copiado! Agora abra o aplicativo Chrome, toque na barra de endereço e escolha Colar e acessar. Não toque no link em outra mensagem, pois o Android poderá abrir a Shopee.');
+  }catch{
+   setOpenLinkMessage('Seu navegador não autorizou a cópia automática. Pressione e copie o endereço abaixo, depois cole na barra do Chrome: '+url);
+  }
  }
  const load=useCallback(async()=>{
   setBusy(true);setError('');
@@ -210,10 +225,10 @@ export default function ScraplingTestPanel(){
     <li>Na janela que aparecer, toque em <b>Enviar ao teste da Vivi</b>. O painel abrirá com os dados já preenchidos. Confira e toque em <b>Salvar captura apenas no teste</b>. Se não abrir, use <b>Copiar dados</b> como alternativa.</li>
    </ol>
    <div className="vivi-mobile-open-note">
-    <strong>Etapa 1 — Abrir no Chrome, nunca no app</strong>
-    <p>Nos cards abaixo, toque em <b>Abrir no Chrome</b>. No Android, o botão solicita explicitamente o Google Chrome. Depois que o anúncio carregar, execute o favorito <b>Capturar Vivi</b> pela sugestão com estrela na barra de endereço.</p>
-    <p>Se o aparelho continuar enviando para o app Shopee: <b>Configurações do Android → Apps → Shopee → Abrir por padrão → Desativar abertura de links compatíveis</b>. Os nomes podem variar.</p>
-    <small>O navegador não permite que o site acione automaticamente favoritos JavaScript dentro da Shopee. Esse toque continua necessário no piloto.</small>
+    <strong>Etapa 1 — Abrir no Chrome sem chamar o app Shopee</strong>
+    <p>Como o Android está interceptando os links da Shopee, a opção mais confiável é <b>Copiar para o Chrome</b> no produto desejado, abrir o aplicativo Chrome e <b>colar na barra de endereços</b>. Não abra o link pelo gerenciador de apps ou outra mensagem.</p>
+    <p>Para voltar a usar o botão direto: <b>Configurações → Apps → Apps padrão → Abrir links → Shopee → desativar Abrir links compatíveis</b>. Depois disso, teste <b>Abrir link direto</b>.</p>
+    <small>Por segurança do Android, um site não consegue obrigar o Chrome a ignorar as associações de links de outro aplicativo, nem executar automaticamente seu favorito no site da Shopee.</small>
    </div>
    {openLinkMessage&&<p className="vivi-mobile-capture-feedback" role="status">{openLinkMessage}</p>}
    <p className="vivi-scrapling-hint">Se o Chrome não executar o favorito ou a Shopee apresentar uma verificação de acesso, a captura pode não funcionar. Você revisa os resultados antes de salvá-los.</p>
@@ -309,16 +324,17 @@ export default function ScraplingTestPanel(){
        <div><h3>{item.title}</h3>
         <p>Antes: {item.descriptionChars} caracteres de descrição · {item.galleryCount} imagem(ns) cadastrada(s)</p>
         {viviShopeeProductUrl(item.shopId,item.itemId)&&<div className="vivi-scrapling-open-actions">
-         <a className="vivi-scrapling-chrome-btn"
-          href={isAndroid?viviChromeIntentUrl(item.shopId,item.itemId):viviShopeeProductUrl(item.shopId,item.itemId)}
-          rel="noopener noreferrer nofollow"
-          title="Solicitar abertura no Chrome, sem chamar o app Shopee">
-          <ExternalLink size={14}/>{isAndroid?'Abrir no Chrome':'Abrir anúncio'}
+         {isAndroid&&<button className="vivi-scrapling-chrome-btn" type="button"
+          onClick={()=>copyShopeeUrl(viviShopeeProductUrl(item.shopId,item.itemId),item.itemId)}
+          title="Copiar o endereço para colar manualmente na barra do Google Chrome">
+          <Copy size={14}/>{copyingId===String(item.itemId)?'Copiado para Chrome':'Copiar para Chrome'}
+         </button>}
+         <a className={isAndroid?'vivi-scrapling-copy-url':'vivi-scrapling-chrome-btn'}
+          href={viviShopeeProductUrl(item.shopId,item.itemId)}
+          target="_blank" rel="noopener noreferrer nofollow"
+          title={isAndroid?'Somente se a Shopee estiver impedida de abrir links por padrão':'Abrir o anúncio no navegador'}>
+          <ExternalLink size={13}/>{isAndroid?'Abrir link direto':'Abrir anúncio'}
          </a>
-         <button className="vivi-scrapling-copy-url" type="button"
-          onClick={()=>copyShopeeUrl(viviShopeeProductUrl(item.shopId,item.itemId))}>
-          <Copy size={13}/> Copiar link
-         </button>
         </div>}
        </div>
       </div>
