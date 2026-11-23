@@ -41,6 +41,41 @@ function captureShopeePage(){
    description=cleaned(after);
   }
  }
+
+ // Se a descrição não estiver no DOM visível, usar dados estruturados Product
+ // da MESMA página. Não seguir anúncios semelhantes nem copiar avaliações.
+ if(description.length<40){
+  for(const script of [...document.querySelectorAll('script[type="application/ld+json"]')].slice(0,12)){
+   try{
+    const stack=[JSON.parse(script.textContent||'{}')];
+    for(let i=0;i<45&&stack.length;i++){
+     const node=stack.shift();
+     if(Array.isArray(node)){stack.push(...node.slice(0,20));continue;}
+     if(!node||typeof node!=='object')continue;
+     const types=Array.isArray(node['@type'])?node['@type']:[node['@type']];
+     if(types.some(t=>String(t).toLowerCase()==='product')){
+      const value=cleaned(node.description||'');
+      if(value.length>=40&&value.length>description.length&&value.length<12000){
+       description=value;
+      }
+     }
+     if(node['@graph'])stack.push(node['@graph']);
+    }
+   }catch{}
+  }
+ }
+ // Última alternativa: metadescrição comprovadamente específica do produto.
+ if(description.length<40){
+  const candidate=cleaned(meta('og:description')||meta('description'));
+  const toWords=t=>String(t).toLowerCase().normalize('NFD')
+   .replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ')
+   .split(/\s+/).filter(w=>w.length>3&&!['shopee','brasil','produto','preco','loja','online','compre'].includes(w));
+  const titleWords=new Set(toWords(displayTitle));
+  const common=[...new Set(toWords(candidate))].filter(w=>titleWords.has(w)).length;
+  if(candidate.length>=65&&common>=2&&!/Shopee Brasil|Ofertas incríveis|Melhores preços do mercado/i.test(candidate)){
+   description=candidate;
+  }
+ }
  if(description.length>12000)description=description.slice(0,12000);
  if(description.length<35)description='';
 
