@@ -89,9 +89,9 @@ test('sem autorização opcional o modo é desativado',async()=>{
  assert.equal(x.sent.length,0);
  assert.equal(x.store.viviAutoEnabled,false);
 });
-test('limite de dez anúncios desativa o modo contínuo',async()=>{
+test('limite de vinte anúncios desativa o modo contínuo',async()=>{
  const history={};
- for(let i=0;i<10;i++)history['2:'+i]={at:1};
+ for(let i=0;i<20;i++)history['2:'+i]={at:1};
  const x=makeContext(base,{history});
  await x.ctx.scanAutoTab(5);
  assert.equal(x.sent.length,0);
