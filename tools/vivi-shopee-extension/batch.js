@@ -31,8 +31,33 @@
  }
  async function store(info){await chrome.storage.session.set({[KEY]:info});}
  async function verifyAdminTab(tabId){
+  if(!Number.isInteger(tabId)){
+   throw Error('A aba administrativa da Vivi não foi identificada.');
+  }
+  // Chrome MV3 pode omitir tab.url quando o evento vem do content script,
+  // mesmo que o usuário esteja na página /adm. A ponte instalada na própria
+  // aba verifica a origem real, sem solicitar permissão tabs para todos os sites.
+  if(typeof chrome.tabs.sendMessage==='function'){
+   try{
+    const reply=await chrome.tabs.sendMessage(tabId,{type:'viviAdminCheckTab'});
+    if(reply){
+     if(reply.ok===true&&reply.origin===ADMIN_ORIGIN&&reply.pathname==='/adm')return;
+     throw Error('Abra o painel administrativo original da Vivi em /adm.');
+    }
+   }catch(error){
+    // A mensagem pode falhar em extensões antigas. Nesse caso, usar apenas
+    // o URL quando realmente estiver disponível; nunca aceitar aba desconhecida.
+    if(error?.message==='Abra o painel administrativo original da Vivi em /adm.')throw error;
+   }
+  }
   const tab=await chrome.tabs.get(tabId);
-  const u=new URL(tab.url||'');
+  if(typeof tab?.url!=='string'||!tab.url.trim()){
+   throw Error('Não foi possível confirmar a aba da Vivi. Recarregue o ADM após atualizar a extensão.');
+  }
+  let u;
+  try{u=new URL(tab.url)}catch{
+   throw Error('O endereço da aba ADM está inválido. Reabra o painel da Vivi e tente novamente.');
+  }
   if(u.origin!==ADMIN_ORIGIN||u.pathname!=='/adm'){
    throw Error('Mantenha aberta a aba autenticada da Vivi /adm para salvar o lote.');
   }
