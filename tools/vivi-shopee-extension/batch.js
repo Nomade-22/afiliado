@@ -69,25 +69,74 @@
    await delay(400);
   }
  }
+ // Nunca mesclar dados de produtos semelhantes: apenas páginas com os MESMOS IDs.
+ function sameItemCapture(data,item){
+  if(data?.type!=='vivi-shopee-capture-v1'||
+     String(data.shopId)!==String(item.shopId)||String(data.itemId)!==String(item.itemId)||
+     typeof data.title!=='string'||data.title.trim().length<5||
+     /Shopee Brasil|Ofertas incríveis|^Anúncio Shopee \d+$/i.test(data.title))return false;
+  try{
+   const u=new URL(data.sourceUrl);
+   if(u.protocol!=='https:'||!['shopee.com.br','www.shopee.com.br'].includes(u.hostname))return false;
+   const m=u.pathname.match(/\/(?:product|opaanlp)\/(\d+)\/(\d+)(?:\/|$)/i)||
+     u.pathname.match(/(?:^|[-/])i\.(\d+)\.(\d+)(?:$|\/)/i);
+   return Boolean(m&&m[1]===String(item.shopId)&&m[2]===String(item.itemId));
+  }catch{return false;}
+ }
+ function mergeSameItemCapture(best,incoming,item){
+  if(!sameItemCapture(incoming,item))return best;
+  if(!best)return {...incoming,sourceUrl:item.sourceUrl};
+  const oldDesc=String(best.description||'').trim();
+  const newDesc=String(incoming.description||'').trim();
+  const oldImages=Array.isArray(best.images)?best.images:[];
+  const newImages=Array.isArray(incoming.images)?incoming.images:[];
+  return {...best,
+   // Uma fonte pode fornecer as fotos e outra a descrição. Preservar cada campo.
+   description:newDesc.length>oldDesc.length?newDesc:oldDesc,
+   images:newImages.length>oldImages.length?newImages:oldImages,
+   sourceUrl:item.sourceUrl,
+   duplicateImagesRemoved:Math.max(Number(best.duplicateImagesRemoved||0),Number(incoming.duplicateImagesRemoved||0))};
+ }
  async function readProduct(tabId,item){
-  // A Shopee pode renderizar a galeria após o document.readyState.
-  for(const ms of [1200,1800,2200]){
-   await delay(ms);
-   const current=await state();
-   if(current?.status!=='running')return {error:'Interrompido pelo usuário.'};
-   const tab=await chrome.tabs.get(tabId);
-   if(!tab||!tab.url?.startsWith('https://shopee.com.br/')&&!tab.url?.startsWith('https://www.shopee.com.br/')){
-    return {error:'A página deixou de ser um anúncio da Shopee.'};
+  let best=null;
+  // Três formatos públicos do MESMO anúncio; jamais outro produto por similaridade.
+  const routes=[
+   item.sourceUrl,
+   'https://shopee.com.br/opaanlp/'+item.shopId+'/'+item.itemId,
+   'https://shopee.com.br/-i.'+item.shopId+'.'+item.itemId
+  ];
+  for(let routeIndex=0;routeIndex<routes.length;routeIndex++){
+   if(routeIndex>0){
+    try{
+     await chrome.tabs.update(tabId,{url:routes[routeIndex],active:true});
+     await waitPage(tabId);
+    }catch{continue;}
    }
-   try{
-    const results=await chrome.scripting.executeScript({target:{tabId},files:['capture-page.js']});
-    const captured=results?.[0]?.result;
-    if(validCapture(captured,item))return {payload:captured};
-   }catch{
-    // Modo manual permanece disponível quando o site bloqueia a injeção.
+   for(const ms of [1200,1800,2200]){
+    await delay(ms);
+    const current=await state();
+    if(current?.status!=='running')return {error:'Interrompido pelo usuário.'};
+    const tab=await chrome.tabs.get(tabId);
+    let isShopee=false;
+    try{const currentUrl=new URL(tab?.url||'');
+     isShopee=currentUrl.protocol==='https:'&&
+       ['shopee.com.br','www.shopee.com.br'].includes(currentUrl.hostname);
+    }catch{}
+    if(!isShopee)break;
+    try{
+     const results=await chrome.scripting.executeScript({target:{tabId},files:['capture-page.js']});
+     const captured=results?.[0]?.result;
+     best=mergeSameItemCapture(best,captured,item);
+     if(best&&validCapture(best,item))return {payload:best,partial:false};
+    }catch{
+     // Página bloqueada ou carregando; tentar rota seguinte do mesmo produto.
+    }
    }
   }
-  return {error:'Fotos ou descrição insuficientes; anúncio não foi salvo.'};
+  // Uma captura parcial ainda pode atualizar fotos sem destruir descrições antigas.
+  if(best&&(String(best.description||'').trim().length>=25||best.images?.length>0))
+   return {payload:best,partial:true};
+  return {error:'Não foi possível acessar fotos nem descrição nas três rotas do anúncio.'};
  }
  async function sendToAdmin(tabId,payload){
   await verifyAdminTab(tabId);
@@ -147,8 +196,9 @@
       if(current?.status!=='running')break;
       const saved=await sendToAdmin(batch.adminTabId,read.payload);
       if(saved.ok){
-       result={shopId:item.shopId,itemId:item.itemId,title:item.title,status:'saved',
-        photos:saved.imageCount,chars:saved.descriptionChars};
+       result={shopId:item.shopId,itemId:item.itemId,title:item.title,status:saved.descriptionChars>=25?'saved':'partial',
+        photos:saved.imageCount,chars:saved.descriptionChars,
+        reason:saved.descriptionChars>=25?'':'Fotos salvas; a descrição do anúncio ainda não foi encontrada.'};
       }else{
        result={shopId:item.shopId,itemId:item.itemId,title:item.title,
         status:'error',reason:saved.error||('Falha HTTP '+saved.status)};
