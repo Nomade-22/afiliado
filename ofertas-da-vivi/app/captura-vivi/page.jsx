@@ -5,6 +5,7 @@ import {Heart,ShieldCheck,AlertTriangle} from 'lucide-react';
 // Entrada pública de transferência, não uma página administrativa.
 // O payload no fragmento é lido no navegador e nunca enviado no pedido HTTP.
 const KEY='vivi-pending-capture-v1';
+const AUTO_SAVE_KEY='vivi-pending-capture-auto-save-v1';
 export default function CaptureBridge(){
  const [error,setError]=useState('');
  useEffect(()=>{
@@ -32,6 +33,8 @@ export default function CaptureBridge(){
    // SessionStorage é do domínio Vivi, da aba atual, não persiste em cookies.
    // Ainda exige login ADM e revisão antes de qualquer escrita no banco.
    window.sessionStorage.setItem(KEY,JSON.stringify(data));
+   // 'Capturar Vivi' é uma ação explícita do usuário. Salvar somente na tabela isolada do teste.
+   window.sessionStorage.setItem(AUTO_SAVE_KEY,'1');
    window.location.replace('/adm#teste-importacao');
   }catch{
    setError('Não foi possível guardar a captura neste navegador. Use Copiar dados no anúncio.');
@@ -44,7 +47,7 @@ export default function CaptureBridge(){
     <p><AlertTriangle size={16} style={{verticalAlign:'middle'}}/> {error}</p>
     <a href="/adm#teste-importacao" className="btn btn-primary btn-wide">Abrir teste de importação</a>
    </>:<><h1>Enviando captura para o teste</h1>
-    <p>Salvando temporariamente as fotos e a descrição neste navegador para que não se percam caso seja necessário entrar no painel.</p>
+    <p>Transferindo as fotos e a descrição para salvamento automático no ambiente de teste. Se necessário, faça login no painel; a captura será retomada.</p>
     <p><ShieldCheck size={16} style={{verticalAlign:'middle'}}/> Nenhum produto da loja foi alterado.</p>
    </>}
   </section>
