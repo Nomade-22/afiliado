@@ -101,7 +101,7 @@ async function refreshAutoUI(){
   const used=Object.keys(history.viviAutoProcessed||{}).length;
   el('autoSwitch').textContent=autoEnabled?'Pausar captura contínua':'Ativar captura contínua';
   el('autoSwitch').className=autoEnabled?'secondary':'';
-  el('autoState').textContent=(autoEnabled?'Ativo':'Desligado')+' · '+used+'/10 anúncios nesta sessão.';
+  el('autoState').textContent=(autoEnabled?'Ativo':'Desligado')+' · '+used+'/20 anúncios nesta sessão.';
   el('autoLast').textContent=prefs.viviAutoLast?.text||'Abra um produto Shopee para iniciar a captura.';
  }catch(error){
   el('autoState').textContent='Não foi possível consultar o modo contínuo.';
