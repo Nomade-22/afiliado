@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vivi · Capturar Shopee</title>
+<style>
+*{box-sizing:border-box}body{width:355px;margin:0;background:#fff9fc;color:#282332;font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:18px;background:linear-gradient(115deg,#541633,#d72b78);color:#fff}
+header strong{font-size:17px}header p{font-size:11px;margin:5px 0 0;opacity:.9}
+main{padding:16px}p{margin:0 0 12px}button{width:100%;border:0;border-radius:10px;padding:13px 12px;font-weight:800;font-size:13px;cursor:pointer;background:linear-gradient(110deg,#8f2055,#e62d79);color:white}
+button.secondary{background:white;border:1px solid #cf8aa8;color:#9a2360;margin-top:9px}
+button:disabled{opacity:.55;cursor:default}.hint{color:#7c6f7a;font-size:11px;line-height:1.55;margin-top:10px}
+#result{display:none;margin-top:14px;background:white;border:1px solid #f2dae5;padding:12px;border-radius:12px}
+.title{font-weight:800;font-size:12px;line-height:1.4;max-height:50px;overflow:hidden}
+.stats{display:flex;gap:8px;margin-top:10px}.stats span{flex:1;background:#f9eaf1;padding:8px 6px;border-radius:7px;text-align:center;font-size:11px}.stats b{display:block;color:#a82966;font-size:17px}
+#status{font-size:12px;margin:12px 0 0;color:#8d466c;white-space:pre-wrap;overflow-wrap:anywhere}
+#status.error{color:#b42e42}.safe{background:#e9f7ef;padding:10px;color:#1c6649;border-radius:9px;margin-top:14px;font-size:11px}
+</style></head>
+<body><header><strong>♥ Ofertas da Vivi</strong><p>Teste de fotos + descrição · Shopee</p></header>
+<main>
+<p>Abra o anúncio completo da Shopee nesta aba do Chrome e clique para tentar recuperar o conteúdo visível.</p>
+<button id="scan">Capturar fotos e descrição</button>
+<div id="result">
+ <div id="title" class="title"></div>
+ <div class="stats"><span><b id="imgs">0</b>fotos diferentes</span><span><b id="chars">0</b>caracteres</span><span><b id="removed">0</b>duplicatas</span></div>
+ <button class="secondary" id="copy">Copiar captura para o painel</button>
+</div>
+<div id="status" aria-live="polite">Nenhuma captura realizada.</div>
+<div class="safe">Somente leitura. Não coleta cookies, senhas, avaliações de compradores ou dados da conta. Não publica nada.</div>
+<p class="hint">Depois de copiar, abra <b>Ofertas da Vivi → ADM → Teste de importação</b>, cole o JSON e escolha <b>Salvar captura apenas no teste</b>.</p>
+</main><script src="popup.js"></script></body></html>

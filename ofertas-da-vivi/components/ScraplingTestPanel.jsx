@@ -21,6 +21,9 @@ export default function ScraplingTestPanel(){
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState('');
  const [expanded,setExpanded]=useState({});
+ const [captureJson,setCaptureJson]=useState('');
+ const [sending,setSending]=useState(false);
+ const [captureMessage,setCaptureMessage]=useState(null);
  const load=useCallback(async()=>{
   setBusy(true);setError('');
   try{
@@ -35,7 +38,32 @@ export default function ScraplingTestPanel(){
  useEffect(()=>{load();const interval=setInterval(load,45000);
   return ()=>clearInterval(interval)},[load]);
  const report=data?.reports?.[0]||null;
+ const extensionById=useMemo(()=>new Map((data?.captures||[]).map(x=>[x.offerId,x])),[data]);
  const byId=useMemo(()=>new Map((report?.results||[]).map(x=>[x.id,x])),[report]);
+ const extensionStats=useMemo(()=>({
+  count:(data?.captures||[]).length,
+  descriptions:(data?.captures||[]).filter(x=>x.description?.trim()).length,
+  photos:(data?.captures||[]).reduce((n,x)=>n+(x.images?.length||0),0)
+ }),[data]);
+ async function saveCapturedData(){
+  if(sending)return;
+  setSending(true);setCaptureMessage(null);
+  try{
+   let parsed;
+   try{parsed=JSON.parse(captureJson)}catch{throw Error('O conteúdo não é JSON válido. Use Copiar captura na extensão.')}
+   const response=await fetch('/api/admin/scrapling-test/extension',{
+    method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',
+    body:JSON.stringify(parsed)
+   });
+   if(response.status===401){location.href='/adm/login';return}
+   const result=await response.json();
+   if(!response.ok)throw Error(result.error||'Não foi possível salvar a captura.');
+   setCaptureJson('');
+   setCaptureMessage({success:true,text:'Captura de '+result.title+' salva no teste: '+result.imageCount+' fotos distintas e '+result.descriptionChars+' caracteres. Nenhuma alteração na loja.'});
+   await load();
+  }catch(error){setCaptureMessage({success:false,text:String(error?.message||error)})}
+  finally{setSending(false)}
+ }
  const totals=useMemo(()=>{
   const items=report?.results||[];
   return {count:items.length,full:items.filter(x=>x.status==='success').length,
@@ -66,6 +94,25 @@ export default function ScraplingTestPanel(){
    <p className="vivi-scrapling-hint">O relatório é atualizado automaticamente. A execução do GitHub só indica que o coletor rodou, não que a Shopee liberou as fotos e descrições. Repetir a mesma coleta sem mudar a estratégia provavelmente produzirá o mesmo resultado.</p>
   </section>
   {error&&<div className="vivi-notice vivi-notice-error" role="alert"><AlertTriangle size={19}/>{error}</div>}
+  <section className="admin-card vivi-extension-test-card">
+   <div className="admin-card-title"><h2><Images size={22}/> Teste pelo Chrome — fotos e descrição</h2></div>
+   <p className="muted-text">Abra um dos dez anúncios abaixo no Chrome do computador, use a extensão <b>Vivi · Capturar Shopee</b> e copie o resultado. Cole o JSON aqui para comparar com a galeria atual, sem publicar nada.</p>
+   <div className="vivi-extension-test-stats">
+    <span><b>{extensionStats.count}/10</b> capturados</span>
+    <span><b>{extensionStats.descriptions}</b> com descrição</span>
+    <span><b>{extensionStats.photos}</b> fotos encontradas</span>
+   </div>
+   <label className="vivi-extension-test-label" htmlFor="vivi-extension-json">Dados copiados da extensão</label>
+   <textarea id="vivi-extension-json" value={captureJson} onChange={e=>setCaptureJson(e.target.value)}
+    rows={4} placeholder="Cole aqui o JSON produzido pela extensão no Chrome..." spellCheck={false}/>
+   <div className="vivi-scrapling-actions">
+    <button className="btn btn-primary" type="button" disabled={sending||!captureJson.trim()} onClick={saveCapturedData}>
+     <Images size={17}/>{sending?'Verificando captura…':'Salvar captura apenas no teste'}
+    </button>
+   </div>
+   {captureMessage&&<p className={'vivi-extension-test-message '+(captureMessage.success?'success':'error')} role="status">{captureMessage.text}</p>}
+   <p className="vivi-scrapling-hint">Extensão para Chrome em computador. Use <b>chrome://extensions</b> → Modo do desenvolvedor → Carregar sem compactação. A captura inclui somente informações do anúncio aberto, não cookies ou senhas.</p>
+  </section>
   {report?<section className="admin-card">
     <div className="vivi-scrapling-report-header">
      <div><h3>Último teste registrado</h3>
@@ -96,6 +143,7 @@ export default function ScraplingTestPanel(){
    <div className="vivi-scrapling-grid">
     {(data?.candidates||[]).map((item,index)=>{
      const result=byId.get(item.id);
+     const captured=extensionById.get(item.id);
      const status=result?(result.status==='unavailable'&&/página genérica/i.test(result.reason||'')?['Página genérica','warning']:states[result.status]||states.error):null;
      const photos=result?.images||[];
      const description=result?.description||'';
@@ -112,8 +160,21 @@ export default function ScraplingTestPanel(){
         onError={e=>{e.currentTarget.src='/images/produto-1.webp'}}/>
        <div><h3>{item.title}</h3>
         <p>Antes: {item.descriptionChars} caracteres de descrição · {item.galleryCount} imagem(ns) cadastrada(s)</p>
+        {item.sourceUrl&&<a href={item.sourceUrl} target="_blank" rel="noopener noreferrer nofollow" className="vivi-scrapling-open-ad">Abrir este anúncio <ExternalLink size={13}/></a>}
        </div>
       </div>
+      {captured&&<div className="vivi-extension-capture-result">
+       <div className="vivi-extension-capture-heading"><CheckCircle2 size={17}/> <strong>Capturado no Chrome</strong><small>{displayDate(captured.capturedAt)}</small></div>
+       <div className="vivi-scrapling-findings">
+        <span><FileText size={15}/> Descrição: <b>{captured.description?.length||0} caracteres</b></span>
+        <span><Images size={15}/> Fotos distintas: <b>{captured.images?.length||0}</b></span>
+        <span>Duplicatas removidas: <b>{captured.duplicatesRemoved||0}</b></span>
+       </div>
+       {!!captured.images?.length&&<div className="vivi-scrapling-photo-grid">{captured.images.map((url,i)=><a key={url} href={url} target="_blank" rel="noopener noreferrer"><img src={url} loading="lazy" alt={'Foto '+(i+1)+' capturada do anúncio'}/></a>)}</div>}
+       {!!captured.description&&<div className="vivi-scrapling-description"><strong>Descrição capturada</strong><p>{expanded['ext-'+item.id]?captured.description:captured.description.slice(0,370)+(captured.description.length>370?'…':'')}</p>
+        {captured.description.length>370&&<button type="button" className="vivi-scrapling-expand" onClick={()=>setExpanded(prev=>({...prev,['ext-'+item.id]:!prev['ext-'+item.id]}))}>{expanded['ext-'+item.id]?'Recolher':'Ler descrição completa'}</button>}
+       </div>}
+      </div>}
       {result?<>
        {result.reason&&<p className="vivi-scrapling-reason"><Info size={15}/>{result.reason}</p>}
        <div className="vivi-scrapling-findings">

@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Vivi · Capturar Shopee (Piloto)",
+  "version": "0.1.0",
+  "description": "Teste de leitura da galeria e descrição do anúncio da Shopee aberto no Chrome. Não altera a loja.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "clipboardWrite"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Capturar fotos e descrição para a Vivi"
+  }
+}
