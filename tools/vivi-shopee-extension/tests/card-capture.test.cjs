@@ -16,7 +16,7 @@ const payload={
  images:['https://down-br.img.susercontent.com/file/image123']
 };
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-function createHarness({granted=true,save={ok:true,status:200,imageCount:1,descriptionChars:90},candidate=true}={}){
+function createHarness({granted=true,save={ok:true,status:200,imageCount:1,descriptionChars:90},candidate=true,adminUrlVisible=true,bridgeOk=true}={}){
  let messageHandler;
  const store={},sent=[],opened=[],closed=[];
  const browser={
@@ -31,13 +31,14 @@ function createHarness({granted=true,save={ok:true,status:200,imageCount:1,descr
     }
    },
    tabs:{
-    get:async tabId=>tabId===1?{id:1,url:'https://ofertas-da-vivi.vercel.app/adm#teste-importacao',status:'complete'}:
+    get:async tabId=>tabId===1?{id:1,...(adminUrlVisible?{url:'https://ofertas-da-vivi.vercel.app/adm#teste-importacao'}:{}),status:'complete'}:
      {id:6,url:item.sourceUrl,status:'complete'},
     create:async o=>{opened.push(o);return {id:6}},
     remove:async id=>{closed.push(id)},
     update:async()=>{},
     sendMessage:async(_id,msg)=>{
      sent.push(msg);
+     if(msg.type==='viviAdminCheckTab')return {ok:bridgeOk,origin:'https://ofertas-da-vivi.vercel.app',pathname:bridgeOk?'/adm':'/malicious'};
      if(msg.type==='viviAdminValidateProduct')return candidate?{item}:{error:'Produto fora dos dez anúncios de teste.'};
      if(msg.type==='viviAdminSavePayload')return save;
      return {ok:true};
@@ -96,4 +97,20 @@ test('não informa salvo se a API não confirmar',async()=>{
  const end=await h.complete();
  assert.equal(end.results[0].status,'error');
  assert.match(end.results[0].reason,/Captura inválida/);
+});
+
+test('corrige Invalid URL quando Chrome omite tab.url do painel ADM',async()=>{
+ const h=createHarness({adminUrlVisible:false});
+ const started=await h.send(command);
+ assert.equal(started.ok,true);
+ const end=await h.complete();
+ assert.equal(end.results[0].status,'saved');
+ assert.equal(h.sent.some(x=>x.type==='viviAdminCheckTab'),true);
+});
+test('recusa aba com origem ou caminho inválidos mesmo com URL visível',async()=>{
+ const h=createHarness({bridgeOk:false});
+ const started=await h.send(command);
+ assert.equal(started.ok,false);
+ assert.match(started.error,/painel administrativo original/);
+ assert.equal(h.opened.length,0);
 });
