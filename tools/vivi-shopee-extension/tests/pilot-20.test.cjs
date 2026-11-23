@@ -27,7 +27,7 @@ test('extensão suporta lote e sessão de vinte',()=>{
  const manifest=JSON.parse(read('tools/vivi-shopee-extension/manifest.json'));
  assert.match(batch,/const MAX_ITEMS=20;/);
  assert.match(background,/const MAX_PER_SESSION=20;/);
- assert.equal(manifest.version,'0.6.0');
+ assert.equal(manifest.version,'0.7.0');
 });
 test('o catálogo público continua expondo galerias e descrições sem mudar preços ou comissões',()=>{
  const mapper=read('ofertas-da-vivi/lib/db.js');

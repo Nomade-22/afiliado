@@ -76,16 +76,50 @@ export async function POST(request){
   if(!matched)return reply({error:'Esse produto não está entre os 20 anúncios do piloto. Abra um dos links da página de teste para capturá-lo.'},422);
   const duplicates=Number(data.duplicateImagesRemoved||0);
   const removed=Math.max(0,Math.min(99,Math.trunc(duplicates)+(valid.length-unique.length)));
+  // Combinar tentativas do MESMO item sem substituir descrições boas por vazias.
   await sql`INSERT INTO vivi_extension_test_captures
    (offer_id,item_id,shop_id,title,description,images_json,source_url,duplicate_images_removed,captured_at)
    VALUES (${matched.id},${itemId},${shopId},${matched.title},${description},
     ${JSON.stringify(unique)},${data.sourceUrl},${removed},NOW())
    ON CONFLICT (offer_id) DO UPDATE SET
-    description=EXCLUDED.description,images_json=EXCLUDED.images_json,
+    description=CASE WHEN LENGTH(TRIM(vivi_extension_test_captures.description))<25
+                          AND LENGTH(TRIM(EXCLUDED.description))>=25
+                     THEN EXCLUDED.description ELSE vivi_extension_test_captures.description END,
+    images_json=CASE WHEN jsonb_array_length(EXCLUDED.images_json::jsonb)>
+                         jsonb_array_length(vivi_extension_test_captures.images_json::jsonb)
+                     THEN EXCLUDED.images_json ELSE vivi_extension_test_captures.images_json END,
     source_url=EXCLUDED.source_url,
     duplicate_images_removed=EXCLUDED.duplicate_images_removed,captured_at=NOW()`;
-  return reply({ok:true,offerId:matched.id,title:matched.title,descriptionChars:description.length,
-   imageCount:unique.length,duplicatesRemoved:removed,publicStorefrontChanged:false});
+  const best=await sql`SELECT description,images_json FROM vivi_extension_test_captures
+   WHERE offer_id=${matched.id} AND shop_id=${shopId} AND item_id=${itemId} LIMIT 1`;
+  if(!best.length)return reply({error:'Não foi possível confirmar a captura consolidada.'},503);
+  const consolidated=best[0];
+  const bestDescription=String(consolidated.description||'');
+  const bestImages=JSON.parse(consolidated.images_json||'[]');
+  // Aplicar apenas os campos melhores do mesmo anúncio à vitrine pública.
+  // Preços, links, comissões, imagem principal e updated_at não são alterados.
+  const updated=await sql`UPDATE vivi_offers SET
+   product_description=CASE
+     WHEN LENGTH(TRIM(COALESCE(product_description,'')))<25 AND ${bestDescription.length}>=25
+     THEN ${bestDescription} ELSE product_description END,
+   product_images=CASE
+     WHEN ${bestImages.length}>CASE
+       WHEN NULLIF(TRIM(product_images),'') IS NULL THEN 0
+       ELSE jsonb_array_length(product_images::jsonb) END
+     THEN ${JSON.stringify(bestImages)} ELSE product_images END
+   WHERE id=${matched.id} AND shop_id=${shopId} AND item_id=${itemId} AND active=TRUE
+     AND (
+       (LENGTH(TRIM(COALESCE(product_description,'')))<25 AND ${bestDescription.length}>=25)
+       OR (${bestImages.length}>CASE
+        WHEN NULLIF(TRIM(product_images),'') IS NULL THEN 0
+        ELSE jsonb_array_length(product_images::jsonb) END)
+     )
+   RETURNING id`;
+  return reply({ok:true,offerId:matched.id,title:matched.title,
+   descriptionChars:bestDescription.length,imageCount:bestImages.length,
+   duplicatesRemoved:removed,publicStorefrontChanged:updated.length>0,
+   descriptionPending:bestDescription.length<25});
+
  }catch(error){
   console.error('vivi_extension_test_save',String(error?.code||'ERROR'));
   return reply({error:'Não foi possível salvar a captura do teste.'},503);

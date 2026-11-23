@@ -91,12 +91,12 @@ export default function ScraplingTestPanel(){
    if(!request?.active)return;
    delete cardCaptureRequests.current[requestId];
    const status=result.status==='saved'?'saved':result.status==='partial'?'partial':'error';
-   const text=status==='saved'?'Captura salva no teste: '+(result.photos||0)+
+   const text=status==='saved'?'Captura conferida na loja: '+(result.photos||0)+
      ' fotos e '+(result.chars||0)+' caracteres.':
-     status==='partial'?'Dados incompletos na Shopee; abra o anúncio e tente novamente.':
+     status==='partial'?String(result.reason||'Fotos capturadas, descrição ainda pendente. Tente novamente.').slice(0,210):
      String(result.reason||'Não foi possível salvar a captura.').slice(0,210);
    setCardCaptures(prev=>({...prev,[request.key]:{status,text}}));
-   if(status==='saved')void load();
+   if(status==='saved'||status==='partial')void load();
   };
   const onMessage=event=>{
    if(event.source!==window||event.origin!==window.location.origin)return;
@@ -172,10 +172,10 @@ export default function ScraplingTestPanel(){
    try{autoSaveRequested=sessionStorage.getItem('vivi-pending-capture-auto-save-v1')==='1'}catch{}
    setCaptureMessage({
     success:true,
-    text:autoSaveRequested?'Captura recebida! Salvando automaticamente apenas no ambiente de teste…':
+    text:autoSaveRequested?'Captura recebida! Conferindo os dados e atualizando fotos/descrição válidas na loja…':
      'Captura recuperada com segurança: '+(Array.isArray(parsed.images)?parsed.images.length:0)+
      ' fotos e '+String(parsed.description||'').length+
-     ' caracteres. Confira e toque em Salvar captura apenas no teste.'
+     ' caracteres. Confira e toque em Aplicar captura na loja.'
    });
    if(autoSaveRequested&&!automaticSaveStarted.current){
     automaticSaveStarted.current=true;
@@ -244,7 +244,7 @@ export default function ScraplingTestPanel(){
  async function saveCapturedData(rawJson,automatic=false){
   if(sending)return;
   setSending(true);
-  setCaptureMessage(automatic?{success:true,text:'Enviando imagens e descrição para o ambiente de teste…'}:null);
+  setCaptureMessage(automatic?{success:true,text:'Validando dados e atualizando fotos/descrição na loja…'}:null);
   try{
    let parsed;
    try{parsed=JSON.parse(typeof rawJson==='string'?rawJson:captureJson)}catch{throw Error('O conteúdo não é JSON válido. Use Copiar captura na extensão.')}
@@ -257,7 +257,7 @@ export default function ScraplingTestPanel(){
    if(!response.ok)throw Error(result.error||'Não foi possível salvar a captura.');
    try{sessionStorage.removeItem('vivi-pending-capture-v1');sessionStorage.removeItem('vivi-pending-capture-auto-save-v1')}catch{}
    setCaptureJson('');
-   setCaptureMessage({success:true,text:'Captura de '+result.title+(automatic?' salva automaticamente':' salva')+' no teste: '+result.imageCount+' fotos distintas e '+result.descriptionChars+' caracteres. Nenhuma alteração na loja.'});
+   setCaptureMessage({success:true,text:'Captura de '+result.title+(automatic?' recebida automaticamente':' recebida')+': '+result.imageCount+' fotos e '+result.descriptionChars+' caracteres. '+(result.publicStorefrontChanged?'Informações novas aplicadas à loja.':'As informações já existentes foram preservadas; nenhum conteúdo melhor foi substituído.')});
    await load();
   }catch(error){
    // Se houver erro de rede ou validação, evitar repetições automáticas; permitir revisão manual.
@@ -282,9 +282,9 @@ export default function ScraplingTestPanel(){
     <h2><FlaskConical size={22}/> Teste de importação Shopee — 20 produtos</h2>
    </div>
    <p>O piloto agora reúne <b>20 produtos ativos da loja</b> para capturar fotos e descrições diretamente dos anúncios públicos da Shopee.</p>
-   <p className="muted-text">As informações já capturadas anteriormente foram incorporadas aos produtos correspondentes do catálogo. Novas capturas permanecem no ambiente de teste até serem revisadas ou importadas.</p>
+   <p className="muted-text">As capturas anteriores foram incorporadas ao catálogo. As novas capturas agora completam automaticamente as fotos e descrições dos mesmos anúncios, preservando informações melhores.</p>
    <div className="vivi-scrapling-safety">
-    <ShieldCheck size={19}/> <span><b>Ambiente de teste.</b> Os resultados ficam em uma tabela separada. Nenhum produto, foto, descrição, preço ou link de afiliado da loja é alterado.</span>
+    <ShieldCheck size={19}/> <span><b>Captura protegida.</b> O histórico fica separado. Só as fotos e descrições válidas são sincronizadas com o produto existente. Preços, links de afiliado, comissões e capas não são alterados.</span>
    </div>
    <div className="vivi-scrapling-actions">
     <button type="button" className="btn btn-outline" onClick={load} disabled={busy}>
@@ -299,7 +299,7 @@ export default function ScraplingTestPanel(){
   {error&&<div className="vivi-notice vivi-notice-error" role="alert"><AlertTriangle size={19}/>{error}</div>}
   <section className="admin-card vivi-mobile-capture-card">
    <div className="admin-card-title"><h2><Smartphone size={22}/> Capturar pelo celular Android</h2></div>
-   <p className="muted-text">O favorito atualizado captura <b>fotos e descrição</b> e envia automaticamente para o teste ao ser acionado no anúncio carregado. O sistema salva os dados na tabela isolada, sem copiar/colar ou confirmação adicional. Nada é publicado na vitrine.</p>
+   <p className="muted-text">O favorito atualizado captura <b>fotos e descrição</b> e envia automaticamente para o teste ao ser acionado no anúncio carregado. O sistema registra a captura e usa informações válidas para completar automaticamente fotos e descrição do produto correspondente.</p>
    <button className="btn btn-outline" type="button" onClick={copyMobileBookmarklet}>
     <Copy size={17}/> Copiar código leve para Android
    </button>
@@ -318,7 +318,7 @@ export default function ScraplingTestPanel(){
     <small>Por segurança do Android, um site não consegue obrigar o Chrome a ignorar as associações de links de outro aplicativo, nem executar automaticamente seu favorito no site da Shopee.</small>
    </div>
    {openLinkMessage&&<p className="vivi-mobile-capture-feedback" role="status">{openLinkMessage}</p>}
-   <p className="vivi-scrapling-hint">No envio automático, o resultado aparece na comparação abaixo. Caso faltem fotos ou descrição, o favorito mantém a janela para tentar novamente ou enviar manualmente. A vitrine pública não é alterada.</p>
+   <p className="vivi-scrapling-hint">No envio automático, o resultado aparece na comparação abaixo. Caso faltem fotos ou descrição, o favorito mantém a janela para tentar novamente ou enviar manualmente. A vitrine recebe somente fotos e descrições novas validadas por ID do anúncio.</p>
   </section>
   <section id="vivi-capture-import-panel" className="admin-card vivi-extension-test-card">
    <div className="admin-card-title"><h2><Images size={22}/> Comparar dados capturados</h2></div>
@@ -357,7 +357,7 @@ export default function ScraplingTestPanel(){
     rows={4} placeholder="Os dados do anúncio chegam automaticamente aqui, ou podem ser colados manualmente..." spellCheck={false}/>
    <div className="vivi-scrapling-actions">
     <button className="btn btn-primary" type="button" disabled={sending||!captureJson.trim()||!!incomingPreview?.error||(!!data&&!incomingPreview?.matched)} onClick={()=>saveCapturedData()}>
-     <Images size={17}/>{sending?'Salvando captura…':'Salvar manualmente no teste'}
+     <Images size={17}/>{sending?'Salvando captura…':'Aplicar captura na loja'}
     </button>
    </div>
    {captureMessage&&<p className={'vivi-extension-test-message '+(captureMessage.success?'success':'error')} role="status">{captureMessage.text}</p>}

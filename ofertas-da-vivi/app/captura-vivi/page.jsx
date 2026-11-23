@@ -54,7 +54,7 @@ export default function CaptureBridge(){
     <a href="/adm#teste-importacao" className="btn btn-primary btn-wide">Abrir teste de importação</a>
    </>:<><h1>Enviando captura para o teste</h1>
     <p>Transferindo as fotos e a descrição para salvamento automático no ambiente de teste. Se necessário, faça login no painel; a captura será retomada.</p>
-    <p><ShieldCheck size={16} style={{verticalAlign:'middle'}}/> Nenhum produto da loja foi alterado.</p>
+    <p><ShieldCheck size={16} style={{verticalAlign:'middle'}}/> Somente fotos e descrições válidas de produtos já cadastrados são atualizadas; preços e links ficam preservados.</p>
    </>}
   </section>
  </main>;
