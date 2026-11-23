@@ -33,6 +33,7 @@ jobs:
         run: |
           node --check ../tools/vivi-shopee-extension/popup.js
           node --check ../tools/vivi-shopee-extension/background.js
+          node --check ../tools/vivi-shopee-extension/batch.js
           node --check ../tools/vivi-shopee-extension/capture-page.js
           node --test ../tools/vivi-shopee-extension/tests/*.test.cjs
       - name: Next build
