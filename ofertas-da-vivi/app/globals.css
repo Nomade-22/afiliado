@@ -2538,3 +2538,30 @@
  color:#9d2866;font-size:11px;font-weight:800;margin-top:7px;text-decoration:none;
 }
 .vivi-scrapling-open-ad:hover{text-decoration:underline}
+
+/* Piloto de captura mobile da Shopee, usando favorito do Chrome Android. */
+.vivi-mobile-capture-card{
+ border:1px solid #efd4e3;
+ background:linear-gradient(135deg,#fffcfe,#fff5fa);
+}
+.vivi-mobile-capture-card>.btn{
+ display:inline-flex;align-items:center;justify-content:center;gap:8px;
+ max-width:100%;white-space:normal;text-align:center;
+}
+.vivi-mobile-capture-steps{
+ display:flex;flex-direction:column;gap:11px;
+ padding-left:23px;margin:16px 0 12px;
+ color:#66616e;font-size:13px;line-height:1.6;
+}
+.vivi-mobile-capture-steps li{padding-left:3px}
+.vivi-mobile-capture-steps li::marker{color:#b9296c;font-weight:850}
+.vivi-mobile-capture-steps b{color:#38313e}
+.vivi-mobile-capture-feedback{
+ padding:10px 12px;border-radius:10px;
+ background:#e9f8f0;color:#196b49;
+ margin:12px 0;font-size:12px;line-height:1.6;
+}
+@media(max-width:520px){
+ .vivi-mobile-capture-card>.btn{width:100%}
+ .vivi-mobile-capture-steps{font-size:12px;gap:9px}
+}
