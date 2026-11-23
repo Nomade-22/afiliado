@@ -5,6 +5,7 @@ import {Heart,ShieldCheck,AlertTriangle} from 'lucide-react';
 // Entrada pública de transferência, não uma página administrativa.
 // O payload no fragmento é lido no navegador e nunca enviado no pedido HTTP.
 const KEY='vivi-pending-capture-v1';
+const AUTO_SAVE_KEY='vivi-pending-capture-auto-save-v1';
 export default function CaptureBridge(){
  const [error,setError]=useState('');
  useEffect(()=>{
@@ -32,6 +33,13 @@ export default function CaptureBridge(){
    // SessionStorage é do domínio Vivi, da aba atual, não persiste em cookies.
    // Ainda exige login ADM e revisão antes de qualquer escrita no banco.
    window.sessionStorage.setItem(KEY,JSON.stringify(data));
+   // Enviar sem confirmação apenas quando a captura contém título, fotos e descrição útil.
+   // Capturas parciais continuam disponíveis para revisão manual, sem sobrescrever uma boa captura.
+   const eligible=typeof data.title==='string'&&!/Shopee Brasil|Ofertas incríveis/i.test(data.title)&&
+    typeof data.description==='string'&&data.description.trim().length>=50&&
+    Array.isArray(data.images)&&data.images.length>0;
+   if(eligible)window.sessionStorage.setItem(AUTO_SAVE_KEY,'1');
+   else window.sessionStorage.removeItem(AUTO_SAVE_KEY);
    window.location.replace('/adm#teste-importacao');
   }catch{
    setError('Não foi possível guardar a captura neste navegador. Use Copiar dados no anúncio.');
@@ -44,7 +52,7 @@ export default function CaptureBridge(){
     <p><AlertTriangle size={16} style={{verticalAlign:'middle'}}/> {error}</p>
     <a href="/adm#teste-importacao" className="btn btn-primary btn-wide">Abrir teste de importação</a>
    </>:<><h1>Enviando captura para o teste</h1>
-    <p>Salvando temporariamente as fotos e a descrição neste navegador para que não se percam caso seja necessário entrar no painel.</p>
+    <p>Transferindo as fotos e a descrição para salvamento automático no ambiente de teste. Se necessário, faça login no painel; a captura será retomada.</p>
     <p><ShieldCheck size={16} style={{verticalAlign:'middle'}}/> Nenhum produto da loja foi alterado.</p>
    </>}
   </section>

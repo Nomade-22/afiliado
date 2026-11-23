@@ -1,5 +1,5 @@
 'use client';
-import {useCallback,useEffect,useMemo,useState} from 'react';
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {FlaskConical,RefreshCw,ExternalLink,Images,FileText,
  CheckCircle2,AlertTriangle,Clock3,ShieldCheck,Eye,Info,Smartphone,Copy} from 'lucide-react';
 import {VIVI_MOBILE_BOOKMARKLET} from '../lib/vivi-mobile-bookmarklet';
@@ -25,6 +25,7 @@ export default function ScraplingTestPanel(){
  const [expanded,setExpanded]=useState({});
  const [captureJson,setCaptureJson]=useState('');
  const [sending,setSending]=useState(false);
+ const automaticSaveStarted=useRef(false);
  const [captureMessage,setCaptureMessage]=useState(null);
  const [mobileCopyMessage,setMobileCopyMessage]=useState('');
  const [isAndroid,setIsAndroid]=useState(false);
@@ -96,12 +97,21 @@ export default function ScraplingTestPanel(){
    const serialized=JSON.stringify(parsed);
    sessionStorage.setItem(key,serialized);
    setCaptureJson(serialized);
+   let autoSaveRequested=false;
+   try{autoSaveRequested=sessionStorage.getItem('vivi-pending-capture-auto-save-v1')==='1'}catch{}
    setCaptureMessage({
     success:true,
-    text:'Captura recuperada com segurança: '+(Array.isArray(parsed.images)?parsed.images.length:0)+
-      ' fotos e '+String(parsed.description||'').length+
-      ' caracteres. Confira e toque em Salvar captura apenas no teste.'
+    text:autoSaveRequested?'Captura recebida! Salvando automaticamente apenas no ambiente de teste…':
+     'Captura recuperada com segurança: '+(Array.isArray(parsed.images)?parsed.images.length:0)+
+     ' fotos e '+String(parsed.description||'').length+
+     ' caracteres. Confira e toque em Salvar captura apenas no teste.'
    });
+   if(autoSaveRequested&&!automaticSaveStarted.current){
+    automaticSaveStarted.current=true;
+    // O usuário já pediu o envio no favorito. Mantemos validação de IDs e sessão no servidor.
+    // Agendar fora da execução direta do efeito, evitando atualizações de estado síncronas.
+    window.setTimeout(()=>{void saveCapturedData(serialized,true)},0);
+   }
    window.requestAnimationFrame(()=>{
     document.getElementById('vivi-capture-import-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
    });
@@ -155,17 +165,18 @@ export default function ScraplingTestPanel(){
     const copied=document.execCommand('copy');element.remove();
     if(!copied)throw Error('clipboard');
    }
-   setMobileCopyMessage('Novo código copiado! Substitua a URL antiga do favorito Capturar Vivi. Agora ele terá o botão Enviar ao teste da Vivi.');
+   setMobileCopyMessage('Código de captura automática copiado! Substitua a URL do favorito Capturar Vivi. Ao executar, ele enviará a captura completa sem pedir mais cliques.');
   }catch{
    setMobileCopyMessage('O navegador não permitiu copiar automaticamente. Abra o painel no Chrome e tente novamente.');
   }
  }
- async function saveCapturedData(){
+ async function saveCapturedData(rawJson,automatic=false){
   if(sending)return;
-  setSending(true);setCaptureMessage(null);
+  setSending(true);
+  setCaptureMessage(automatic?{success:true,text:'Enviando imagens e descrição para o ambiente de teste…'}:null);
   try{
    let parsed;
-   try{parsed=JSON.parse(captureJson)}catch{throw Error('O conteúdo não é JSON válido. Use Copiar captura na extensão.')}
+   try{parsed=JSON.parse(typeof rawJson==='string'?rawJson:captureJson)}catch{throw Error('O conteúdo não é JSON válido. Use Copiar captura na extensão.')}
    const response=await fetch('/api/admin/scrapling-test/extension',{
     method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',
     body:JSON.stringify(parsed)
@@ -173,11 +184,15 @@ export default function ScraplingTestPanel(){
    if(response.status===401){location.href='/adm/login';return}
    const result=await response.json();
    if(!response.ok)throw Error(result.error||'Não foi possível salvar a captura.');
-   try{sessionStorage.removeItem('vivi-pending-capture-v1')}catch{}
+   try{sessionStorage.removeItem('vivi-pending-capture-v1');sessionStorage.removeItem('vivi-pending-capture-auto-save-v1')}catch{}
    setCaptureJson('');
-   setCaptureMessage({success:true,text:'Captura de '+result.title+' salva no teste: '+result.imageCount+' fotos distintas e '+result.descriptionChars+' caracteres. Nenhuma alteração na loja.'});
+   setCaptureMessage({success:true,text:'Captura de '+result.title+(automatic?' salva automaticamente':' salva')+' no teste: '+result.imageCount+' fotos distintas e '+result.descriptionChars+' caracteres. Nenhuma alteração na loja.'});
    await load();
-  }catch(error){setCaptureMessage({success:false,text:String(error?.message||error)})}
+  }catch(error){
+   // Se houver erro de rede ou validação, evitar repetições automáticas; permitir revisão manual.
+   try{sessionStorage.removeItem('vivi-pending-capture-auto-save-v1')}catch{}
+   setCaptureMessage({success:false,text:(automatic?'Não foi possível salvar automaticamente. Confira a captura e salve manualmente. ':'')+String(error?.message||error)});
+  }
   finally{setSending(false)}
  }
  const totals=useMemo(()=>{
@@ -212,7 +227,7 @@ export default function ScraplingTestPanel(){
   {error&&<div className="vivi-notice vivi-notice-error" role="alert"><AlertTriangle size={19}/>{error}</div>}
   <section className="admin-card vivi-mobile-capture-card">
    <div className="admin-card-title"><h2><Smartphone size={22}/> Capturar pelo celular Android</h2></div>
-   <p className="muted-text">O favorito captura <b>fotos e descrição</b> do anúncio aberto no Chrome e permite enviá-las diretamente para esta página, sem copiar e colar. Nada é publicado na vitrine.</p>
+   <p className="muted-text">O favorito atualizado captura <b>fotos e descrição</b> e envia automaticamente para o teste ao ser acionado no anúncio carregado. O sistema salva os dados na tabela isolada, sem copiar/colar ou confirmação adicional. Nada é publicado na vitrine.</p>
    <button className="btn btn-outline" type="button" onClick={copyMobileBookmarklet}>
     <Copy size={17}/> Copiar código leve para Android
    </button>
@@ -222,7 +237,7 @@ export default function ScraplingTestPanel(){
     <li>Abra <b>⋮ → Favoritos</b>, encontre o favorito salvo e escolha <b>Editar</b>. Dê o nome <b>Capturar Vivi</b> e substitua a URL pelo código copiado acima.</li>
     <li>Abra um dos <b>10 anúncios completos</b> da Shopee que aparecem abaixo e espere as fotos e a descrição carregarem. O capturador também reconhece endereços <b>/opaanlp/</b>, comuns no celular.</li>
     <li>Toque na barra de endereço, digite <b>Capturar Vivi</b> e toque na <b>sugestão com estrela</b> (não faça uma pesquisa comum).</li>
-    <li>Na janela que aparecer, toque em <b>Enviar ao teste da Vivi</b>. O painel abrirá com os dados já preenchidos. Confira e toque em <b>Salvar captura apenas no teste</b>. Se não abrir, use <b>Copiar dados</b> como alternativa.</li>
+    <li>Ao executar o favorito atualizado, uma captura com fotos e descrição será <b>enviada e salva automaticamente no teste</b>. Se a sessão tiver expirado, faça login uma vez; o envio será retomado. Para capturas incompletas, você poderá revisar e usar <b>Enviar ao teste da Vivi</b>.</li>
    </ol>
    <div className="vivi-mobile-open-note">
     <strong>Etapa 1 — Abrir no Chrome sem chamar o app Shopee</strong>
@@ -231,7 +246,7 @@ export default function ScraplingTestPanel(){
     <small>Por segurança do Android, um site não consegue obrigar o Chrome a ignorar as associações de links de outro aplicativo, nem executar automaticamente seu favorito no site da Shopee.</small>
    </div>
    {openLinkMessage&&<p className="vivi-mobile-capture-feedback" role="status">{openLinkMessage}</p>}
-   <p className="vivi-scrapling-hint">Se o Chrome não executar o favorito ou a Shopee apresentar uma verificação de acesso, a captura pode não funcionar. Você revisa os resultados antes de salvá-los.</p>
+   <p className="vivi-scrapling-hint">No envio automático, o resultado aparece na comparação abaixo. Caso faltem fotos ou descrição, o favorito mantém a janela para tentar novamente ou enviar manualmente. A vitrine pública não é alterada.</p>
   </section>
   <section id="vivi-capture-import-panel" className="admin-card vivi-extension-test-card">
    <div className="admin-card-title"><h2><Images size={22}/> Comparar dados capturados</h2></div>
@@ -269,8 +284,8 @@ export default function ScraplingTestPanel(){
    <textarea id="vivi-extension-json" value={captureJson} onChange={e=>setCaptureJson(e.target.value)}
     rows={4} placeholder="Os dados do anúncio chegam automaticamente aqui, ou podem ser colados manualmente..." spellCheck={false}/>
    <div className="vivi-scrapling-actions">
-    <button className="btn btn-primary" type="button" disabled={sending||!captureJson.trim()||!!incomingPreview?.error||(!!data&&!incomingPreview?.matched)} onClick={saveCapturedData}>
-     <Images size={17}/>{sending?'Verificando captura…':'Salvar captura apenas no teste'}
+    <button className="btn btn-primary" type="button" disabled={sending||!captureJson.trim()||!!incomingPreview?.error||(!!data&&!incomingPreview?.matched)} onClick={()=>saveCapturedData()}>
+     <Images size={17}/>{sending?'Salvando captura…':'Salvar manualmente no teste'}
     </button>
    </div>
    {captureMessage&&<p className={'vivi-extension-test-message '+(captureMessage.success?'success':'error')} role="status">{captureMessage.text}</p>}
