@@ -2500,3 +2500,41 @@
 }
 .vivi-scrapling-diagnosis svg{flex-shrink:0;margin-top:1px}
 .vivi-scrapling-diagnosis b{color:#714017}
+
+/* Piloto de extensão Shopee: somente descrição e galeria. */
+.vivi-extension-test-card{background:linear-gradient(135deg,#fff,#fff8fb)}
+.vivi-extension-test-stats{
+ display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;
+}
+.vivi-extension-test-stats span{
+ background:#fdf0f6;color:#743150;border:1px solid #f3dce9;
+ border-radius:10px;padding:9px 13px;font-size:12px;
+}
+.vivi-extension-test-stats b{color:#ad2563;font-size:16px}
+.vivi-extension-test-label{display:block;font-size:12px;font-weight:800;color:#59505e;margin:9px 0 7px}
+.vivi-extension-test-card textarea{
+ width:100%;min-height:95px;box-sizing:border-box;
+ border:1px solid #e6dce7;border-radius:12px;
+ padding:12px;background:#fff;font-size:12px;line-height:1.5;color:#32303c;
+ resize:vertical;outline:none;
+}
+.vivi-extension-test-card textarea:focus{border-color:#be3974;box-shadow:0 0 0 3px #d43f7c20}
+.vivi-extension-test-message{
+ padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.55;margin:7px 0;
+}
+.vivi-extension-test-message.success{background:#e8f8ee;color:#176c45}
+.vivi-extension-test-message.error{background:#fff0ee;color:#a53235}
+.vivi-extension-capture-result{
+ border:1px solid #d6eadd;background:#f5fcf7;
+ border-radius:11px;padding:11px;margin-top:12px;
+}
+.vivi-extension-capture-heading{
+ display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+ color:#176b45;font-size:12px;
+}
+.vivi-extension-capture-heading small{color:#6e887c;font-weight:500}
+.vivi-scrapling-open-ad{
+ display:inline-flex;gap:4px;align-items:center;
+ color:#9d2866;font-size:11px;font-weight:800;margin-top:7px;text-decoration:none;
+}
+.vivi-scrapling-open-ad:hover{text-decoration:underline}
