@@ -32,6 +32,8 @@ jobs:
       - name: Validate Chrome extension and desktop one-click flow
         run: |
           node --check ../tools/vivi-shopee-extension/popup.js
-          node --test ../tools/vivi-shopee-extension/tests/desktop-flow.test.cjs
+          node --check ../tools/vivi-shopee-extension/background.js
+          node --check ../tools/vivi-shopee-extension/capture-page.js
+          node --test ../tools/vivi-shopee-extension/tests/*.test.cjs
       - name: Next build
         run: npm run build
