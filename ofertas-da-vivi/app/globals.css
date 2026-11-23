@@ -2583,3 +2583,33 @@
  white-space:pre-wrap;overflow-wrap:anywhere;
  color:#54505a;font-size:12px;line-height:1.6;
 }
+
+/* Link de captura Android: abrir o anúncio explicitamente no Chrome. */
+.vivi-mobile-open-note{
+ margin:14px 0 10px;padding:12px 13px;
+ background:#f4f8ff;border:1px solid #d9e5f4;border-radius:12px;
+ color:#334b67;font-size:12px;line-height:1.65;
+}
+.vivi-mobile-open-note strong{display:block;font-size:13px;color:#294566;margin-bottom:5px}
+.vivi-mobile-open-note p{margin:7px 0}
+.vivi-mobile-open-note small{color:#677b91;font-size:11px}
+.vivi-scrapling-open-actions{
+ display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:9px;
+}
+.vivi-scrapling-chrome-btn,
+.vivi-scrapling-copy-url{
+ display:inline-flex;align-items:center;justify-content:center;gap:5px;
+ border-radius:8px;padding:8px 10px;font-weight:800;font-size:11px;
+ line-height:1.25;text-decoration:none;cursor:pointer;
+}
+.vivi-scrapling-chrome-btn{
+ border:1px solid #a6296a;background:#ad2d6b;color:#fff;
+}
+.vivi-scrapling-chrome-btn:hover{color:#fff;background:#8e2159}
+.vivi-scrapling-copy-url{
+ background:#fff;border:1px solid #eadce5;color:#8f3961;
+}
+.vivi-scrapling-copy-url:hover{background:#fff2f9}
+@media(max-width:440px){
+ .vivi-scrapling-open-actions>*{flex:1}
+}
