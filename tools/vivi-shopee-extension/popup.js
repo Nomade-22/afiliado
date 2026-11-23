@@ -137,8 +137,104 @@ el('resetAuto').addEventListener('click',async()=>{
   msg('Não foi possível reiniciar o histórico.',true);
  }
 });
-// Manter o comportamento de um clique quando o modo contínuo estiver desligado.
-refreshAutoUI().then(()=>{
- if(!autoEnabled)void scanActiveProduct();
+// Processa somente os produtos que ainda estão sem captura completa no ambiente de teste.
+async function pendingPilotItems(){
+ const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
+ if(!tab?.id||!/^https:\/\/ofertas-da-vivi\.vercel\.app\/adm(?:[?#]|$)/i.test(tab.url||'')){
+  throw Error('Primeiro abra a aba ADM da Vivi e faça login. Depois clique no ícone da extensão.');
+ }
+ const response=await chrome.scripting.executeScript({
+  target:{tabId:tab.id},
+  func:async()=>{
+   try{
+    const response=await fetch('/api/admin/scrapling-test',{
+     credentials:'same-origin',cache:'no-store'
+    });
+    if(!response.ok)return {error:response.status===401?
+     'Sessão expirada: entre novamente no ADM.':'Não foi possível consultar os produtos do piloto.'};
+    const data=await response.json();
+    const captures=new Map((data.captures||[]).map(c=>[c.offerId,c]));
+    const pending=(data.candidates||[]).filter(p=>{
+     const c=captures.get(p.id);
+     return !c||String(c.description||'').trim().length<50||
+      !Array.isArray(c.images)||c.images.length===0;
+    }).map(p=>({
+     title:String(p.title||'Produto Shopee').slice(0,200),
+     shopId:String(p.shopId),itemId:String(p.itemId),
+     sourceUrl:'https://shopee.com.br/product/'+p.shopId+'/'+p.itemId
+    }));
+    return {items:pending,all:data.candidates?.length||0};
+   }catch{return {error:'Falha ao consultar o painel ADM.'}}
+  }
+ });
+ const data=response?.[0]?.result;
+ if(!data||data.error)throw Error(data?.error||'Sem resposta da aba Vivi.');
+ return {adminTabId:tab.id,...data};
+}
+async function refreshBatchUI(){
+ try{
+  const answer=await chrome.runtime.sendMessage({type:'viviBatchGet'});
+  const batch=answer?.info;
+  if(!batch){
+   el('batchState').textContent='Abra o painel ADM e inicie a captura dos anúncios pendentes.';
+   el('batchPause').hidden=true;
+   return;
+  }
+  const saved=(batch.results||[]).filter(x=>x.status==='saved').length;
+  const failed=(batch.results||[]).filter(x=>x.status!=='saved').length;
+  el('batchState').textContent='Status: '+batch.status+' · '+(batch.index||0)+'/'+batch.items.length+
+   ' verificados · '+saved+' salvos · '+failed+' para revisar. '+(batch.message||'');
+  el('batchPause').hidden=batch.status!=='running';
+  el('batchRun').disabled=batch.status==='running';
+  const details=(batch.results||[]).slice(-5);
+  el('batchDetails').textContent=details.map(r=>
+   (r.status==='saved'?'✓ ':'! ')+r.title+
+   (r.status==='saved'?' ('+r.photos+' fotos, '+r.chars+' caracteres)':' — '+(r.reason||r.status))
+  ).join('\n');
+ }catch{
+  el('batchState').textContent='Não foi possível consultar o andamento do lote.';
+ }
+}
+el('batchRun').addEventListener('click',async()=>{
+ el('batchRun').disabled=true;
+ el('batchState').textContent='Preparando lista do piloto…';
+ try{
+  // Deve ser solicitado diretamente pelo clique: permissão restrita à Shopee.
+  const granted=await chrome.permissions.request({origins:VIVI_AUTO_ORIGINS});
+  if(!granted)throw Error('O Chrome não concedeu acesso às páginas Shopee.');
+  const plan=await pendingPilotItems();
+  if(plan.items.length===0){
+   el('batchState').textContent='Todos os '+plan.all+' produtos do piloto já têm fotos e descrição de teste.';
+   return;
+  }
+  const answer=await chrome.runtime.sendMessage({
+   type:'viviBatchStart',adminTabId:plan.adminTabId,items:plan.items
+  });
+  if(!answer?.ok)throw Error(answer?.error||'Não foi possível iniciar o lote.');
+  el('batchState').textContent='Iniciado: '+answer.count+
+   ' anúncios pendentes. O Chrome abrirá cada produto e tentará salvar na Vivi.';
+  await refreshBatchUI();
+ }catch(error){
+  el('batchState').textContent=String(error?.message||error);
+ }finally{el('batchRun').disabled=false;}
 });
+el('batchPause').addEventListener('click',async()=>{
+ await chrome.runtime.sendMessage({type:'viviBatchStop'});
+ await refreshBatchUI();
+});
+refreshBatchUI();
+setInterval(refreshBatchUI,1200);
+// Manter o fluxo manual somente se o usuário clicou na extensão sobre uma aba Shopee.
+refreshAutoUI().then(async()=>{
+ if(autoEnabled)return;
+ try{
+  const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
+  if(/^https:\/\/(?:www\.)?shopee\.com\.br\//i.test(tab?.url||'')){
+   await scanActiveProduct();
+  }else{
+   msg('Abra um produto Shopee para captura individual ou use o lote na aba ADM.');
+  }
+ }catch{}
+});
+
 
