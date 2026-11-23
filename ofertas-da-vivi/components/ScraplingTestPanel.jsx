@@ -39,9 +39,68 @@ export default function ScraplingTestPanel(){
  },[]);
  useEffect(()=>{load();const interval=setInterval(load,45000);
   return ()=>clearInterval(interval)},[load]);
+ useEffect(()=>{
+  // A URL contém só o fragmento #, nunca enviado ao servidor Shopee ou Vercel.
+  // Remove os dados da barra de endereço antes que o usuário compartilhe a URL.
+  const hash=window.location.hash||'';
+  const marker='&vivi-capture=';
+  const index=hash.indexOf(marker);
+  if(!hash.startsWith('#teste-importacao')||index<0)return;
+  const encoded=hash.slice(index+marker.length);
+  window.history.replaceState(null,'',window.location.pathname+window.location.search+'#teste-importacao');
+  if(!encoded||encoded.length>45000){
+   setCaptureMessage({success:false,text:'Dados muito grandes ou ausentes. Volte ao anúncio e use Copiar dados.'});
+   return;
+  }
+  try{
+   const parsed=JSON.parse(decodeURIComponent(encoded));
+   if(parsed?.type!=='vivi-shopee-capture-v1'||
+      !/^\d{1,24}$/.test(String(parsed.shopId||''))||
+      !/^\d{1,24}$/.test(String(parsed.itemId||''))){
+    throw Error('Identificação de anúncio inválida.');
+   }
+   const serialized=JSON.stringify(parsed);
+   setCaptureJson(serialized);
+   setCaptureMessage({
+    success:true,
+    text:'Captura recebida do anúncio: '+(Array.isArray(parsed.images)?parsed.images.length:0)+
+      ' fotos e '+String(parsed.description||'').length+
+      ' caracteres. Confira as informações e toque em Salvar captura apenas no teste.'
+   });
+   window.requestAnimationFrame(()=>{
+    document.getElementById('vivi-capture-import-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
+   });
+  }catch{
+   setCaptureMessage({success:false,text:'Não foi possível ler os dados recebidos. Volte à Shopee e use Copiar dados.'});
+  }
+ },[]);
+
  const report=data?.reports?.[0]||null;
  const extensionById=useMemo(()=>new Map((data?.captures||[]).map(x=>[x.offerId,x])),[data]);
  const byId=useMemo(()=>new Map((report?.results||[]).map(x=>[x.id,x])),[report]);
+ const incomingPreview=useMemo(()=>{
+  if(!captureJson.trim())return null;
+  try{
+   const payload=JSON.parse(captureJson);
+   if(payload?.type!=='vivi-shopee-capture-v1')return {error:'Formato inválido para a captura da Vivi.'};
+   const matched=data?.candidates?.find(p=>
+    String(p.shopId)===String(payload.shopId)&&String(p.itemId)===String(payload.itemId));
+   const photos=Array.isArray(payload.images)?payload.images.filter(raw=>{
+    if(typeof raw!=='string')return false;
+    try{
+     const u=new URL(raw);
+     const host=u.hostname.toLowerCase();
+     return u.protocol==='https:'&&
+      ['susercontent.com','shopee.com.br','shopee.sg'].some(x=>host===x||host.endsWith('.'+x));
+    }catch{return false}
+   }).slice(0,6):[];
+   return {name:matched?.title||String(payload.title||'Produto não identificado').slice(0,200),
+    matched:!!matched,description:String(payload.description||''),
+    images:photos,number:payload.images?.length||0,
+    loading:!data,shopId:String(payload.shopId||''),itemId:String(payload.itemId||'')};
+  }catch{return {error:'Os dados não são um JSON válido.'}}
+ },[captureJson,data]);
+
  const extensionStats=useMemo(()=>({
   count:(data?.captures||[]).length,
   descriptions:(data?.captures||[]).filter(x=>x.description?.trim()).length,
@@ -60,7 +119,7 @@ export default function ScraplingTestPanel(){
     const copied=document.execCommand('copy');element.remove();
     if(!copied)throw Error('clipboard');
    }
-   setMobileCopyMessage('Código leve copiado! Edite o favorito Capturar Vivi, apague a URL antiga e cole este novo código.');
+   setMobileCopyMessage('Novo código copiado! Substitua a URL antiga do favorito Capturar Vivi. Agora ele terá o botão Enviar ao teste da Vivi.');
   }catch{
    setMobileCopyMessage('O navegador não permitiu copiar automaticamente. Abra o painel no Chrome e tente novamente.');
   }
@@ -116,7 +175,7 @@ export default function ScraplingTestPanel(){
   {error&&<div className="vivi-notice vivi-notice-error" role="alert"><AlertTriangle size={19}/>{error}</div>}
   <section className="admin-card vivi-mobile-capture-card">
    <div className="admin-card-title"><h2><Smartphone size={22}/> Capturar pelo celular Android</h2></div>
-   <p className="muted-text">Teste sem instalar extensão: esta versão leve (menos de 2 mil caracteres) tenta ler a <b>descrição e as fotos do anúncio aberto</b> no Chrome. Não busca dados de outras páginas e não publica na vitrine.</p>
+   <p className="muted-text">O favorito captura <b>fotos e descrição</b> do anúncio aberto no Chrome e permite enviá-las diretamente para esta página, sem copiar e colar. Nada é publicado na vitrine.</p>
    <button className="btn btn-outline" type="button" onClick={copyMobileBookmarklet}>
     <Copy size={17}/> Copiar código leve para Android
    </button>
@@ -126,28 +185,52 @@ export default function ScraplingTestPanel(){
     <li>Abra <b>⋮ → Favoritos</b>, encontre o favorito salvo e escolha <b>Editar</b>. Dê o nome <b>Capturar Vivi</b> e substitua a URL pelo código copiado acima.</li>
     <li>Abra um dos <b>10 anúncios completos</b> da Shopee que aparecem abaixo e espere as fotos e a descrição carregarem. O capturador também reconhece endereços <b>/opaanlp/</b>, comuns no celular.</li>
     <li>Toque na barra de endereço, digite <b>Capturar Vivi</b> e toque na <b>sugestão com estrela</b> (não faça uma pesquisa comum).</li>
-    <li>Na janela que aparecer, toque em <b>Copiar fotos e descrição</b>. Volte aqui, cole o resultado e selecione <b>Salvar captura apenas no teste</b>.</li>
+    <li>Na janela que aparecer, toque em <b>Enviar ao teste da Vivi</b>. O painel abrirá com os dados já preenchidos. Confira e toque em <b>Salvar captura apenas no teste</b>. Se não abrir, use <b>Copiar dados</b> como alternativa.</li>
    </ol>
    <p className="vivi-scrapling-hint">Se o Chrome não executar o favorito ou a Shopee apresentar uma verificação de acesso, a captura pode não funcionar. Não acessamos cookies, senhas ou imagens das avaliações. Você revisa os resultados antes de salvá-los.</p>
   </section>
-  <section className="admin-card vivi-extension-test-card">
+  <section id="vivi-capture-import-panel" className="admin-card vivi-extension-test-card">
    <div className="admin-card-title"><h2><Images size={22}/> Comparar dados capturados</h2></div>
-   <p className="muted-text">Cole aqui o resultado do <b>favorito no celular</b> ou da <b>extensão no computador</b>. Confira fotos e descrição dos dez produtos selecionados, sem publicar nada.</p>
+   <p className="muted-text">Os dados enviados pelo celular aparecem automaticamente abaixo. Confira antes de salvar. Também é possível colar o resultado da extensão no computador.</p>
    <div className="vivi-extension-test-stats">
     <span><b>{extensionStats.count}/10</b> capturados</span>
     <span><b>{extensionStats.descriptions}</b> com descrição</span>
     <span><b>{extensionStats.photos}</b> fotos encontradas</span>
    </div>
-   <label className="vivi-extension-test-label" htmlFor="vivi-extension-json">Dados copiados do celular ou da extensão</label>
+   {incomingPreview&&<div className="vivi-incoming-capture-preview">
+    {incomingPreview.error?<p className="vivi-extension-test-message error">{incomingPreview.error}</p>:<>
+     <div className="vivi-extension-capture-heading"><CheckCircle2 size={17}/>
+      <strong>Prévia do anúncio recebido</strong>
+     </div>
+     <p><b>{incomingPreview.name}</b></p>
+     <p className="vivi-incoming-preview-meta">
+      Loja {incomingPreview.shopId} · Produto {incomingPreview.itemId} ·
+      {incomingPreview.number} imagem(ns) · {incomingPreview.description.length} caracteres
+     </p>
+     {data&&!incomingPreview.matched&&<p className="vivi-extension-test-message error">
+      Este anúncio não faz parte dos 10 produtos do piloto. Nenhum dado será salvo.
+     </p>}
+     {incomingPreview.images.length>0&&<div className="vivi-scrapling-photo-grid">
+      {incomingPreview.images.map((u,i)=><a key={u+i} href={u} target="_blank" rel="noopener noreferrer">
+       <img src={u} alt={'Prévia da imagem '+(i+1)} loading="lazy"/>
+      </a>)}
+     </div>}
+     {incomingPreview.description&&<p className="vivi-incoming-preview-description">
+      {incomingPreview.description.slice(0,420)}
+      {incomingPreview.description.length>420?'…':''}
+     </p>}
+    </>}
+   </div>}
+   <label className="vivi-extension-test-label" htmlFor="vivi-extension-json">Dados recebidos (opcional editar)</label>
    <textarea id="vivi-extension-json" value={captureJson} onChange={e=>setCaptureJson(e.target.value)}
-    rows={4} placeholder="Cole aqui os dados copiados no anúncio da Shopee..." spellCheck={false}/>
+    rows={4} placeholder="Os dados do anúncio chegam automaticamente aqui, ou podem ser colados manualmente..." spellCheck={false}/>
    <div className="vivi-scrapling-actions">
-    <button className="btn btn-primary" type="button" disabled={sending||!captureJson.trim()} onClick={saveCapturedData}>
+    <button className="btn btn-primary" type="button" disabled={sending||!captureJson.trim()||!!incomingPreview?.error||(!!data&&!incomingPreview?.matched)} onClick={saveCapturedData}>
      <Images size={17}/>{sending?'Verificando captura…':'Salvar captura apenas no teste'}
     </button>
    </div>
    {captureMessage&&<p className={'vivi-extension-test-message '+(captureMessage.success?'success':'error')} role="status">{captureMessage.text}</p>}
-   <p className="vivi-scrapling-hint">No computador, continua disponível a extensão Chrome instalada por <b>chrome://extensions</b>. No celular, use o favorito acima. A captura só registra informações do anúncio, sem dados de login.</p>
+   <p className="vivi-scrapling-hint">O envio é feito através do próprio navegador e exige sua confirmação antes de salvar no ambiente de teste. O Chrome continua precisando abrir o anúncio normalmente; o servidor não consegue capturá-lo sozinho. Cookies e links de afiliados permanecem inalterados.</p>
   </section>
   {report?<section className="admin-card">
     <div className="vivi-scrapling-report-header">
