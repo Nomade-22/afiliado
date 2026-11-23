@@ -16,9 +16,8 @@ function captureShopeePage(){
  const title=cleaned(text(document.querySelector('h1'))||
   text(document.querySelector('[data-sqe="name"]'))||
   meta('og:title')||document.title).slice(0,300);
- if(!title||/Shopee Brasil\s*[|\-]|Ofertas incríveis/i.test(title)){
-  return {error:'O anúncio não parece ter carregado. Aguarde a descrição e a galeria aparecerem.'};
- }
+ const displayTitle=title&&!/Shopee Brasil\s*[|\-]|Ofertas incríveis/i.test(title)
+  ?title:'Anúncio Shopee '+itemId;
 
  const descriptionSelectors=[
   '[data-sqe="product-description"]',
@@ -102,16 +101,20 @@ function captureShopeePage(){
   if(srcset)push(srcset.split(',').pop()?.trim().split(/\s+/)[0]);
  };
  const gallerySet=new Set();
+ const titleNode=document.querySelector('h1')||document.querySelector('[data-sqe="name"]');
+ const titleY=titleNode?titleNode.getBoundingClientRect().top+scrollY:350;
+ const threshold=Math.max(1200,titleY+850);
  for(const selector of gallerySelectors){
-  for(const im of [...document.querySelectorAll(selector)].slice(0,65))gallerySet.add(im);
+  for(const im of [...document.querySelectorAll(selector)].slice(0,65)){
+   const box=im.getBoundingClientRect();
+   // Não capturar fotos de avaliações, que ficam depois da galeria do anúncio.
+   if(box.top+scrollY>=0&&box.top+scrollY<=threshold)gallerySet.add(im);
+  }
  }
  for(const im of gallerySet)addImg(im);
  // Em alguns layouts da Shopee a galeria é renderizada sem nomes de classe.
  // Neste fallback só consideramos imagens do topo da página, antes das avaliações.
  if(gallerySet.size<2){
-  const titleNode=document.querySelector('h1')||document.querySelector('[data-sqe="name"]');
-  const titleY=titleNode?titleNode.getBoundingClientRect().top+scrollY:350;
-  const threshold=Math.max(1100,titleY+750);
   for(const im of document.images){
    const rect=im.getBoundingClientRect();
    const y=rect.top+scrollY;
@@ -132,7 +135,7 @@ function captureShopeePage(){
  }
  if(!images.length&&description.length<35)return {error:'Nenhuma foto ou descrição encontrada. Abra a seção de detalhes e tente novamente.'};
  return {
-  type:'vivi-shopee-capture-v1',shopId,itemId,title,
+  type:'vivi-shopee-capture-v1',shopId,itemId,title:displayTitle,
   sourceUrl:'https://shopee.com.br'+u.pathname,
   description,images,duplicateImagesRemoved:duplicates,
   capturedAt:new Date().toISOString(),
