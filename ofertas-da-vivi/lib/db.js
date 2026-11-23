@@ -134,6 +134,21 @@ export async function getDB(){
   )`;
   await sql`CREATE INDEX IF NOT EXISTS vivi_scrapling_test_recent
     ON vivi_scrapling_test_runs (started_at DESC)`;
+  // Capturas manuais de até dez produtos com a extensão Chrome.
+  // A tabela é independente: nunca atualiza vivi_offers.
+  await sql`CREATE TABLE IF NOT EXISTS vivi_extension_test_captures (
+    offer_id TEXT PRIMARY KEY,
+    item_id TEXT NOT NULL,
+    shop_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    images_json TEXT NOT NULL DEFAULT '[]',
+    source_url TEXT,
+    duplicate_images_removed INTEGER NOT NULL DEFAULT 0,
+    captured_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`;
+  await sql`CREATE INDEX IF NOT EXISTS vivi_extension_test_recent
+    ON vivi_extension_test_captures (captured_at DESC)`;
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS vivi_product_sync_single_active
     ON vivi_product_sync_runs ((status)) WHERE status='running'`;
  })().catch(e=>{initPromise=null;throw e});
