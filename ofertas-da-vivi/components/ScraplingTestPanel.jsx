@@ -164,7 +164,7 @@ export default function ScraplingTestPanel(){
     const copied=document.execCommand('copy');element.remove();
     if(!copied)throw Error('clipboard');
    }
-   setMobileCopyMessage('Novo código copiado! Substitua a URL antiga do favorito Capturar Vivi. Agora ele terá o botão Enviar ao teste da Vivi.');
+   setMobileCopyMessage('Código de captura automática copiado! Substitua a URL do favorito Capturar Vivi. Ao executar, ele enviará a captura completa sem pedir mais cliques.');
   }catch{
    setMobileCopyMessage('O navegador não permitiu copiar automaticamente. Abra o painel no Chrome e tente novamente.');
   }
@@ -245,7 +245,7 @@ export default function ScraplingTestPanel(){
     <small>Por segurança do Android, um site não consegue obrigar o Chrome a ignorar as associações de links de outro aplicativo, nem executar automaticamente seu favorito no site da Shopee.</small>
    </div>
    {openLinkMessage&&<p className="vivi-mobile-capture-feedback" role="status">{openLinkMessage}</p>}
-   <p className="vivi-scrapling-hint">Se o Chrome não executar o favorito ou a Shopee apresentar uma verificação de acesso, a captura pode não funcionar. Você revisa os resultados antes de salvá-los.</p>
+   <p className="vivi-scrapling-hint">No envio automático, o resultado aparece na comparação abaixo. Caso faltem fotos ou descrição, o favorito mantém a janela para tentar novamente ou enviar manualmente. A vitrine pública não é alterada.</p>
   </section>
   <section id="vivi-capture-import-panel" className="admin-card vivi-extension-test-card">
    <div className="admin-card-title"><h2><Images size={22}/> Comparar dados capturados</h2></div>
@@ -284,7 +284,7 @@ export default function ScraplingTestPanel(){
     rows={4} placeholder="Os dados do anúncio chegam automaticamente aqui, ou podem ser colados manualmente..." spellCheck={false}/>
    <div className="vivi-scrapling-actions">
     <button className="btn btn-primary" type="button" disabled={sending||!captureJson.trim()||!!incomingPreview?.error||(!!data&&!incomingPreview?.matched)} onClick={()=>saveCapturedData()}>
-     <Images size={17}/>{sending?'Verificando captura…':'Salvar captura apenas no teste'}
+     <Images size={17}/>{sending?'Salvando captura…':'Salvar manualmente no teste'}
     </button>
    </div>
    {captureMessage&&<p className={'vivi-extension-test-message '+(captureMessage.success?'success':'error')} role="status">{captureMessage.text}</p>}
