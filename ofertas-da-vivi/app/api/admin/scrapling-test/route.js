@@ -17,12 +17,12 @@ export async function GET(){
     WHERE active=TRUE AND item_id ~ '^[0-9]{1,24}$'
       AND shop_id ~ '^[0-9]{1,24}$'
     ORDER BY CASE WHEN LOWER(title) LIKE '%play & joy%' THEN 0 ELSE 1 END,
-     updated_at DESC LIMIT 10`,
+     updated_at DESC LIMIT 20`,
    sql`SELECT run_id,status,started_at,finished_at,results_json,notes
     FROM vivi_scrapling_test_runs ORDER BY finished_at DESC LIMIT 2`,
    sql`SELECT offer_id,item_id,shop_id,title,description,images_json,source_url,
      duplicate_images_removed,captured_at
-     FROM vivi_extension_test_captures ORDER BY captured_at DESC LIMIT 20`
+     FROM vivi_extension_test_captures ORDER BY captured_at DESC LIMIT 120`
   ]);
   function galleryCount(raw){
    try{const value=JSON.parse(raw||'[]');return Array.isArray(value)?value.length:0}

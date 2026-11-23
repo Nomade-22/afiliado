@@ -71,9 +71,9 @@ export async function POST(request){
   const candidates=await sql`SELECT id,item_id,shop_id,title FROM vivi_offers WHERE active=TRUE
    AND item_id ~ '^[0-9]{1,24}$' AND shop_id ~ '^[0-9]{1,24}$'
    ORDER BY CASE WHEN LOWER(title) LIKE '%play & joy%' THEN 0 ELSE 1 END,
-   updated_at DESC LIMIT 10`;
+   updated_at DESC LIMIT 20`;
   const matched=candidates.find(x=>String(x.item_id)===String(itemId)&&String(x.shop_id)===String(shopId));
-  if(!matched)return reply({error:'Esse produto não está entre os 10 anúncios do piloto. Abra um dos links da página de teste para capturá-lo.'},422);
+  if(!matched)return reply({error:'Esse produto não está entre os 20 anúncios do piloto. Abra um dos links da página de teste para capturá-lo.'},422);
   const duplicates=Number(data.duplicateImagesRemoved||0);
   const removed=Math.max(0,Math.min(99,Math.trunc(duplicates)+(valid.length-unique.length)));
   await sql`INSERT INTO vivi_extension_test_captures

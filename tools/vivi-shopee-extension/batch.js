@@ -6,7 +6,7 @@
  'use strict';
  const ADMIN_ORIGIN='https://ofertas-da-vivi.vercel.app';
  const KEY='viviPilotBatch';
- const MAX_ITEMS=10;
+ const MAX_ITEMS=20;
  let processing=false;
  const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
  const numeric=value=>/^\d{1,24}$/.test(String(value||''));
