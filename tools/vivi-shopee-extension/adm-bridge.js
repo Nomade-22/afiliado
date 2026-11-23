@@ -67,7 +67,7 @@
     const data=await r.json();
     const candidate=(data.candidates||[]).find(p=>
      String(p.shopId)===String(message.shopId)&&String(p.itemId)===String(message.itemId));
-    if(!candidate)return {error:'Produto fora dos dez anúncios de teste.'};
+    if(!candidate)return {error:'Produto fora dos vinte anúncios do piloto.'};
     return {item:{
      shopId:String(candidate.shopId),itemId:String(candidate.itemId),
      title:String(candidate.title||'Produto Shopee').slice(0,200),
@@ -89,7 +89,8 @@
     });
     let output={};try{output=await r.json()}catch{}
     return {ok:r.ok&&output.ok===true,status:r.status,
-     error:output.error||'',imageCount:output.imageCount||0,descriptionChars:output.descriptionChars||0};
+     error:output.error||'',imageCount:output.imageCount||0,descriptionChars:output.descriptionChars||0,
+     publicStorefrontChanged:output.publicStorefrontChanged===true,descriptionPending:output.descriptionPending===true};
    })().then(sendResponse).catch(error=>sendResponse({ok:false,status:0,error:fail(error)}));
    return true;
   }
