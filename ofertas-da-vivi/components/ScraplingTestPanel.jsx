@@ -31,6 +31,26 @@ export default function ScraplingTestPanel(){
  const [isAndroid,setIsAndroid]=useState(false);
  const [openLinkMessage,setOpenLinkMessage]=useState('');
  const [copyingId,setCopyingId]=useState('');
+ const [cardCaptures,setCardCaptures]=useState({});
+ const cardCaptureRequests=useRef({});
+ function captureFromCard(item){
+  const shopId=String(item.shopId||''),itemId=String(item.itemId||'');
+  if(!/^\d{1,24}$/.test(shopId)||!/^\d{1,24}$/.test(itemId))return;
+  if(Object.values(cardCaptureRequests.current).some(job=>job.active))return;
+  const key=shopId+':'+itemId;
+  const requestId='vivi-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12);
+  cardCaptureRequests.current[requestId]={key,acknowledged:false,active:true};
+  setCardCaptures(prev=>({...prev,[key]:{status:'starting',text:'Conectando à extensão Vivi…'}}));
+  window.postMessage({type:'vivi:card:capture:start:v1',requestId,shopId,itemId},window.location.origin);
+  window.setTimeout(()=>{
+   const pending=cardCaptureRequests.current[requestId];
+   if(pending?.active&&!pending.acknowledged){
+    delete cardCaptureRequests.current[requestId];
+    setCardCaptures(prev=>({...prev,[key]:{status:'error',
+     text:'Extensão Vivi não detectada. Atualize a extensão para a versão 0.5, recarregue o painel e tente novamente.'}}));
+   }
+  },3000);
+ }
  useEffect(()=>{setIsAndroid(/Android/i.test(navigator.userAgent||''))},[]);
  async function copyShopeeUrl(url,itemId){
   setCopyingId('');
@@ -64,6 +84,57 @@ export default function ScraplingTestPanel(){
  },[]);
  useEffect(()=>{load();const interval=setInterval(load,45000);
   return ()=>clearInterval(interval)},[load]);
+
+ useEffect(()=>{
+  const done=(requestId,result)=>{
+   const request=cardCaptureRequests.current[requestId];
+   if(!request?.active)return;
+   delete cardCaptureRequests.current[requestId];
+   const status=result.status==='saved'?'saved':result.status==='partial'?'partial':'error';
+   const text=status==='saved'?'Captura salva no teste: '+(result.photos||0)+
+     ' fotos e '+(result.chars||0)+' caracteres.':
+     status==='partial'?'Dados incompletos na Shopee; abra o anúncio e tente novamente.':
+     String(result.reason||'Não foi possível salvar a captura.').slice(0,210);
+   setCardCaptures(prev=>({...prev,[request.key]:{status,text}}));
+   if(status==='saved')void load();
+  };
+  const onMessage=event=>{
+   if(event.source!==window||event.origin!==window.location.origin)return;
+   const data=event.data;
+   if(!data||typeof data!=='object')return;
+   const request=cardCaptureRequests.current[data.requestId];
+   if(!request?.active)return;
+   if(data.type==='vivi:card:capture:start-result:v1'){
+    request.acknowledged=true;
+    if(data.phase==='error'){
+     done(data.requestId,{status:'error',reason:data.error});return;
+    }
+    if(data.phase==='started'){
+     request.started=true;
+     setCardCaptures(prev=>({...prev,[request.key]:{
+      status:'running',text:'Abrindo Shopee, extraindo fotos e descrição e enviando à Vivi…'}}));
+    }
+   }else if(data.type==='vivi:card:capture:finished:v1'){
+    done(data.requestId,data);
+   }else if(data.type==='vivi:card:capture:status-result:v1'){
+    if(data.result&&(data.status==='completed'||data.status==='paused')){
+     done(data.requestId,{...data.result,reason:data.result.reason||data.step});
+    }else if(data.status==='running'){
+     setCardCaptures(prev=>({...prev,[request.key]:{
+      status:'running',text:data.step||'Capturando anúncio Shopee…'}}));
+    }
+   }
+  };
+  window.addEventListener('message',onMessage);
+  const poll=window.setInterval(()=>{
+   for(const [requestId,job] of Object.entries(cardCaptureRequests.current)){
+    if(job.active&&job.started){
+     window.postMessage({type:'vivi:card:capture:status-request:v1',requestId},window.location.origin);
+    }
+   }
+  },1500);
+  return ()=>{window.removeEventListener('message',onMessage);window.clearInterval(poll)};
+ },[load]);
  useEffect(()=>{
   // O favorito novo guarda o JSON na sessão antes de abrir a área protegida.
   // Assim, quando o login for necessário, o payload sobrevive ao redirecionamento.
@@ -350,7 +421,22 @@ export default function ScraplingTestPanel(){
           title={isAndroid?'Somente se a Shopee estiver impedida de abrir links por padrão':'Abrir o anúncio no navegador'}>
           <ExternalLink size={13}/>{isAndroid?'Abrir link direto':'Abrir anúncio'}
          </a>
+         {!isAndroid&&<button type="button"
+          className="vivi-scrapling-chrome-btn vivi-capture-card-btn"
+          disabled={cardCaptures[String(item.shopId)+':'+String(item.itemId)]?.status==='starting'||
+           cardCaptures[String(item.shopId)+':'+String(item.itemId)]?.status==='running'}
+          onClick={()=>captureFromCard(item)}
+          title="Abre a Shopee no Chrome, usa a extensão Vivi e salva a captura no teste">
+          <Images size={14}/>
+          {['starting','running'].includes(cardCaptures[String(item.shopId)+':'+String(item.itemId)]?.status)
+           ?'Capturando…':'Capturar com a Vivi'}
+         </button>}
         </div>}
+        {!isAndroid&&cardCaptures[String(item.shopId)+':'+String(item.itemId)]&&
+         <p className={'vivi-card-capture-feedback '+cardCaptures[String(item.shopId)+':'+String(item.itemId)].status}
+          role="status">
+          {cardCaptures[String(item.shopId)+':'+String(item.itemId)].text}
+         </p>}
        </div>
       </div>
       {captured&&<div className="vivi-extension-capture-result">
