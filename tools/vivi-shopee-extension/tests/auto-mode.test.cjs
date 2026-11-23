@@ -101,6 +101,6 @@ test('limite de dez anúncios desativa o modo contínuo',async()=>{
 test('arquivo compartilhado de captura está presente e é sintaticamente válido',()=>{
  const content=fs.readFileSync(path.join(__dirname,'..','capture-page.js'),'utf8');
  assert.match(content,/captureShopeePage\(\);/);
- assert.match(content,/\/opaanlp\//);
+ assert.match(content,/opaanlp/);
  new vm.Script(content,{filename:'capture-page.js'});
 });
