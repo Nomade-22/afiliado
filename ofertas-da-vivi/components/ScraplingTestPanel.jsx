@@ -102,7 +102,7 @@ export default function ScraplingTestPanel(){
    setCaptureMessage({
     success:true,
     text:autoSaveRequested?'Captura recebida! Salvando automaticamente apenas no ambiente de teste…':
-     'Captura recuperada com segurança: '+(Array.isArray(parsed.images)?parsed.images.length||0)+
+     'Captura recuperada com segurança: '+(Array.isArray(parsed.images)?parsed.images.length:0)+
      ' fotos e '+String(parsed.description||'').length+
      ' caracteres. Confira e toque em Salvar captura apenas no teste.'
    });
