@@ -40,37 +40,49 @@ export default function ScraplingTestPanel(){
  useEffect(()=>{load();const interval=setInterval(load,45000);
   return ()=>clearInterval(interval)},[load]);
  useEffect(()=>{
-  // A URL contém só o fragmento #, nunca enviado ao servidor Shopee ou Vercel.
-  // Remove os dados da barra de endereço antes que o usuário compartilhe a URL.
+  // O favorito novo guarda o JSON na sessão antes de abrir a área protegida.
+  // Assim, quando o login for necessário, o payload sobrevive ao redirecionamento.
+  const key='vivi-pending-capture-v1';
   const hash=window.location.hash||'';
   const marker='&vivi-capture=';
-  const index=hash.indexOf(marker);
-  if(!hash.startsWith('#teste-importacao')||index<0)return;
-  const encoded=hash.slice(index+marker.length);
-  window.history.replaceState(null,'',window.location.pathname+window.location.search+'#teste-importacao');
-  if(!encoded||encoded.length>45000){
-   setCaptureMessage({success:false,text:'Dados muito grandes ou ausentes. Volte ao anúncio e use Copiar dados.'});
-   return;
+  const index=hash.startsWith('#teste-importacao')?hash.indexOf(marker):-1;
+  let raw=null;
+  if(index>=0){
+   const encoded=hash.slice(index+marker.length);
+   window.history.replaceState(null,'',window.location.pathname+window.location.search+'#teste-importacao');
+   if(encoded.length>45000||!encoded){
+    setCaptureMessage({success:false,text:'Captura muito grande ou ausente. Use Copiar dados no anúncio.'});
+    return;
+   }
+   try{raw=decodeURIComponent(encoded)}catch{
+    setCaptureMessage({success:false,text:'A captura recebida pela URL está incompleta.'});
+    return;
+   }
+  }else{
+   try{raw=sessionStorage.getItem(key)}catch{}
   }
+  if(!raw)return;
   try{
-   const parsed=JSON.parse(decodeURIComponent(encoded));
+   const parsed=JSON.parse(raw);
    if(parsed?.type!=='vivi-shopee-capture-v1'||
       !/^\d{1,24}$/.test(String(parsed.shopId||''))||
       !/^\d{1,24}$/.test(String(parsed.itemId||''))){
-    throw Error('Identificação de anúncio inválida.');
+    throw Error('IDs inválidos');
    }
    const serialized=JSON.stringify(parsed);
+   sessionStorage.setItem(key,serialized);
    setCaptureJson(serialized);
    setCaptureMessage({
     success:true,
-    text:'Captura recebida do anúncio: '+(Array.isArray(parsed.images)?parsed.images.length:0)+
+    text:'Captura recuperada com segurança: '+(Array.isArray(parsed.images)?parsed.images.length:0)+
       ' fotos e '+String(parsed.description||'').length+
-      ' caracteres. Confira as informações e toque em Salvar captura apenas no teste.'
+      ' caracteres. Confira e toque em Salvar captura apenas no teste.'
    });
    window.requestAnimationFrame(()=>{
     document.getElementById('vivi-capture-import-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
    });
   }catch{
+   try{sessionStorage.removeItem(key)}catch{}
    setCaptureMessage({success:false,text:'Não foi possível ler os dados recebidos. Volte à Shopee e use Copiar dados.'});
   }
  },[]);
@@ -137,6 +149,7 @@ export default function ScraplingTestPanel(){
    if(response.status===401){location.href='/adm/login';return}
    const result=await response.json();
    if(!response.ok)throw Error(result.error||'Não foi possível salvar a captura.');
+   try{sessionStorage.removeItem('vivi-pending-capture-v1')}catch{}
    setCaptureJson('');
    setCaptureMessage({success:true,text:'Captura de '+result.title+' salva no teste: '+result.imageCount+' fotos distintas e '+result.descriptionChars+' caracteres. Nenhuma alteração na loja.'});
    await load();
@@ -230,7 +243,7 @@ export default function ScraplingTestPanel(){
     </button>
    </div>
    {captureMessage&&<p className={'vivi-extension-test-message '+(captureMessage.success?'success':'error')} role="status">{captureMessage.text}</p>}
-   <p className="vivi-scrapling-hint">O envio é feito através do próprio navegador e exige sua confirmação antes de salvar no ambiente de teste. O Chrome continua precisando abrir o anúncio normalmente; o servidor não consegue capturá-lo sozinho. Cookies e links de afiliados permanecem inalterados.</p>
+   <p className="vivi-scrapling-hint">Se a sessão de administração estiver expirada, será necessário entrar novamente; a captura permanecerá salva temporariamente nesta aba até você confirmar a importação. Cookies de afiliado e links dos produtos não são modificados.</p>
   </section>
   {report?<section className="admin-card">
     <div className="vivi-scrapling-report-header">
