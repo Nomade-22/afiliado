@@ -60,7 +60,7 @@ export default function ScraplingTestPanel(){
     const copied=document.execCommand('copy');element.remove();
     if(!copied)throw Error('clipboard');
    }
-   setMobileCopyMessage('Código copiado! Edite um favorito do Chrome e cole no campo URL.');
+   setMobileCopyMessage('Capturador completo copiado! Substitua o código de diagnóstico javascript:alert(...) no campo URL do favorito Capturar Vivi.');
   }catch{
    setMobileCopyMessage('O navegador não permitiu copiar automaticamente. Abra o painel no Chrome e tente novamente.');
   }
@@ -124,7 +124,7 @@ export default function ScraplingTestPanel(){
    <ol className="vivi-mobile-capture-steps">
     <li>No <b>Chrome do celular</b>, salve esta página como favorito pelo menu <b>⋮ → Adicionar aos favoritos</b>.</li>
     <li>Abra <b>⋮ → Favoritos</b>, encontre o favorito salvo e escolha <b>Editar</b>. Dê o nome <b>Capturar Vivi</b> e substitua a URL pelo código copiado acima.</li>
-    <li>Abra um dos <b>10 anúncios completos</b> da Shopee que aparecem abaixo e espere as fotos e a descrição carregarem.</li>
+    <li>Abra um dos <b>10 anúncios completos</b> da Shopee que aparecem abaixo e espere as fotos e a descrição carregarem. O capturador também reconhece endereços <b>/opaanlp/</b>, comuns no celular.</li>
     <li>Toque na barra de endereço, digite <b>Capturar Vivi</b> e toque na <b>sugestão do favorito</b> (não faça uma pesquisa comum).</li>
     <li>Na janela que aparecer, toque em <b>Copiar fotos e descrição</b>. Volte aqui, cole o resultado e selecione <b>Salvar captura apenas no teste</b>.</li>
    </ol>
