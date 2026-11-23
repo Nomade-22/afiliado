@@ -1,6 +1,6 @@
 # Vivi · Captura Shopee desktop (piloto)
 
-Versão **0.5.0**. Agora há dois modos: **um clique**, já validado no Chrome, e **captura contínua opcional** para anúncios visitados. Ambos só encaminham resultados para o ambiente de teste autenticado da Vivi, limitado a dez produtos. A loja pública não é alterada.
+Versão **0.5.1**. Agora há dois modos: **um clique**, já validado no Chrome, e **captura contínua opcional** para anúncios visitados. Ambos só encaminham resultados para o ambiente de teste autenticado da Vivi, limitado a dez produtos. A loja pública não é alterada.
 
 ## Atualizar a extensão instalada
 
@@ -8,6 +8,12 @@ Versão **0.5.0**. Agora há dois modos: **um clique**, já validado no Chrome, 
 2. Substitua os arquivos da extensão instalada pelos novos. A pasta agora deve incluir `manifest.json`, `popup.html`, `popup.js`, `capture-page.js` e `background.js`.
 3. Abra `chrome://extensions`, ative Modo do desenvolvedor se necessário e clique em **Atualizar** na extensão Vivi; caso o Chrome não encontre os novos arquivos, use **Carregar sem compactação** apontando para a pasta correta.
 4. Abra `https://ofertas-da-vivi.vercel.app/adm#teste-importacao` e faça login administrativo.
+
+## Correção 0.5.1 — erro "Failed to construct 'URL': Invalid URL"
+
+O Chrome às vezes oculta `tab.url` do service worker por não ter permissão `tabs` geral. A extensão **não precisa** solicitar acesso irrestrito: agora a ponte `adm-bridge.js`, executada apenas no domínio exato do ADM da Vivi, confirma `location.origin` e `location.pathname` antes da abertura da Shopee. Existe uma mensagem explicativa quando a aba não puder ser validada.
+
+**Depois de substituir os arquivos locais da extensão, atualize em `chrome://extensions` e recarregue a aba ADM (Ctrl+Shift+R).** Em seguida, teste novamente o botão do card. Não apaga nenhuma captura.
 
 ## Botão Capturar com a Vivi em cada produto (novo)
 
