@@ -105,3 +105,11 @@ test('devolve a confirmação ao card específico',async()=>{
  assert.equal(h.sent.at(-1).msg.type,'vivi:card:capture:finished:v1');
  assert.equal(h.sent.at(-1).msg.photos,6);
 });
+
+test('ponte confirma a origem/caminho do ADM sem acessar tab.url',async()=>{
+ const h=harness();
+ const reply=await h.runtimeMessage({type:'viviAdminCheckTab'});
+ assert.equal(reply.ok,true);
+ assert.equal(reply.origin,'https://ofertas-da-vivi.vercel.app');
+ assert.equal(reply.pathname,'/adm');
+});
