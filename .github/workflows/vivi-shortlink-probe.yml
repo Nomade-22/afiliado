@@ -1,0 +1,27 @@
+name: Testar link curto Shopee 6q2UWhCh7x
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/vivi-shortlink-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testar-link:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout apenas para ler o script
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Instalar Chromium
+        run: |
+          python3 -m pip install --disable-pip-version-check "playwright==1.58.0" "beautifulsoup4==4.13.4" --break-system-packages
+          python3 -m playwright install --with-deps chromium
+      - name: Abrir link curto e procurar descrição e fotos
+        run: python3 scripts/vivi_shortlink_probe.py
