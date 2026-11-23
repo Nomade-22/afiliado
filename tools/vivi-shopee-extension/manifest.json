@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Vivi · Captura Rápida Shopee (Piloto)",
-  "version": "0.5.1",
-  "description": "Correção: botão Capturar com a Vivi valida a aba ADM mesmo quando Chrome oculta tab.url.",
+  "version": "0.6.0",
+  "description": "Piloto ampliado para 20 produtos Shopee: capturas individuais, contínuas ou em lote, com salvamento autenticado na Vivi.",
   "permissions": [
     "activeTab",
     "scripting",
