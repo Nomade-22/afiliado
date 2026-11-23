@@ -1,13 +1,21 @@
 # Vivi · Captura Shopee desktop (piloto)
 
-Versão **0.6.0**. Agora há dois modos: **um clique**, já validado no Chrome, e **captura contínua opcional** para anúncios visitados. Ambos só encaminham resultados para o ambiente de teste autenticado da Vivi, limitado a vinte produtos. A loja pública não é alterada.
+Versão **0.7.0**. Agora há dois modos: **um clique**, já validado no Chrome, e **captura contínua opcional** para anúncios visitados. As capturas vão para o histórico administrativo e agora sincronizam fotos e descrições válidas dos mesmos produtos, até vinte anúncios. Preços, comissões, links de afiliado e capas não são alterados.
 
 ## Ampliação do piloto para 20 produtos (23/11/2026)
 
 - O painel ADM exibe os dez produtos anteriores e acrescenta mais dez anúncios ativos da própria loja. Os IDs dos produtos são identificados no banco da Vivi, sem cadastrar ofertas duplicadas.
 - Foram aplicadas às ofertas correspondentes as **13 galerias de fotos** já capturadas; **10 descrições completas** foram transferidas para campos que estavam vazios. Preços, links de afiliado, comissões e imagens de capa não mudaram.
-- Novas capturas da extensão continuam sendo gravadas **apenas na tabela de testes** para revisão, sem publicação automática de futuros dados no catálogo.
-- A extensão versão 0.6.0 aceita até 20 candidatos no lote e no contador de sessão. Atualize os arquivos locais e recarregue o painel ADM para usar essa capacidade.
+- A partir da versão 0.7.0, novas fotos e descrições válidas também completam automaticamente o anúncio correspondente no catálogo, além do registro no histórico de testes. Capturas parciais nunca apagam conteúdo bom.
+- A extensão versão 0.7.0 aceita até 20 candidatos no lote e no contador de sessão. Atualize os arquivos locais e recarregue o painel ADM para usar essa capacidade.
+
+## Melhoria 0.7.0 — aproveitar dados de diferentes tentativas
+
+- Quando o anúncio direto não traz todas as informações, o botão do card tenta três caminhos públicos **do mesmo item**: `/product/LOJA/ITEM`, `/opaanlp/LOJA/ITEM` e `/-i.LOJA.ITEM`.
+- Pode aproveitar fotos de uma rota e descrição de outra, mas nunca dados de produtos parecidos com IDs diferentes.
+- A gravação mantém a descrição já existente se a próxima tentativa vier vazia e nunca troca a galeria atual por outra com menos fotos.
+- O servidor sincroniza automaticamente somente descrições antes vazias e galerias mais completas com a página pública da oferta correspondente.
+- Se nenhum caminho mostrar a descrição, ela segue pendente, mas as fotos válidas continuam salvas.
 
 ## Atualizar a extensão instalada
 
@@ -31,7 +39,7 @@ Depois de atualizar a extensão e recarregar `https://ofertas-da-vivi.vercel.app
 3. A extensão consulta a lista de vinte produtos do servidor, confere IDs e verifica a permissão do Chrome para ler `shopee.com.br`.
 4. Ela abre temporariamente o anúncio em uma aba do Chrome, aguarda o carregamento e coleta título, galeria e descrição.
 5. Só grava dados completos usando a própria sessão administrativa no endpoint de teste `/api/admin/scrapling-test/extension`. Em seguida, fecha a aba temporária, volta ao ADM, atualiza o card e indica **Salvo** ou **Revisar**.
-6. O botão não altera `vivi_offers` nem publica a captura na loja. **Abrir anúncio** segue funcionando separadamente.
+6. O botão pode completar `product_description` e `product_images` da mesma oferta em `vivi_offers`, sem alterar preço, capa, comissão ou URL afiliada. **Abrir anúncio** segue funcionando separadamente.
 
 **Permissão inicial**: se o Chrome disser que a extensão ainda não tem acesso à Shopee, clique no ícone Vivi, escolha **Ativar captura contínua** para autorizar os domínios Shopee e depois **Pausar captura contínua**. Assim o botão do painel pode usar a permissão já concedida sem capturas passivas. Você pode revogá-la em `chrome://extensions`.
 
@@ -46,7 +54,7 @@ Depois de atualizar a extensão e recarregar `https://ofertas-da-vivi.vercel.app
 5. Cada anúncio é aberto temporariamente em uma aba ativa do Chrome, lido com o coletor da extensão e enviado **diretamente à API autenticada da Vivi** quando há dados completos. A aba do anúncio é fechada antes do próximo.
 6. Confira a contagem de salvos e falhas no popup da extensão; clique em **Pausar lote** para interromper. Confira os resultados no painel ADM após a execução.
 
-**Importante:** a extensão não consegue operar remotamente no computador a partir do ChatGPT; esta ação roda dentro do seu próprio Chrome depois que você clicar no botão. Se a Shopee mostrar apenas uma página genérica, exigir login ou não renderizar imagens, esse produto será marcado para revisão e não será salvo. O sistema informa **salvo** somente quando o endpoint confirma a gravação. O modo contínuo é desligado ao iniciar o lote para impedir duplicatas. A vitrine pública não é modificada.
+**Importante:** a extensão não consegue operar remotamente no computador a partir do ChatGPT; esta ação roda dentro do seu próprio Chrome depois que você clicar no botão. Se a Shopee mostrar apenas uma página genérica, exigir login ou não renderizar imagens, esse produto será marcado para revisão e não será salvo. O sistema informa **salvo** somente quando o endpoint confirma a gravação. O modo contínuo é desligado ao iniciar o lote para impedir duplicatas. A vitrine pode receber novas fotos e descrições válidas, preservando preços e links.
 
 ## Captura contínua: sem clicar na extensão a cada produto
 
@@ -72,6 +80,6 @@ Depois de atualizar a extensão e recarregar `https://ofertas-da-vivi.vercel.app
 - Usa `activeTab`, `scripting`, `clipboardWrite` e `storage`, com permissão de host **opcional** somente para o domínio Shopee.
 - Não acessa cookies, senhas, avaliações privadas ou páginas em outros domínios.
 - Os dados seguem pelo fragmento de URL até `/captura-vivi`; a ponte remove o fragmento do histórico e usa `sessionStorage` na aba criada até a autenticação ADM.
-- Apenas `vivi_extension_test_captures` é alterada; o endpoint verifica shopId/itemId, URL, imagens e produtos autorizados. Não modifica `vivi_offers`, preços, links, cookies nem comissões.
+- O endpoint grava `vivi_extension_test_captures` e, com os mesmos IDs conferidos, pode atualizar somente `product_description` e `product_images` em `vivi_offers`. Não altera preços, links, cookies, comissões ou capas.
 - O Chrome pode limitar a automação em páginas com login, bloqueios ou renderização tardia. Nem a extensão nem o site conseguem garantir extração de todo anúncio.
 - Abas de fundo criadas pela extensão podem permanecer abertas para você conferir o resultado. O contador impede envio repetido do mesmo ID na sessão.
