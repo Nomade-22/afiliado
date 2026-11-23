@@ -55,8 +55,8 @@ export default function ScraplingTestPanel(){
   try{
    const parsed=JSON.parse(decodeURIComponent(encoded));
    if(parsed?.type!=='vivi-shopee-capture-v1'||
-      !/^\\d{1,24}$/.test(String(parsed.shopId||''))||
-      !/^\\d{1,24}$/.test(String(parsed.itemId||''))){
+      !/^\d{1,24}$/.test(String(parsed.shopId||''))||
+      !/^\d{1,24}$/.test(String(parsed.itemId||''))){
     throw Error('Identificação de anúncio inválida.');
    }
    const serialized=JSON.stringify(parsed);
